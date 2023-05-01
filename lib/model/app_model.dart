@@ -28,7 +28,7 @@ class AppModel extends ChangeNotifier {
   Player playerSide = Player.player1;
   int timeLimit = 0;
   String pieceTheme = 'Classic';
-  String themeName = 'Jargon Jade';
+  String themeName = 'Cherry Funk';
   bool showMoveHistory = true;
   bool allowUndoRedo = true;
   bool soundEnabled = true;
