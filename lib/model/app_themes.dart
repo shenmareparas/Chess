@@ -149,6 +149,6 @@ List<AppTheme> get themeList {
       border: Color(0xFF000000),
     ),
   ];
-  themeList.sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
+  // themeList.sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
   return themeList;
 }
