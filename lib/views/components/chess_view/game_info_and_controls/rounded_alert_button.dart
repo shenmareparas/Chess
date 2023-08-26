@@ -6,7 +6,7 @@ class RoundedAlertButton extends StatelessWidget {
   final String label;
   final Function onConfirm;
 
-  RoundedAlertButton(this.label, {@required this.onConfirm});
+  RoundedAlertButton(this.label, {required this.onConfirm});
 
   @override
   Widget build(BuildContext context) {

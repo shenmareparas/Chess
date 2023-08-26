@@ -28,15 +28,15 @@ class AppModel extends ChangeNotifier {
   Player playerSide = Player.player1;
   int timeLimit = 0;
   String pieceTheme = 'Classic';
-  String themeName = 'Cherry Funk';
+  String themeName = 'Jargon Jade';
   bool showMoveHistory = true;
   bool allowUndoRedo = true;
   bool soundEnabled = true;
   bool showHints = true;
   bool flip = true;
 
-  ChessGame game;
-  Timer timer;
+  ChessGame? game;
+  Timer? timer;
   bool gameOver = false;
   bool stalemate = false;
   bool promotionRequested = false;
@@ -93,12 +93,8 @@ class AppModel extends ChangeNotifier {
   }
 
   void newGame(BuildContext context, {bool notify = true}) {
-    if (game != null) {
-      game.cancelAIMove();
-    }
-    if (timer != null) {
-      timer.cancel();
-    }
+    game?.cancelAIMove();
+    timer?.cancel();
     gameOver = false;
     stalemate = false;
     turn = Player.player1;
@@ -126,8 +122,8 @@ class AppModel extends ChangeNotifier {
   }
 
   void exitChessView() {
-    game.cancelAIMove();
-    timer.cancel();
+    game?.cancelAIMove();
+    timer?.cancel();
     notifyListeners();
   }
 
@@ -163,29 +159,37 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setPlayerCount(int count) {
-    playerCount = count;
-    notifyListeners();
-  }
-
-  void setAIDifficulty(int difficulty) {
-    aiDifficulty = difficulty;
-    notifyListeners();
-  }
-
-  void setPlayerSide(Player side) {
-    selectedSide = side;
-    if (side != Player.random) {
-      playerSide = side;
+  void setPlayerCount(int? count) {
+    if (count != null) {
+      playerCount = count;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
-  void setTimeLimit(int duration) {
-    timeLimit = duration;
-    player1TimeLeft = Duration(minutes: timeLimit);
-    player2TimeLeft = Duration(minutes: timeLimit);
-    notifyListeners();
+  void setAIDifficulty(int? difficulty) {
+    if (difficulty != null) {
+      aiDifficulty = difficulty;
+      notifyListeners();
+    }
+  }
+
+  void setPlayerSide(Player? side) {
+    if (side != null) {
+      selectedSide = side;
+      if (side != Player.random) {
+        playerSide = side;
+      }
+      notifyListeners();
+    }
+  }
+
+  void setTimeLimit(int? duration) {
+    if (duration != null) {
+      timeLimit = duration;
+      player1TimeLeft = Duration(minutes: timeLimit);
+      player2TimeLeft = Duration(minutes: timeLimit);
+      notifyListeners();
+    }
   }
 
   void decrementPlayer1Timer() {
@@ -205,7 +209,7 @@ class AppModel extends ChangeNotifier {
   }
 
   void setTheme(int index) async {
-    themeName = themeList[index].name;
+    themeName = themeList[index].name ?? "";
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('themeName', themeName);
     notifyListeners();
