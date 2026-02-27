@@ -5,6 +5,7 @@ import 'package:en_passant/model/app_model.dart';
 import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
 import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 
 class MoveList extends StatelessWidget {
   final AppModel appModel;
@@ -12,26 +13,68 @@ class MoveList extends StatelessWidget {
 
   MoveList(this.appModel);
 
+  void _copyMovesToClipboard(BuildContext context) {
+    final moves = _allMoves();
+    if (moves.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: moves));
+    HapticFeedback.mediumImpact();
+    _showCopiedOverlay(context);
+  }
+
+  void _showCopiedOverlay(BuildContext context) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: MediaQuery.of(context).size.height * 0.15,
+        left: 0,
+        right: 0,
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: CupertinoColors.systemGrey.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              'Moves copied to clipboard',
+              style: TextStyle(
+                color: CupertinoColors.white,
+                fontFamily: 'Jura',
+                fontSize: 14,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(overlayEntry);
+    Future.delayed(Duration(seconds: 2), () => overlayEntry.remove());
+  }
+
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(15)),
-        color: Color(0x20000000),
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        controller: scrollController,
-        padding: EdgeInsets.only(left: 15, right: 15),
-        child: Center(child: TextRegular(_allMoves())),
+    return GestureDetector(
+      onLongPress: () => _copyMovesToClipboard(context),
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.all(Radius.circular(15)),
+          color: Color(0x20000000),
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          controller: scrollController,
+          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+          child: TextRegular(_allMoves()),
+        ),
       ),
     );
   }
 
   void _scrollToBottom() {
-    if (appModel.moveListUpdated) {
+    if (appModel.moveListUpdated && scrollController.hasClients) {
       scrollController.jumpTo(scrollController.position.maxScrollExtent);
       appModel.moveListUpdated = false;
     }
@@ -42,7 +85,7 @@ class MoveList extends StatelessWidget {
     appModel.moveMetaList.asMap().forEach((index, move) {
       var turnNumber = ((index + 1) / 2).ceil();
       if (index % 2 == 0) {
-        moveString += index == 0 ? '$turnNumber. ' : '   $turnNumber. ';
+        moveString += index == 0 ? '$turnNumber. ' : '\n$turnNumber. ';
       }
       moveString += _moveToString(move);
       if (index % 2 == 0) {
