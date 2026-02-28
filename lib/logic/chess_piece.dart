@@ -50,5 +50,24 @@ class ChessPiece {
     return (player == Player.player1) ? value : -value;
   }
 
+  int get materialValue {
+    switch (type) {
+      case ChessPieceType.pawn:
+        return 100;
+      case ChessPieceType.knight:
+        return 320;
+      case ChessPieceType.bishop:
+        return 330;
+      case ChessPieceType.rook:
+        return 500;
+      case ChessPieceType.queen:
+        return 900;
+      case ChessPieceType.king:
+        return 20000;
+      default:
+        return 0;
+    }
+  }
+
   ChessPiece(this.id, this.type, this.player, this.tile);
 }

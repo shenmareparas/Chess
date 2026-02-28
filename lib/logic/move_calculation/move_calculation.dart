@@ -33,40 +33,40 @@ const KING_QUEEN_MOVES = [
   UP_LEFT
 ];
 
-List<Move> allMoves(Player player, ChessBoard board, int aiDifficulty) {
+List<Move> allMoves(Player player, ChessBoard board, int aiDifficulty,
+    {bool capturesOnly = false}) {
   List<MoveAndValue> moves = [];
   var pieces = List.from(piecesForPlayer(player, board));
   for (var piece in pieces) {
     var tiles = movesForPiece(piece, board);
     for (var tile in tiles) {
-      if (piece.type == ChessPieceType.pawn &&
-          (tileToRow(tile) == 0 || tileToRow(tile) == 7)) {
+      var victim = board.tiles[tile];
+      bool isCapture = victim != null && victim.player != piece.player;
+      bool isPromotion = piece.type == ChessPieceType.pawn &&
+          (tileToRow(tile) == 0 || tileToRow(tile) == 7);
+
+      // In captures-only mode, skip quiet moves
+      if (capturesOnly && !isCapture && !isPromotion) continue;
+
+      int priority = 0;
+      // MVV-LVA: prioritize captures by victim value - attacker value
+      if (isCapture) {
+        priority = (10000 + victim.materialValue - piece.materialValue).toInt();
+      }
+      if (isPromotion) {
         for (var promotion in PROMOTIONS) {
-          var move =
-              MoveAndValue(Move(piece.tile, tile, promotionType: promotion), 0);
-          push(move.move, board, promotionType: promotion);
-          move.value = boardValue(board);
-          pop(board);
-          moves.add(move);
+          moves.add(MoveAndValue(
+              Move(piece.tile, tile, promotionType: promotion),
+              priority + 9000));
         }
       } else {
-        var move = MoveAndValue(Move(piece.tile, tile), 0);
-        push(move.move, board);
-        move.value = boardValue(board);
-        pop(board);
-        moves.add(move);
+        moves.add(MoveAndValue(Move(piece.tile, tile), priority));
       }
     }
   }
-  moves.sort((a, b) => _compareMoves(a, b, player, board));
+  // Sort by priority descending: captures and promotions first
+  moves.sort((a, b) => b.value.compareTo(a.value));
   return moves.map((move) => move.move).toList();
-}
-
-int _compareMoves(
-    MoveAndValue a, MoveAndValue b, Player player, ChessBoard board) {
-  return player == Player.player1
-      ? b.value.compareTo(a.value)
-      : a.value.compareTo(b.value);
 }
 
 List<int> movesForPiece(ChessPiece piece, ChessBoard board,

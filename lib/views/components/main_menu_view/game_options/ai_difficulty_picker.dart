@@ -8,8 +8,7 @@ class AIDifficultyPicker extends StatelessWidget {
     2: Text('2'),
     3: Text('3'),
     4: Text('4'),
-    5: Text('5'),
-    6: Text('6')
+    5: Text('5')
   };
 
   final int aiDifficulty;

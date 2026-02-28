@@ -188,6 +188,10 @@ class ChessGame extends FlameGame with TapCallbacks {
     aiOperation?.cancel();
   }
 
+  void triggerAIMove() {
+    _aiMove();
+  }
+
   void undoMove() {
     board.redoStack.add(pop(board));
     if (appModel.moveMetaList.length > 1) {

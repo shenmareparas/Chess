@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:en_passant/logic/chess_board.dart';
 import 'package:en_passant/logic/chess_game.dart';
+import 'package:en_passant/logic/game_state_storage.dart';
+import 'package:en_passant/logic/move_calculation/move_calculation.dart';
 import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
 import 'package:en_passant/logic/shared_functions.dart';
 import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
@@ -96,6 +99,7 @@ class AppModel extends ChangeNotifier {
   void newGame(BuildContext context, {bool notify = true}) {
     game?.cancelAIMove();
     timer?.cancel();
+    GameStateStorage.clearGameState();
     gameOver = false;
     stalemate = false;
     turn = Player.player1;
@@ -107,6 +111,13 @@ class AppModel extends ChangeNotifier {
           Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
     }
     game = ChessGame(this, context);
+    _startTimer();
+    if (notify) {
+      notifyListeners();
+    }
+  }
+
+  void _startTimer() {
     timer = Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (timer) {
       turn == Player.player1
           ? decrementPlayer1Timer()
@@ -117,14 +128,12 @@ class AppModel extends ChangeNotifier {
         endGame();
       }
     });
-    if (notify) {
-      notifyListeners();
-    }
   }
 
   void exitChessView() {
     game?.cancelAIMove();
     timer?.cancel();
+    GameStateStorage.clearGameState();
     notifyListeners();
   }
 
@@ -132,16 +141,19 @@ class AppModel extends ChangeNotifier {
     moveMetaList.add(meta);
     moveListUpdated = true;
     notifyListeners();
+    saveGameState();
   }
 
   void popMoveMeta() {
     moveMetaList.removeLast();
     moveListUpdated = true;
     notifyListeners();
+    saveGameState();
   }
 
   void endGame() {
     gameOver = true;
+    GameStateStorage.clearGameState();
     notifyListeners();
   }
 
@@ -280,5 +292,64 @@ class AppModel extends ChangeNotifier {
 
   void update() {
     notifyListeners();
+  }
+
+  void saveGameState() {
+    GameStateStorage.saveGameState(this);
+  }
+
+  Future<void> restoreGameState(BuildContext context) async {
+    final state = await GameStateStorage.loadGameState();
+    if (state == null) return;
+
+    game?.cancelAIMove();
+    timer?.cancel();
+
+    playerCount = state['playerCount'] as int;
+    aiDifficulty = state['aiDifficulty'] as int;
+    playerSide = Player.values[state['playerSide'] as int];
+    selectedSide = Player.values[state['selectedSide'] as int];
+    timeLimit = state['timeLimit'] as int;
+    pieceTheme = state['pieceTheme'] as String;
+    gameOver = state['gameOver'] as bool;
+    stalemate = state['stalemate'] as bool;
+    turn = Player.player1;
+    moveMetaList = [];
+
+    // Create a fresh game and replay all moves
+    game = ChessGame(this, context);
+    final moves = GameStateStorage.parseMoves(state);
+    for (var move in moves) {
+      var meta = push(move, game!.board,
+          getMeta: true, promotionType: move.promotionType);
+      moveMetaList.add(meta);
+      turn = oppositePlayer(turn);
+    }
+
+    // Restore timer durations
+    player1TimeLeft = Duration(milliseconds: state['player1TimeLeftMs'] as int);
+    player2TimeLeft = Duration(milliseconds: state['player2TimeLeftMs'] as int);
+
+    // Restore game over / stalemate state
+    gameOver = state['gameOver'] as bool;
+    stalemate = state['stalemate'] as bool;
+
+    // Update visual state from last move
+    if (moveMetaList.isNotEmpty) {
+      game!.latestMove = moveMetaList.last.move;
+      var oppositeTurn = oppositePlayer(turn);
+      if (kingInCheck(oppositeTurn, game!.board)) {
+        game!.checkHintTile = kingForPlayer(oppositeTurn, game!.board)?.tile;
+      }
+    }
+
+    _startTimer();
+
+    notifyListeners();
+
+    // Trigger AI move if it's AI's turn
+    if (isAIsTurn && !gameOver) {
+      game!.triggerAIMove();
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:en_passant/logic/move_calculation/move_classes/move_stack_object.dart';
 import 'package:en_passant/logic/move_calculation/openings.dart';
 import 'package:en_passant/logic/shared_functions.dart';
@@ -8,6 +10,40 @@ import 'move_calculation/move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'move_calculation/piece_square_tables.dart';
+
+// Zobrist hashing constants
+// 12 piece types (6 types x 2 colors) x 64 squares + 1 side-to-move
+final List<List<int>> zobristTable = _initZobristTable();
+final int zobristSideToMove = math.Random(9999).nextInt(0x7FFFFFFF);
+
+const _pieceTypeIndex = {
+  ChessPieceType.pawn: 0,
+  ChessPieceType.knight: 1,
+  ChessPieceType.bishop: 2,
+  ChessPieceType.rook: 3,
+  ChessPieceType.queen: 4,
+  ChessPieceType.king: 5,
+};
+
+List<List<int>> _initZobristTable() {
+  var rng = math.Random(42);
+  return List.generate(
+      12, (_) => List.generate(64, (_) => rng.nextInt(0x7FFFFFFF)));
+}
+
+int _zobristIndex(ChessPiece piece) {
+  int base = _pieceTypeIndex[piece.type] ?? 0;
+  if (piece.player == Player.player2) base += 6;
+  return base;
+}
+
+int _zobristPiece(ChessPiece piece) {
+  return zobristTable[_zobristIndex(piece)][piece.tile];
+}
+
+int _zobristPieceAt(ChessPiece piece, int tile) {
+  return zobristTable[_zobristIndex(piece)][tile];
+}
 
 const KING_ROW_PIECES = [
   ChessPieceType.rook,
@@ -37,10 +73,20 @@ class ChessBoard {
   bool player2KingInCheck = false;
   List<List<Move>> possibleOpenings = List.from(openings);
   int moveCount = 0;
+  int zobristHash = 0;
 
   ChessBoard() {
     _addPiecesForPlayer(Player.player1);
     _addPiecesForPlayer(Player.player2);
+    _initZobristHash();
+  }
+
+  void _initZobristHash() {
+    zobristHash = 0;
+    for (var piece in player1Pieces + player2Pieces) {
+      zobristHash ^= _zobristPiece(piece);
+    }
+    // Player 1 starts, so no side-to-move XOR initially
   }
 
   void _addPiecesForPlayer(Player player) {
@@ -80,6 +126,7 @@ MoveMeta push(Move move, ChessBoard board,
     ChessPieceType promotionType = ChessPieceType.promotion}) {
   var mso = MoveStackObject(move, board.tiles[move.from], board.tiles[move.to],
       board.enPassantPiece, List.from(board.possibleOpenings));
+  mso.previousHash = board.zobristHash;
   var meta = MoveMeta(move, mso.movedPiece?.player, mso.movedPiece?.type);
   if (board.possibleOpenings.isNotEmpty) {
     _filterPossibleOpenings(board, move);
@@ -87,6 +134,8 @@ MoveMeta push(Move move, ChessBoard board,
   if (getMeta) {
     _checkMoveAmbiguity(move, meta, board);
   }
+  // Toggle side to move
+  board.zobristHash ^= zobristSideToMove;
   if (_castled(mso.movedPiece, mso.takenPiece)) {
     _castle(board, mso, meta);
   } else {
@@ -120,6 +169,7 @@ MoveMeta pushMSO(MoveStackObject mso, ChessBoard board) {
 
 MoveStackObject pop(ChessBoard board) {
   var mso = board.moveStack.removeLast();
+  board.zobristHash = mso.previousHash;
   board.enPassantPiece = mso.enPassantPiece;
   board.possibleOpenings = mso.possibleOpenings ?? [];
   if (mso.castled) {
@@ -139,6 +189,17 @@ MoveStackObject pop(ChessBoard board) {
 }
 
 void _standardMove(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
+  var piece = mso.movedPiece;
+  if (piece != null) {
+    // Remove piece from source square
+    board.zobristHash ^= _zobristPieceAt(piece, mso.move.from);
+    // Add piece to destination square
+    board.zobristHash ^= _zobristPieceAt(piece, mso.move.to);
+  }
+  if (mso.takenPiece != null) {
+    // Remove captured piece
+    board.zobristHash ^= _zobristPiece(mso.takenPiece!);
+  }
   _setTile(mso.move.to, mso.movedPiece, board);
   _setTile(mso.move.from, null, board);
   mso.movedPiece?.moveCount++;

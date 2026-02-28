@@ -17,10 +17,32 @@ class ChessView extends StatefulWidget {
   _ChessViewState createState() => _ChessViewState(appModel);
 }
 
-class _ChessViewState extends State<ChessView> {
+class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
 
   _ChessViewState(this.appModel);
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
+      if (!appModel.gameOver) {
+        appModel.saveGameState();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
