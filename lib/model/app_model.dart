@@ -137,6 +137,13 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void saveAndExitChessView() {
+    saveGameState();
+    game?.cancelAIMove();
+    timer?.cancel();
+    notifyListeners();
+  }
+
   void pushMoveMeta(MoveMeta meta) {
     moveMetaList.add(meta);
     moveListUpdated = true;
