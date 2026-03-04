@@ -46,8 +46,7 @@ class _MainMenuButtonsState extends State<MainMenuButtons> {
                   context,
                   CupertinoPageRoute(
                     builder: (context) {
-                      widget.appModel.restoreGameState(context);
-                      return ChessView(widget.appModel);
+                      return ChessView(widget.appModel, isResuming: true);
                     },
                   ),
                 ).then((_) => _checkSavedGame());
@@ -62,7 +61,6 @@ class _MainMenuButtonsState extends State<MainMenuButtons> {
                 context,
                 CupertinoPageRoute(
                   builder: (context) {
-                    widget.appModel.newGame(context, notify: false);
                     return ChessView(widget.appModel);
                   },
                 ),

@@ -9,12 +9,21 @@ import 'package:en_passant/model/app_model.dart';
 import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
+
+/// Top-level function for compute() — runs kingInCheckmate in a real isolate.
+/// compute() requires a top-level or static function, not a closure.
+bool _computeCheckmate(Map args) {
+  Player player = args['player'];
+  ChessBoard board = args['board'];
+  return kingInCheckmate(player, board);
+}
 
 class ChessGame extends FlameGame with TapCallbacks {
   double? width;
@@ -186,6 +195,9 @@ class ChessGame extends FlameGame with TapCallbacks {
       validMoves = [];
       var meta =
           push(Move(selectedPiece?.tile ?? 0, tile), board, getMeta: true);
+      if (appModel.soundEnabled) {
+        FlameAudio.play('piece_moved.mp3');
+      }
       if (meta.promotion) {
         appModel.requestPromotion();
       }
@@ -208,6 +220,9 @@ class ChessGame extends FlameGame with TapCallbacks {
       } else {
         validMoves = [];
         var meta = push(move, board, getMeta: true);
+        if (appModel.soundEnabled) {
+          FlameAudio.play('piece_moved.mp3');
+        }
         _moveCompletion(meta, changeTurn: !meta.promotion);
         if (meta.promotion) {
           promote(move.promotionType);
@@ -289,11 +304,20 @@ class ChessGame extends FlameGame with TapCallbacks {
     latestMove = meta.move;
     checkHintTile = null;
     var oppositeTurn = oppositePlayer(appModel.turn);
+
+    // kingInCheck is lightweight (no push/pop), keep synchronous
     if (kingInCheck(oppositeTurn, board)) {
       meta.isCheck = true;
       checkHintTile = kingForPlayer(oppositeTurn, board)?.tile;
     }
-    if (kingInCheckmate(oppositeTurn, board)) {
+
+    // kingInCheckmate is expensive (O(pieces × moves²) with push/pop).
+    // Run it in a real isolate to avoid blocking the UI thread.
+    bool isCheckmate = await compute(_computeCheckmate, {
+      'player': oppositeTurn,
+      'board': board,
+    });
+    if (isCheckmate) {
       if (!meta.isCheck) {
         appModel.stalemate = true;
         meta.isStalemate = true;

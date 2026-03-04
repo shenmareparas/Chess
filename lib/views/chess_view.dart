@@ -13,8 +13,9 @@ import 'components/shared/bottom_padding.dart';
 
 class ChessView extends StatefulWidget {
   final AppModel appModel;
+  final bool isResuming;
 
-  ChessView(this.appModel);
+  ChessView(this.appModel, {this.isResuming = false});
 
   @override
   _ChessViewState createState() => _ChessViewState(appModel);
@@ -32,6 +33,17 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 5));
+
+    // Defer game initialization to after the page transition completes.
+    // This prevents heavy work (sprite creation, board setup) from
+    // blocking the navigation animation.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.isResuming) {
+        appModel.restoreGameState(context);
+      } else {
+        appModel.newGame(context);
+      }
+    });
   }
 
   @override
@@ -55,6 +67,13 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Consumer<AppModel>(
       builder: (context, appModel, child) {
+        // Show themed background while game initializes
+        if (appModel.game == null) {
+          return Container(
+            decoration: BoxDecoration(gradient: appModel.theme.background),
+          );
+        }
+
         if (appModel.promotionRequested) {
           appModel.promotionRequested = false;
           WidgetsBinding.instance

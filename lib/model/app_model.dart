@@ -116,13 +116,13 @@ class AppModel extends ChangeNotifier {
   }
 
   void _startTimer() {
+    if (timeLimit == 0) return;
     timer = Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (timer) {
       turn == Player.player1
           ? decrementPlayer1Timer()
           : decrementPlayer2Timer();
-      if ((player1TimeLeft == Duration.zero ||
-              player2TimeLeft == Duration.zero) &&
-          timeLimit != 0) {
+      if (player1TimeLeft == Duration.zero ||
+          player2TimeLeft == Duration.zero) {
         endGame();
       }
     });
