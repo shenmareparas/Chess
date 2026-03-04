@@ -6,6 +6,7 @@ import 'package:en_passant/views/components/shared/rounded_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:confetti/confetti.dart';
 
 import 'components/chess_view/game_info_and_controls/game_status.dart';
 import 'components/shared/bottom_padding.dart';
@@ -21,6 +22,7 @@ class ChessView extends StatefulWidget {
 
 class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
+  late ConfettiController _confettiController;
 
   _ChessViewState(this.appModel);
 
@@ -28,11 +30,14 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 5));
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -55,6 +60,13 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           WidgetsBinding.instance
               .addPostFrameCallback((_) => _showPromotionDialog(appModel));
         }
+
+        if (appModel.gameOver && appModel.userWon) {
+          _confettiController.play();
+        } else {
+          _confettiController.stop();
+        }
+
         return PopScope(
           canPop: false,
           onPopInvokedWithResult: (didPop, result) async {
@@ -66,20 +78,38 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
               showExitDialog(context);
             }
           },
-          child: Container(
-            decoration: BoxDecoration(gradient: appModel.theme.background),
-            padding: EdgeInsets.all(30),
-            child: Column(
-              children: [
-                Spacer(),
-                ChessBoardWidget(appModel),
-                SizedBox(height: 30),
-                GameStatus(),
-                Spacer(),
-                GameInfoAndControls(appModel),
-                BottomPadding(),
-              ],
-            ),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(gradient: appModel.theme.background),
+                padding: EdgeInsets.all(30),
+                child: Column(
+                  children: [
+                    Spacer(),
+                    ChessBoardWidget(appModel),
+                    SizedBox(height: 30),
+                    GameStatus(),
+                    Spacer(),
+                    GameInfoAndControls(appModel),
+                    BottomPadding(),
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  shouldLoop: false,
+                  colors: [
+                    appModel.theme.lightTile,
+                    appModel.theme.darkTile,
+                    appModel.theme.moveHint,
+                    appModel.theme.latestMove,
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },

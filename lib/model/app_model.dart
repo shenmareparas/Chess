@@ -55,6 +55,7 @@ class AppModel extends ChangeNotifier {
   bool stalemate = false;
   bool promotionRequested = false;
   bool moveListUpdated = false;
+  bool userWon = false;
   Player turn = Player.player1;
   List<MoveMeta> moveMetaList = [];
   Duration player1TimeLeft = Duration.zero;
@@ -98,6 +99,7 @@ class AppModel extends ChangeNotifier {
     GameStateStorage.clearGameState();
     gameOver = false;
     stalemate = false;
+    userWon = false;
     turn = Player.player1;
     moveMetaList = [];
     player1TimeLeft = Duration(minutes: timeLimit);
@@ -172,11 +174,13 @@ class AppModel extends ChangeNotifier {
 
         if (playingWithAI) {
           if (winner == playerSide) {
+            userWon = true;
             FlameAudio.play('win.wav');
           } else {
             FlameAudio.play('lose.wav');
           }
         } else {
+          userWon = true;
           FlameAudio.play('win.wav');
         }
       }
