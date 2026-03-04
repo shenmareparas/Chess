@@ -8,6 +8,7 @@ import 'package:en_passant/logic/move_calculation/move_calculation.dart';
 import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
 import 'package:en_passant/logic/shared_functions.dart';
 import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +25,12 @@ const PIECE_THEMES = [
   'Mexico City'
 ];
 
+final List<String> _sortedPieceThemes = () {
+  var list = List<String>.from(PIECE_THEMES);
+  list.sort();
+  return list;
+}();
+
 class AppModel extends ChangeNotifier {
   int playerCount = 1;
   int aiDifficulty = 3;
@@ -39,6 +46,9 @@ class AppModel extends ChangeNotifier {
   bool showNotation = false;
   bool enableRotation = true;
 
+  // Cached SharedPreferences instance
+  SharedPreferences? _prefs;
+
   ChessGame? game;
   Timer? timer;
   bool gameOver = false;
@@ -50,34 +60,20 @@ class AppModel extends ChangeNotifier {
   Duration player1TimeLeft = Duration.zero;
   Duration player2TimeLeft = Duration.zero;
 
-  List<String> get pieceThemes {
-    var pieceThemes = List<String>.from(PIECE_THEMES);
-    pieceThemes.sort();
-    return pieceThemes;
-  }
+  List<String> get pieceThemes => _sortedPieceThemes;
 
   AppTheme get theme {
     return themeList[themeIndex];
   }
 
   int get themeIndex {
-    var themeIndex = 0;
-    themeList.asMap().forEach((index, theme) {
-      if (theme.name == themeName) {
-        themeIndex = index;
-      }
-    });
-    return themeIndex;
+    var idx = themeList.indexWhere((theme) => theme.name == themeName);
+    return idx >= 0 ? idx : 0;
   }
 
   int get pieceThemeIndex {
-    var pieceThemeIndex = 0;
-    pieceThemes.asMap().forEach((index, theme) {
-      if (theme == pieceTheme) {
-        pieceThemeIndex = index;
-      }
-    });
-    return pieceThemeIndex;
+    var idx = pieceThemes.indexWhere((theme) => theme == pieceTheme);
+    return idx >= 0 ? idx : 0;
   }
 
   Player get aiTurn {
@@ -160,6 +156,32 @@ class AppModel extends ChangeNotifier {
 
   void endGame() {
     gameOver = true;
+
+    if (soundEnabled) {
+      if (stalemate) {
+        FlameAudio.play('tie.wav');
+      } else {
+        Player winner;
+        if (player1TimeLeft == Duration.zero) {
+          winner = Player.player2;
+        } else if (player2TimeLeft == Duration.zero) {
+          winner = Player.player1;
+        } else {
+          winner = turn;
+        }
+
+        if (playingWithAI) {
+          if (winner == playerSide) {
+            FlameAudio.play('win.wav');
+          } else {
+            FlameAudio.play('lose.wav');
+          }
+        } else {
+          FlameAudio.play('win.wav');
+        }
+      }
+    }
+
     GameStateStorage.clearGameState();
     notifyListeners();
   }
@@ -216,7 +238,7 @@ class AppModel extends ChangeNotifier {
     if (player1TimeLeft.inMilliseconds > 0 && !gameOver) {
       player1TimeLeft = Duration(
           milliseconds: player1TimeLeft.inMilliseconds - TIMER_ACCURACY_MS);
-      notifyListeners();
+      if (timeLimit != 0) notifyListeners();
     }
   }
 
@@ -224,76 +246,76 @@ class AppModel extends ChangeNotifier {
     if (player2TimeLeft.inMilliseconds > 0 && !gameOver) {
       player2TimeLeft = Duration(
           milliseconds: player2TimeLeft.inMilliseconds - TIMER_ACCURACY_MS);
-      notifyListeners();
+      if (timeLimit != 0) notifyListeners();
     }
   }
 
   void setTheme(int index) async {
     themeName = themeList[index].name ?? "";
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('themeName', themeName);
+    _prefs ??= await SharedPreferences.getInstance();
+    _prefs!.setString('themeName', themeName);
     notifyListeners();
   }
 
   void setPieceTheme(int index) async {
     pieceTheme = pieceThemes[index];
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString('pieceTheme', pieceTheme);
+    _prefs ??= await SharedPreferences.getInstance();
+    _prefs!.setString('pieceTheme', pieceTheme);
     notifyListeners();
   }
 
   void setShowMoveHistory(bool show) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     showMoveHistory = show;
-    prefs.setBool('showMoveHistory', show);
+    _prefs!.setBool('showMoveHistory', show);
     notifyListeners();
   }
 
   void setSoundEnabled(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     soundEnabled = enabled;
-    prefs.setBool('soundEnabled', enabled);
+    _prefs!.setBool('soundEnabled', enabled);
     notifyListeners();
   }
 
   void setShowHints(bool show) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     showHints = show;
-    prefs.setBool('showHints', show);
+    _prefs!.setBool('showHints', show);
     notifyListeners();
   }
 
   void setShowNotation(bool show) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     showNotation = show;
-    prefs.setBool('showNotation', show);
+    _prefs!.setBool('showNotation', show);
     notifyListeners();
   }
 
   void setEnableRotation(bool enableRotation) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     this.enableRotation = enableRotation;
-    prefs.setBool('enableRotation', enableRotation);
+    _prefs!.setBool('enableRotation', enableRotation);
     notifyListeners();
   }
 
   void setAllowUndoRedo(bool allow) async {
-    final prefs = await SharedPreferences.getInstance();
+    _prefs ??= await SharedPreferences.getInstance();
     this.allowUndoRedo = allow;
-    prefs.setBool('allowUndoRedo', allow);
+    _prefs!.setBool('allowUndoRedo', allow);
     notifyListeners();
   }
 
   void loadSharedPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    themeName = prefs.getString('themeName') ?? 'Jargon Jade';
-    pieceTheme = prefs.getString('pieceTheme') ?? 'Classic';
-    showMoveHistory = prefs.getBool('showMoveHistory') ?? true;
-    soundEnabled = prefs.getBool('soundEnabled') ?? true;
-    showHints = prefs.getBool('showHints') ?? true;
-    showNotation = prefs.getBool('showNotation') ?? false;
-    enableRotation = prefs.getBool('enableRotation') ?? true;
-    allowUndoRedo = prefs.getBool('allowUndoRedo') ?? true;
+    _prefs = await SharedPreferences.getInstance();
+    themeName = _prefs!.getString('themeName') ?? 'Jargon Jade';
+    pieceTheme = _prefs!.getString('pieceTheme') ?? 'Classic';
+    showMoveHistory = _prefs!.getBool('showMoveHistory') ?? true;
+    soundEnabled = _prefs!.getBool('soundEnabled') ?? true;
+    showHints = _prefs!.getBool('showHints') ?? true;
+    showNotation = _prefs!.getBool('showNotation') ?? false;
+    enableRotation = _prefs!.getBool('enableRotation') ?? true;
+    allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     notifyListeners();
   }
 
@@ -332,6 +354,7 @@ class AppModel extends ChangeNotifier {
       moveMetaList.add(meta);
       turn = oppositePlayer(turn);
     }
+    game!.snapSprites();
 
     // Restore timer durations
     player1TimeLeft = Duration(milliseconds: state['player1TimeLeftMs'] as int);

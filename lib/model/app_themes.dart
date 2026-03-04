@@ -24,8 +24,10 @@ class AppTheme {
   });
 }
 
-List<AppTheme> get themeList {
-  var themeList = <AppTheme>[
+final List<AppTheme> themeList = _buildThemeList();
+
+List<AppTheme> _buildThemeList() {
+  var list = <AppTheme>[
     AppTheme(
       name: 'Grey',
       background: LinearGradient(
@@ -159,6 +161,6 @@ List<AppTheme> get themeList {
       notation: Color(0xFFD0F0E0),
     ),
   ];
-  themeList.sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
-  return themeList;
+  list.sort((a, b) => a.name?.compareTo(b.name ?? "") ?? 0);
+  return list;
 }

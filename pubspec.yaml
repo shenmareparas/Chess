@@ -102,3 +102,6 @@ flutter:
         - assets/images/pieces/lewischessmen/
         - assets/images/pieces/mexicocity/
         - assets/audio/piece_moved.mp3
+        - assets/audio/win.wav
+        - assets/audio/lose.wav
+        - assets/audio/tie.wav

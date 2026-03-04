@@ -35,6 +35,15 @@ class ChessGame extends FlameGame with TapCallbacks {
   double animationProgress = 1.0;
   final double animationDuration = 0.6;
 
+  // Cached Paint objects to avoid per-frame allocations
+  Paint _lightTilePaint = Paint();
+  Paint _darkTilePaint = Paint();
+  Paint _moveHintPaint = Paint();
+  Paint _checkHintPaint = Paint();
+  Paint _latestMovePaint = Paint();
+  Paint _selectedPiecePaint = Paint();
+  String? _cachedThemeName;
+
   ChessGame(this.appModel, this.context) {
     width = MediaQuery.of(context).size.width - 68;
     tileSize = (width ?? 0) / 8;
@@ -42,9 +51,21 @@ class ChessGame extends FlameGame with TapCallbacks {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
     _initSpritePositions();
+    _updatePaints();
     if (appModel.isAIsTurn) {
       _aiMove();
     }
+  }
+
+  void _updatePaints() {
+    var theme = appModel.theme;
+    _lightTilePaint = Paint()..color = theme.lightTile;
+    _darkTilePaint = Paint()..color = theme.darkTile;
+    _moveHintPaint = Paint()..color = theme.moveHint;
+    _checkHintPaint = Paint()..color = theme.checkHint;
+    _latestMovePaint = Paint()..color = theme.latestMove;
+    _selectedPiecePaint = Paint()..color = theme.moveHint;
+    _cachedThemeName = theme.name;
   }
 
   void onTapDown(TapDownEvent event) {
@@ -93,6 +114,11 @@ class ChessGame extends FlameGame with TapCallbacks {
   void update(double t) {
     super.update(t);
 
+    // Update cached paints if theme changed
+    if (_cachedThemeName != appModel.theme.name) {
+      _updatePaints();
+    }
+
     double newTargetRotation = 0;
     if (appModel.enableRotation &&
         ((appModel.playingWithAI && appModel.playerSide == Player.player2) ||
@@ -124,14 +150,20 @@ class ChessGame extends FlameGame with TapCallbacks {
       currentRotation = targetRotation;
     }
 
-    for (var piece in board.player1Pieces + board.player2Pieces) {
+    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
       spriteMap[piece]?.update(tileSize ?? 0, appModel, piece);
     }
   }
 
   void _initSpritePositions() {
-    for (var piece in board.player1Pieces + board.player2Pieces) {
+    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
       spriteMap[piece]?.initSpritePosition(tileSize ?? 0, appModel);
+    }
+  }
+
+  void snapSprites() {
+    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+      spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
     }
   }
 
@@ -300,16 +332,15 @@ class ChessGame extends FlameGame with TapCallbacks {
           (tileSize ?? 0),
           (tileSize ?? 0),
         ),
-        Paint()
-          ..color = (tileNo + (tileNo / 8).floor()) % 2 == 0
-              ? appModel.theme.lightTile
-              : appModel.theme.darkTile,
+        (tileNo + (tileNo / 8).floor()) % 2 == 0
+            ? _lightTilePaint
+            : _darkTilePaint,
       );
     }
   }
 
   void _drawPieces(Canvas canvas) {
-    for (var piece in board.player1Pieces + board.player2Pieces) {
+    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
       double x = (spriteMap[piece]?.spriteX ?? 0) + 5;
       double y = (spriteMap[piece]?.spriteY ?? 0) + 5;
       double size = (tileSize ?? 0) - 10;
@@ -337,7 +368,7 @@ class ChessGame extends FlameGame with TapCallbacks {
           getYFromTile(tile, (tileSize ?? 0), appModel) + ((tileSize ?? 0) / 2),
         ),
         (tileSize ?? 0) / 5,
-        Paint()..color = appModel.theme.moveHint,
+        _moveHintPaint,
       );
     }
   }
@@ -351,7 +382,7 @@ class ChessGame extends FlameGame with TapCallbacks {
           tileSize ?? 0,
           tileSize ?? 0,
         ),
-        Paint()..color = appModel.theme.latestMove,
+        _latestMovePaint,
       );
       canvas.drawRect(
         Rect.fromLTWH(
@@ -360,7 +391,7 @@ class ChessGame extends FlameGame with TapCallbacks {
           tileSize ?? 0,
           tileSize ?? 0,
         ),
-        Paint()..color = appModel.theme.latestMove,
+        _latestMovePaint,
       );
     }
   }
@@ -374,7 +405,7 @@ class ChessGame extends FlameGame with TapCallbacks {
           tileSize ?? 0,
           tileSize ?? 0,
         ),
-        Paint()..color = appModel.theme.checkHint,
+        _checkHintPaint,
       );
     }
   }
@@ -388,7 +419,7 @@ class ChessGame extends FlameGame with TapCallbacks {
           tileSize ?? 0,
           tileSize ?? 0,
         ),
-        Paint()..color = appModel.theme.moveHint,
+        _selectedPiecePaint,
       );
     }
   }

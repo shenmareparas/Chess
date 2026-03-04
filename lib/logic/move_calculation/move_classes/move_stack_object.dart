@@ -12,6 +12,8 @@ class MoveStackObject {
   bool enPassant = false;
   List<List<Move>>? possibleOpenings;
   int previousHash = 0;
+  int previousBoardValue = 0;
+  bool previousInEndGame = false;
 
   MoveStackObject(this.move, this.movedPiece, this.takenPiece,
       this.enPassantPiece, this.possibleOpenings);

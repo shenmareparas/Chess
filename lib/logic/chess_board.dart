@@ -75,18 +75,37 @@ class ChessBoard {
   int moveCount = 0;
   int zobristHash = 0;
 
+  // Incremental evaluation state
+  int incrementalValue = 0;
+  bool inEndGameCached = false;
+
   ChessBoard() {
     _addPiecesForPlayer(Player.player1);
     _addPiecesForPlayer(Player.player2);
     _initZobristHash();
+    _initIncrementalValue();
   }
 
   void _initZobristHash() {
     zobristHash = 0;
-    for (var piece in player1Pieces + player2Pieces) {
+    for (var piece in player1Pieces.followedBy(player2Pieces)) {
       zobristHash ^= _zobristPiece(piece);
     }
     // Player 1 starts, so no side-to-move XOR initially
+  }
+
+  void _initIncrementalValue() {
+    incrementalValue = 0;
+    for (var piece in player1Pieces.followedBy(player2Pieces)) {
+      incrementalValue += piece.value + squareValue(piece, false);
+    }
+    inEndGameCached = _computeInEndGame();
+  }
+
+  bool _computeInEndGame() {
+    return (player1Queens.isEmpty && player2Queens.isEmpty) ||
+        player1Pieces.length <= 3 ||
+        player2Pieces.length <= 3;
   }
 
   void _addPiecesForPlayer(Player player) {
@@ -114,11 +133,7 @@ class ChessBoard {
 }
 
 int boardValue(ChessBoard board) {
-  int value = 0;
-  for (var piece in board.player1Pieces + board.player2Pieces) {
-    value += piece.value + squareValue(piece, _inEndGame(board));
-  }
-  return value;
+  return board.incrementalValue;
 }
 
 MoveMeta push(Move move, ChessBoard board,
@@ -127,6 +142,8 @@ MoveMeta push(Move move, ChessBoard board,
   var mso = MoveStackObject(move, board.tiles[move.from], board.tiles[move.to],
       board.enPassantPiece, List.from(board.possibleOpenings));
   mso.previousHash = board.zobristHash;
+  mso.previousBoardValue = board.incrementalValue;
+  mso.previousInEndGame = board.inEndGameCached;
   var meta = MoveMeta(move, mso.movedPiece?.player, mso.movedPiece?.type);
   if (board.possibleOpenings.isNotEmpty) {
     _filterPossibleOpenings(board, move);
@@ -159,6 +176,8 @@ MoveMeta push(Move move, ChessBoard board,
   }
   board.moveStack.add(mso);
   board.moveCount++;
+  // Update incremental value and endgame flag
+  _recomputeIncrementalValue(board);
   return meta;
 }
 
@@ -170,6 +189,8 @@ MoveMeta pushMSO(MoveStackObject mso, ChessBoard board) {
 MoveStackObject pop(ChessBoard board) {
   var mso = board.moveStack.removeLast();
   board.zobristHash = mso.previousHash;
+  board.incrementalValue = mso.previousBoardValue;
+  board.inEndGameCached = mso.previousInEndGame;
   board.enPassantPiece = mso.enPassantPiece;
   board.possibleOpenings = mso.possibleOpenings ?? [];
   if (mso.castled) {
@@ -422,9 +443,13 @@ bool _canTakeEnPassant(ChessPiece? movedPiece) {
           tileToRow(movedPiece?.tile ?? 0) == 4);
 }
 
-bool _inEndGame(ChessBoard board) {
-  return (_queensForPlayer(Player.player1, board).isEmpty &&
-          _queensForPlayer(Player.player2, board).isEmpty) ||
-      piecesForPlayer(Player.player1, board).length <= 3 ||
-      piecesForPlayer(Player.player2, board).length <= 3;
+/// Recomputes the incremental board value from scratch.
+/// Called after push to ensure correctness.
+void _recomputeIncrementalValue(ChessBoard board) {
+  board.inEndGameCached = board._computeInEndGame();
+  int value = 0;
+  for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+    value += piece.value + squareValue(piece, board.inEndGameCached);
+  }
+  board.incrementalValue = value;
 }

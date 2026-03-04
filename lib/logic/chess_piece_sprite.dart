@@ -17,11 +17,13 @@ class ChessPieceSprite {
   double? spriteY;
   double offsetX = 0;
   double offsetY = 0;
+  bool _soundPlayed = false;
 
   ChessPieceSprite(ChessPiece piece, String pieceTheme) {
     this.tile = piece.tile;
     this.type = piece.type;
     this.pieceTheme = pieceTheme;
+    this._soundPlayed = true;
     initSprite(piece);
   }
 
@@ -34,6 +36,7 @@ class ChessPieceSprite {
       this.tile = piece.tile;
       offsetX = 0;
       offsetY = 0;
+      _soundPlayed = false;
     }
     var destX = getXFromTile(tile ?? 0, tileSize, appModel);
     var destY = getYFromTile(tile ?? 0, tileSize, appModel);
@@ -47,7 +50,6 @@ class ChessPieceSprite {
       if (spriteX != null) {
         spriteX = (spriteX ?? 0) + offsetX;
       }
-      playSound(destX, destY, appModel);
     }
     if ((destY - (spriteY ?? 0)).abs() <= 0.1) {
       spriteY = destY;
@@ -59,13 +61,12 @@ class ChessPieceSprite {
       if (spriteX != null) {
         spriteY = (spriteY ?? 0) + offsetY;
       }
-      playSound(destX, destY, appModel);
     }
-  }
-
-  void playSound(double destX, double destY, AppModel appModel) async {
-    if ((destX - (spriteX ?? 0)).abs() <= 0.1 &&
+    // Play sound once when piece arrives at destination
+    if (!_soundPlayed &&
+        (destX - (spriteX ?? 0)).abs() <= 0.1 &&
         (destY - (spriteY ?? 0)).abs() <= 0.1) {
+      _soundPlayed = true;
       if (appModel.soundEnabled) {
         FlameAudio.play('piece_moved.mp3');
       }
@@ -83,6 +84,16 @@ class ChessPieceSprite {
   }
 
   void initSpritePosition(double tileSize, AppModel appModel) {
+    spriteX = getXFromTile(tile ?? 0, tileSize, appModel);
+    spriteY = getYFromTile(tile ?? 0, tileSize, appModel);
+  }
+
+  void snapToPiece(ChessPiece piece, double tileSize, AppModel appModel) {
+    type = piece.type;
+    tile = piece.tile;
+    offsetX = 0;
+    offsetY = 0;
+    _soundPlayed = true;
     spriteX = getXFromTile(tile ?? 0, tileSize, appModel);
     spriteY = getYFromTile(tile ?? 0, tileSize, appModel);
   }
