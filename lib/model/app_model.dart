@@ -212,6 +212,12 @@ class AppModel extends ChangeNotifier {
   void setEnableRotation(bool enable) => prefs.setEnableRotation(enable);
   void setAllowUndoRedo(bool allow) => prefs.setAllowUndoRedo(allow);
 
+  Future<void> resetSettingsToDefaults() async {
+    await prefs.resetToDefaults();
+    audio.enabled = prefs.soundEnabled;
+    notifyListeners();
+  }
+
   // ── Utilities ──
 
   void update() {

@@ -118,4 +118,26 @@ class UserPreferences {
     _prefs!.setBool('allowUndoRedo', allow);
     onChanged?.call();
   }
+
+  Future<void> resetToDefaults() async {
+    themeName = 'Jargon Jade';
+    pieceTheme = 'Classic';
+    showMoveHistory = true;
+    soundEnabled = true;
+    showHints = true;
+    showNotation = false;
+    enableRotation = true;
+    allowUndoRedo = true;
+
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString('themeName', themeName);
+    await _prefs!.setString('pieceTheme', pieceTheme);
+    await _prefs!.setBool('showMoveHistory', showMoveHistory);
+    await _prefs!.setBool('soundEnabled', soundEnabled);
+    await _prefs!.setBool('showHints', showHints);
+    await _prefs!.setBool('showNotation', showNotation);
+    await _prefs!.setBool('enableRotation', enableRotation);
+    await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
+    onChanged?.call();
+  }
 }
