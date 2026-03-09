@@ -1,6 +1,6 @@
 import 'package:en_passant/logic/chess_piece.dart';
 import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 
 int tileToRow(int tile) {
   return (tile / 8).floor();

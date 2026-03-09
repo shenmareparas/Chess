@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:en_passant/logic/move_calculation/move_classes/move_and_value.dart';
 import 'package:en_passant/logic/move_calculation/transposition_table.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 
 import '../chess_board.dart';
 import '../shared_functions.dart';

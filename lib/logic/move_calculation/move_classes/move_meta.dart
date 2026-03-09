@@ -1,4 +1,4 @@
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 
 import '../../chess_piece.dart';
 import 'move.dart';

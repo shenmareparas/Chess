@@ -1,8 +1,8 @@
 import 'package:en_passant/logic/move_calculation/move_classes/direction.dart';
 import 'package:en_passant/logic/move_calculation/move_classes/move_and_value.dart';
 import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/views/components/chess_view/promotion_dialog.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/logic/chess_constants.dart';
+import 'package:en_passant/model/player.dart';
 
 import '../chess_board.dart';
 import '../chess_piece.dart';

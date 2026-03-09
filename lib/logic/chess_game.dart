@@ -6,7 +6,7 @@ import 'package:en_passant/logic/move_calculation/move_calculation.dart';
 import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
 import 'package:en_passant/logic/shared_functions.dart';
 import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame_audio/flame_audio.dart';
@@ -160,7 +160,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
 
     for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
-      spriteMap[piece]?.update(tileSize ?? 0, appModel, piece);
+      spriteMap[piece]?.update(tileSize ?? 0, appModel, piece, t);
     }
   }
 
@@ -335,7 +335,6 @@ class ChessGame extends FlameGame with TapCallbacks {
       appModel.pushMoveMeta(meta);
     }
     if (changeTurn) {
-      await Future.delayed(Duration(milliseconds: 300));
       appModel.changeTurn();
     }
     selectedPiece = null;

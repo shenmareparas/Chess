@@ -9,6 +9,13 @@ import 'move_calculation/move_classes/move.dart';
 const _gameStateKey = 'saved_game_state';
 
 class GameStateStorage {
+  static SharedPreferences? _prefs;
+
+  static Future<SharedPreferences> _getPrefs() async {
+    _prefs ??= await SharedPreferences.getInstance();
+    return _prefs!;
+  }
+
   static Future<void> saveGameState(AppModel appModel) async {
     if (appModel.game == null) return;
 
@@ -35,12 +42,12 @@ class GameStateStorage {
       'moves': moves,
     };
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(_gameStateKey, jsonEncode(state));
   }
 
   static Future<Map<String, dynamic>?> loadGameState() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     final jsonString = prefs.getString(_gameStateKey);
     if (jsonString == null) return null;
     try {
@@ -52,12 +59,12 @@ class GameStateStorage {
   }
 
   static Future<void> clearGameState() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.remove(_gameStateKey);
   }
 
   static Future<bool> hasSavedGame() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     return prefs.containsKey(_gameStateKey);
   }
 

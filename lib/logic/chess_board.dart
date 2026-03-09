@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:en_passant/logic/move_calculation/move_classes/move_stack_object.dart';
 import 'package:en_passant/logic/move_calculation/openings.dart';
 import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 
 import 'chess_piece.dart';
 import 'move_calculation/move_calculation.dart';
@@ -176,8 +176,8 @@ MoveMeta push(Move move, ChessBoard board,
   }
   board.moveStack.add(mso);
   board.moveCount++;
-  // Update incremental value and endgame flag
-  _recomputeIncrementalValue(board);
+  // Update endgame flag (board value is tracked incrementally)
+  _updateEndGameFlag(board);
   return meta;
 }
 
@@ -216,6 +216,8 @@ void _standardMove(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
     board.zobristHash ^= _zobristPieceAt(piece, mso.move.from);
     // Add piece to destination square
     board.zobristHash ^= _zobristPieceAt(piece, mso.move.to);
+    // Incremental eval: remove old square value, add new square value
+    board.incrementalValue -= squareValue(piece, board.inEndGameCached);
   }
   if (mso.takenPiece != null) {
     // Remove captured piece
@@ -223,8 +225,15 @@ void _standardMove(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
   }
   _setTile(mso.move.to, mso.movedPiece, board);
   _setTile(mso.move.from, null, board);
+  if (piece != null) {
+    // Piece is now at new tile, add new square value
+    board.incrementalValue += squareValue(piece, board.inEndGameCached);
+  }
   mso.movedPiece?.moveCount++;
   if (mso.takenPiece != null) {
+    // Incremental eval: remove captured piece's full contribution
+    board.incrementalValue -= mso.takenPiece!.value +
+        squareValue(mso.takenPiece!, board.inEndGameCached);
     _removePiece(mso.takenPiece, board);
     meta.took = true;
   }
@@ -247,12 +256,26 @@ void _castle(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
   var rook = mso.movedPiece?.type == ChessPieceType.rook
       ? mso.movedPiece
       : mso.takenPiece;
+  // Incremental eval: remove old square values
+  if (king != null) {
+    board.incrementalValue -= squareValue(king, board.inEndGameCached);
+  }
+  if (rook != null) {
+    board.incrementalValue -= squareValue(rook, board.inEndGameCached);
+  }
   _setTile(king?.tile, null, board);
   _setTile(rook?.tile, null, board);
   var kingCol = tileToCol(rook?.tile ?? 0) == 0 ? 2 : 6;
   var rookCol = tileToCol(rook?.tile ?? 0) == 0 ? 3 : 5;
   _setTile(tileToRow(king?.tile ?? 0) * 8 + kingCol, king, board);
   _setTile(tileToRow(rook?.tile ?? 0) * 8 + rookCol, rook, board);
+  // Incremental eval: add new square values
+  if (king != null) {
+    board.incrementalValue += squareValue(king, board.inEndGameCached);
+  }
+  if (rook != null) {
+    board.incrementalValue += squareValue(rook, board.inEndGameCached);
+  }
   tileToCol(rook?.tile ?? 0) == 3
       ? meta.queenCastle = true
       : meta.kingCastle = true;
@@ -278,9 +301,18 @@ void _undoCastle(ChessBoard board, MoveStackObject mso) {
 }
 
 void _promote(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
+  var piece = mso.movedPiece;
+  if (piece != null) {
+    // Incremental eval: remove pawn's current contribution
+    board.incrementalValue -= piece.value + squareValue(piece, board.inEndGameCached);
+  }
   mso.movedPiece?.type = mso.promotionType ?? ChessPieceType.promotion;
   if (mso.promotionType != ChessPieceType.promotion) {
     addPromotedPiece(board, mso);
+  }
+  if (piece != null) {
+    // Incremental eval: add promoted piece's contribution
+    board.incrementalValue += piece.value + squareValue(piece, board.inEndGameCached);
   }
   meta.promotion = true;
   mso.promotion = true;
@@ -334,6 +366,9 @@ void _checkEnPassant(ChessBoard board, MoveStackObject mso, MoveMeta meta) {
   var tile = (mso.movedPiece?.tile ?? 0) + offset;
   var takenPiece = board.tiles[tile];
   if (takenPiece != null && takenPiece == board.enPassantPiece) {
+    // Incremental eval: remove en passant captured piece's contribution
+    board.incrementalValue -= takenPiece.value +
+        squareValue(takenPiece, board.inEndGameCached);
     _removePiece(takenPiece, board);
     _setTile(takenPiece.tile, null, board);
     mso.enPassant = true;
@@ -443,13 +478,9 @@ bool _canTakeEnPassant(ChessPiece? movedPiece) {
           tileToRow(movedPiece?.tile ?? 0) == 4);
 }
 
-/// Recomputes the incremental board value from scratch.
-/// Called after push to ensure correctness.
-void _recomputeIncrementalValue(ChessBoard board) {
+/// Updates the endgame flag after a push.
+/// Board value is now updated incrementally in _standardMove, _castle,
+/// _checkEnPassant, and _promote, so no full recomputation is needed.
+void _updateEndGameFlag(ChessBoard board) {
   board.inEndGameCached = board._computeInEndGame();
-  int value = 0;
-  for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
-    value += piece.value + squareValue(piece, board.inEndGameCached);
-  }
-  board.incrementalValue = value;
 }

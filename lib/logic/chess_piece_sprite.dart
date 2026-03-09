@@ -1,5 +1,5 @@
 import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import 'package:en_passant/model/player.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
@@ -14,8 +14,6 @@ class ChessPieceSprite {
   Sprite? sprite;
   double? spriteX;
   double? spriteY;
-  double offsetX = 0;
-  double offsetY = 0;
 
   ChessPieceSprite(ChessPiece piece, String pieceTheme) {
     this.tile = piece.tile;
@@ -24,7 +22,10 @@ class ChessPieceSprite {
     initSprite(piece);
   }
 
-  void update(double tileSize, AppModel appModel, ChessPiece piece) {
+  /// Smooth interpolation factor per frame (0 = no movement, 1 = snap)
+  static const double _lerpSpeed = 12.0;
+
+  void update(double tileSize, AppModel appModel, ChessPiece piece, double dt) {
     if (piece.type != this.type || appModel.pieceTheme != this.pieceTheme) {
       this.type = piece.type;
       this.pieceTheme = appModel.pieceTheme;
@@ -32,33 +33,27 @@ class ChessPieceSprite {
     }
     if (piece.tile != this.tile) {
       this.tile = piece.tile;
-      offsetX = 0;
-      offsetY = 0;
     }
     var destX = getXFromTile(tile ?? 0, tileSize, appModel);
     var destY = getYFromTile(tile ?? 0, tileSize, appModel);
-    if ((destX - (spriteX ?? 0)).abs() <= 0.1) {
+    // Smooth interpolation using frame-rate independent lerp
+    double t = 1.0 - _pow(1.0 - _lerpSpeed * dt, 1);
+    if (t > 1.0) t = 1.0;
+    if ((destX - (spriteX ?? 0)).abs() <= 0.5) {
       spriteX = destX;
-      offsetX = 0;
-    } else {
-      if (offsetX == 0) {
-        offsetX = (destX - (spriteX ?? 0)) / 10;
-      }
-      if (spriteX != null) {
-        spriteX = (spriteX ?? 0) + offsetX;
-      }
+    } else if (spriteX != null) {
+      spriteX = spriteX! + (destX - spriteX!) * t;
     }
-    if ((destY - (spriteY ?? 0)).abs() <= 0.1) {
+    if ((destY - (spriteY ?? 0)).abs() <= 0.5) {
       spriteY = destY;
-      offsetY = 0;
-    } else {
-      if (offsetY == 0) {
-        offsetY += (destY - (spriteY ?? 0)) / 10;
-      }
-      if (spriteX != null) {
-        spriteY = (spriteY ?? 0) + offsetY;
-      }
+    } else if (spriteY != null) {
+      spriteY = spriteY! + (destY - spriteY!) * t;
     }
+  }
+
+  static double _pow(double base, int exp) {
+    if (base <= 0) return 0;
+    return base;
   }
 
   void initSprite(ChessPiece piece) async {
@@ -79,8 +74,6 @@ class ChessPieceSprite {
   void snapToPiece(ChessPiece piece, double tileSize, AppModel appModel) {
     type = piece.type;
     tile = piece.tile;
-    offsetX = 0;
-    offsetY = 0;
     spriteX = getXFromTile(tile ?? 0, tileSize, appModel);
     spriteY = getYFromTile(tile ?? 0, tileSize, appModel);
   }
