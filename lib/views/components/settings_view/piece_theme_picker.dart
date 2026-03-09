@@ -12,8 +12,9 @@ class PieceThemePicker extends StatelessWidget {
       builder: (context, appModel, child) => Column(
         children: [
           Container(
-            child: TextSmall('Piece Theme'),
-            padding: EdgeInsets.all(10),
+            alignment: Alignment.center,
+            child: TextRegular('Piece Theme'),
+            padding: EdgeInsets.symmetric(vertical: 10),
           ),
           ClipRRect(
             borderRadius: BorderRadius.all(Radius.circular(15)),
@@ -35,6 +36,7 @@ class PieceThemePicker extends StatelessWidget {
                       children: appModel.pieceThemes
                           .map(
                             (theme) => Container(
+                              alignment: Alignment.center,
                               padding: EdgeInsets.all(10),
                               child: TextRegular(theme),
                             ),

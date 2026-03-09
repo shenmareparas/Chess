@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'components/settings_view/app_theme_picker.dart';
 import 'components/settings_view/toggles.dart';
 import 'components/shared/bottom_padding.dart';
-import 'components/shared/text_variable.dart';
 
 class SettingsView extends StatelessWidget {
   @override
@@ -19,22 +18,22 @@ class SettingsView extends StatelessWidget {
         child: Column(
           children: [
             SizedBox(height: MediaQuery.of(context).padding.top),
-            TextLarge('Settings'),
-            SizedBox(height: 20),
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                physics: ClampingScrollPhysics(),
-                children: [
-                  AppThemePicker(),
-                  SizedBox(height: 20),
-                  PieceThemePicker(),
-                  SizedBox(height: 10),
-                  Toggles(appModel),
-                ],
+              child: CupertinoScrollbar(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  physics: ClampingScrollPhysics(),
+                  children: [
+                    AppThemePicker(),
+                    SizedBox(height: 10),
+                    PieceThemePicker(),
+                    SizedBox(height: 10),
+                    Toggles(appModel),
+                  ],
+                ),
               ),
             ),
-            SizedBox(height: 30),
+            SizedBox(height: 20),
             RoundedButton(
               'Back',
               onPressed: () {

@@ -11,8 +11,9 @@ class AppThemePicker extends StatelessWidget {
       builder: (context, appModel, child) => Column(
         children: [
           Container(
-            child: TextSmall('App Theme'),
-            padding: EdgeInsets.all(10),
+            alignment: Alignment.center,
+            child: TextRegular('App Theme'),
+            padding: EdgeInsets.symmetric(vertical: 10),
           ),
           Container(
             height: 120,
@@ -32,6 +33,7 @@ class AppThemePicker extends StatelessWidget {
               children: themeList
                   .map(
                     (theme) => Container(
+                      alignment: Alignment.center,
                       padding: EdgeInsets.all(10),
                       child: TextRegular(theme.name ?? ""),
                     ),

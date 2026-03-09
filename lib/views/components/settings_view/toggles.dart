@@ -41,7 +41,7 @@ class Toggles extends StatelessWidget {
         ),
         Platform.isAndroid
             ? Toggle(
-                'Sound Enabled',
+                'Piece Sound',
                 toggle: appModel.soundEnabled,
                 setFunc: appModel.setSoundEnabled,
               )
