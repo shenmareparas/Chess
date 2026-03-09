@@ -142,21 +142,21 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void pushMoveMeta(MoveMeta meta) {
+  void pushMoveMeta(MoveMeta meta, {bool silent = false}) {
     moveMetaList.add(meta);
     moveListUpdated = true;
-    notifyListeners();
+    if (!silent) notifyListeners();
     saveGameState();
   }
 
-  void popMoveMeta() {
+  void popMoveMeta({bool silent = false}) {
     moveMetaList.removeLast();
     moveListUpdated = true;
-    notifyListeners();
+    if (!silent) notifyListeners();
     saveGameState();
   }
 
-  void endGame() {
+  void endGame({bool silent = false}) {
     if (gameOver) return;
     gameOver = true;
 
@@ -188,17 +188,17 @@ class AppModel extends ChangeNotifier {
     }
 
     GameStateStorage.clearGameState();
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
-  void undoEndGame() {
+  void undoEndGame({bool silent = false}) {
     gameOver = false;
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
-  void changeTurn() {
+  void changeTurn({bool silent = false}) {
     turn = oppositePlayer(turn);
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
   void requestPromotion() {

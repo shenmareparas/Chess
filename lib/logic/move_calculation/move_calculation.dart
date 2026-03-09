@@ -36,8 +36,7 @@ const KING_QUEEN_MOVES = [
 List<Move> allMoves(Player player, ChessBoard board, int aiDifficulty,
     {bool capturesOnly = false}) {
   List<MoveAndValue> moves = [];
-  var pieces = List.from(piecesForPlayer(player, board));
-  for (var piece in pieces) {
+  for (var piece in piecesForPlayer(player, board)) {
     var tiles = movesForPiece(piece, board);
     for (var tile in tiles) {
       var victim = board.tiles[tile];
@@ -66,7 +65,8 @@ List<Move> allMoves(Player player, ChessBoard board, int aiDifficulty,
   }
   // Sort by priority descending: captures and promotions first
   moves.sort((a, b) => b.value.compareTo(a.value));
-  return moves.map((move) => move.move).toList();
+  // Extract moves in-place to avoid extra list allocation
+  return List<Move>.generate(moves.length, (i) => moves[i].move);
 }
 
 List<int> movesForPiece(ChessPiece piece, ChessBoard board,
@@ -127,7 +127,8 @@ List<int> _pawnMoves(ChessPiece pawn, ChessBoard board) {
       }
     }
   }
-  return moves + _pawnDiagonalAttacks(pawn, board);
+  moves.addAll(_pawnDiagonalAttacks(pawn, board));
+  return moves;
 }
 
 List<int> _pawnDiagonalAttacks(ChessPiece pawn, ChessBoard board) {

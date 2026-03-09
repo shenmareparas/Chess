@@ -326,18 +326,20 @@ class ChessGame extends FlameGame with TapCallbacks {
       }
       meta.isCheck = false;
       meta.isCheckmate = true;
-      appModel.endGame();
+      appModel.endGame(silent: true);
     }
     if (undoing) {
-      appModel.popMoveMeta();
-      appModel.undoEndGame();
+      appModel.popMoveMeta(silent: true);
+      appModel.undoEndGame(silent: true);
     } else if (updateMetaList) {
-      appModel.pushMoveMeta(meta);
+      appModel.pushMoveMeta(meta, silent: true);
     }
     if (changeTurn) {
-      appModel.changeTurn();
+      appModel.changeTurn(silent: true);
     }
     selectedPiece = null;
+    // Single rebuild for all the state changes above
+    appModel.update();
     if (appModel.isAIsTurn && clearRedo && changeTurn) {
       _aiMove();
     }
