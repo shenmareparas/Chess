@@ -1,43 +1,28 @@
-import 'package:async/async.dart';
 import 'dart:math';
 import 'package:en_passant/logic/chess_piece_sprite.dart';
-import 'package:en_passant/logic/move_calculation/ai_move_calculation.dart';
-import 'package:en_passant/logic/move_calculation/move_calculation.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
+import 'package:en_passant/logic/game_controller.dart';
 import 'package:en_passant/logic/shared_functions.dart';
 import 'package:en_passant/model/app_model.dart';
 import 'package:en_passant/model/player.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
 
-/// Top-level function for compute() — runs kingInCheckmate in a real isolate.
-/// compute() requires a top-level or static function, not a closure.
-bool _computeCheckmate(Map args) {
-  Player player = args['player'];
-  ChessBoard board = args['board'];
-  return kingInCheckmate(player, board);
-}
-
+/// Rendering layer for the chess game. Delegates all game logic to
+/// [GameController], keeping this class focused on display and input routing.
 class ChessGame extends FlameGame with TapCallbacks {
   double? width;
   double? tileSize;
   AppModel appModel;
   BuildContext context;
-  ChessBoard board = ChessBoard();
+
+  late final GameController controller;
   Map<ChessPiece, ChessPieceSprite> spriteMap = Map();
 
-  CancelableOperation? aiOperation;
-  List<int> validMoves = [];
-  ChessPiece? selectedPiece;
-  int? checkHintTile;
-  Move? latestMove;
   double currentRotation = 0;
   double targetRotation = 0;
   double startRotation = 0;
@@ -54,28 +39,39 @@ class ChessGame extends FlameGame with TapCallbacks {
   String? _cachedThemeName;
 
   ChessGame(this.appModel, this.context) {
+    controller = GameController(appModel);
+    controller.onSnapSprites = () => snapSprites();
     width = MediaQuery.of(context).size.width - 68;
     tileSize = (width ?? 0) / 8;
-    for (var piece in board.player1Pieces + board.player2Pieces) {
+    for (var piece
+        in controller.board.player1Pieces + controller.board.player2Pieces) {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
     _initSpritePositions();
     _updatePaints();
-    if (appModel.isAIsTurn) {
-      _aiMove();
-    }
   }
 
-  void _updatePaints() {
-    var theme = appModel.theme;
-    _lightTilePaint = Paint()..color = theme.lightTile;
-    _darkTilePaint = Paint()..color = theme.darkTile;
-    _moveHintPaint = Paint()..color = theme.moveHint;
-    _checkHintPaint = Paint()..color = theme.checkHint;
-    _latestMovePaint = Paint()..color = theme.latestMove;
-    _selectedPiecePaint = Paint()..color = theme.moveHint;
-    _cachedThemeName = theme.name;
-  }
+  // ── Delegated Accessors (backward compatibility for views) ──
+
+  ChessBoard get board => controller.board;
+  List<int> get validMoves => controller.validMoves;
+  set validMoves(List<int> v) => controller.validMoves = v;
+  ChessPiece? get selectedPiece => controller.selectedPiece;
+  set selectedPiece(ChessPiece? v) => controller.selectedPiece = v;
+  int? get checkHintTile => controller.checkHintTile;
+  set checkHintTile(int? v) => controller.checkHintTile = v;
+  Move? get latestMove => controller.latestMove;
+  set latestMove(Move? v) => controller.latestMove = v;
+
+  void cancelAIMove() => controller.cancelAIMove();
+  void triggerAIMove() => controller.triggerAIMove();
+  void undoMove() => controller.undoMove();
+  void undoTwoMoves() => controller.undoTwoMoves();
+  void redoMove() => controller.redoMove();
+  void redoTwoMoves() => controller.redoTwoMoves();
+  void promote(ChessPieceType type) => controller.promote(type);
+
+  // ── Input Handling ──
 
   void onTapDown(TapDownEvent event) {
     if (appModel.gameOver || !(appModel.isAIsTurn)) {
@@ -89,19 +85,21 @@ class ChessGame extends FlameGame with TapCallbacks {
             touchedPiece != null &&
             touchedPiece.player == selectedPiece?.player) {
           if (validMoves.contains(tile)) {
-            _movePiece(tile);
+            controller.movePiece(tile);
           } else {
             validMoves = [];
-            _selectPiece(touchedPiece);
+            controller.selectPiece(touchedPiece);
           }
         } else if (selectedPiece == null) {
-          _selectPiece(touchedPiece);
+          controller.selectPiece(touchedPiece);
         } else {
-          _movePiece(tile);
+          controller.movePiece(tile);
         }
       }
     }
   }
+
+  // ── Rendering ──
 
   @override
   void render(Canvas canvas) {
@@ -147,8 +145,6 @@ class ChessGame extends FlameGame with TapCallbacks {
       animationProgress += t / animationDuration;
       if (animationProgress > 1.0) animationProgress = 1.0;
 
-      // Parametric easeInOutCubic equivalent to match Curves.easeInOut roughly
-      // t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2
       double curviness = animationProgress < 0.5
           ? 4 * animationProgress * animationProgress * animationProgress
           : 1 - pow(-2 * animationProgress + 2, 3) / 2;
@@ -159,9 +155,21 @@ class ChessGame extends FlameGame with TapCallbacks {
       currentRotation = targetRotation;
     }
 
-    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+    for (var piece
+        in board.player1Pieces.followedBy(board.player2Pieces)) {
       spriteMap[piece]?.update(tileSize ?? 0, appModel, piece, t);
     }
+  }
+
+  void _updatePaints() {
+    var theme = appModel.theme;
+    _lightTilePaint = Paint()..color = theme.lightTile;
+    _darkTilePaint = Paint()..color = theme.darkTile;
+    _moveHintPaint = Paint()..color = theme.moveHint;
+    _checkHintPaint = Paint()..color = theme.checkHint;
+    _latestMovePaint = Paint()..color = theme.latestMove;
+    _selectedPiecePaint = Paint()..color = theme.moveHint;
+    _cachedThemeName = theme.name;
   }
 
   void _initSpritePositions() {
@@ -173,175 +181,6 @@ class ChessGame extends FlameGame with TapCallbacks {
   void snapSprites() {
     for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
       spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
-    }
-  }
-
-  void _selectPiece(ChessPiece? piece) {
-    if (piece != null) {
-      if (piece.player == appModel.turn) {
-        selectedPiece = piece;
-        if (selectedPiece != null) {
-          validMoves = movesForPiece(piece, board);
-        }
-        if (validMoves.isEmpty) {
-          selectedPiece = null;
-        }
-      }
-    }
-  }
-
-  void _movePiece(int tile) {
-    if (validMoves.contains(tile)) {
-      validMoves = [];
-      var meta =
-          push(Move(selectedPiece?.tile ?? 0, tile), board, getMeta: true);
-      if (appModel.soundEnabled) {
-        FlameAudio.play('piece_moved.mp3');
-      }
-      if (meta.promotion) {
-        appModel.requestPromotion();
-      }
-      _moveCompletion(meta, changeTurn: !meta.promotion);
-    }
-  }
-
-  void _aiMove() async {
-    if (appModel.gameOver) return;
-    await Future.delayed(Duration(milliseconds: 500));
-    if (appModel.gameOver) return;
-    var args = Map();
-    args['aiPlayer'] = appModel.aiTurn;
-    args['aiDifficulty'] = appModel.aiDifficulty;
-    args['board'] = board;
-    aiOperation = CancelableOperation.fromFuture(
-      compute(calculateAIMove, args),
-    );
-    aiOperation?.value.then((move) {
-      if (move == null || appModel.gameOver) {
-        appModel.endGame();
-      } else {
-        validMoves = [];
-        var meta = push(move, board, getMeta: true);
-        if (appModel.soundEnabled) {
-          FlameAudio.play('piece_moved.mp3');
-        }
-        _moveCompletion(meta, changeTurn: !meta.promotion);
-        if (meta.promotion) {
-          promote(move.promotionType);
-        }
-      }
-    });
-  }
-
-  void cancelAIMove() {
-    aiOperation?.cancel();
-  }
-
-  void triggerAIMove() {
-    _aiMove();
-  }
-
-  void undoMove() {
-    board.redoStack.add(pop(board));
-    if (appModel.moveMetaList.length > 1) {
-      var meta = appModel.moveMetaList[appModel.moveMetaList.length - 2];
-      _moveCompletion(meta, clearRedo: false, undoing: true);
-    } else {
-      _undoOpeningMove();
-      appModel.changeTurn();
-    }
-  }
-
-  void undoTwoMoves() {
-    board.redoStack.add(pop(board));
-    board.redoStack.add(pop(board));
-    appModel.popMoveMeta();
-    if (appModel.moveMetaList.length > 1) {
-      _moveCompletion(appModel.moveMetaList[appModel.moveMetaList.length - 2],
-          clearRedo: false, undoing: true, changeTurn: false);
-    } else {
-      _undoOpeningMove();
-    }
-  }
-
-  void _undoOpeningMove() {
-    selectedPiece = null;
-    validMoves = [];
-    latestMove = null;
-    checkHintTile = null;
-    appModel.popMoveMeta();
-  }
-
-  void redoMove() {
-    _moveCompletion(pushMSO(board.redoStack.removeLast(), board),
-        clearRedo: false);
-  }
-
-  void redoTwoMoves() {
-    _moveCompletion(pushMSO(board.redoStack.removeLast(), board),
-        clearRedo: false, updateMetaList: true);
-    _moveCompletion(pushMSO(board.redoStack.removeLast(), board),
-        clearRedo: false, updateMetaList: true);
-  }
-
-  void promote(ChessPieceType type) {
-    board.moveStack.last.movedPiece?.type = type;
-    board.moveStack.last.promotionType = type;
-    addPromotedPiece(board, board.moveStack.last);
-    appModel.moveMetaList.last.promotionType = type;
-    _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
-  }
-
-  void _moveCompletion(
-    MoveMeta meta, {
-    bool clearRedo = true,
-    bool undoing = false,
-    bool changeTurn = true,
-    bool updateMetaList = true,
-  }) async {
-    if (clearRedo) {
-      board.redoStack = [];
-    }
-    validMoves = [];
-    latestMove = meta.move;
-    checkHintTile = null;
-    var oppositeTurn = oppositePlayer(appModel.turn);
-
-    // kingInCheck is lightweight (no push/pop), keep synchronous
-    if (kingInCheck(oppositeTurn, board)) {
-      meta.isCheck = true;
-      checkHintTile = kingForPlayer(oppositeTurn, board)?.tile;
-    }
-
-    // kingInCheckmate is expensive (O(pieces × moves²) with push/pop).
-    // Run it in a real isolate to avoid blocking the UI thread.
-    bool isCheckmate = await compute(_computeCheckmate, {
-      'player': oppositeTurn,
-      'board': board,
-    });
-    if (isCheckmate) {
-      if (!meta.isCheck) {
-        appModel.stalemate = true;
-        meta.isStalemate = true;
-      }
-      meta.isCheck = false;
-      meta.isCheckmate = true;
-      appModel.endGame(silent: true);
-    }
-    if (undoing) {
-      appModel.popMoveMeta(silent: true);
-      appModel.undoEndGame(silent: true);
-    } else if (updateMetaList) {
-      appModel.pushMoveMeta(meta, silent: true);
-    }
-    if (changeTurn) {
-      appModel.changeTurn(silent: true);
-    }
-    selectedPiece = null;
-    // Single rebuild for all the state changes above
-    appModel.update();
-    if (appModel.isAIsTurn && clearRedo && changeTurn) {
-      _aiMove();
     }
   }
 
@@ -373,7 +212,6 @@ class ChessGame extends FlameGame with TapCallbacks {
       double size = (tileSize ?? 0) - 10;
 
       canvas.save();
-      // Rotate piece around its center
       canvas.translate(x + size / 2, y + size / 2);
       canvas.rotate(-currentRotation);
       canvas.translate(-(x + size / 2), -(y + size / 2));

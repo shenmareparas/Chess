@@ -1,4 +1,5 @@
 import 'package:en_passant/model/app_model.dart';
+import 'package:en_passant/model/user_preferences.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:en_passant/views/main_menu_view.dart';
 import 'package:flame/flame.dart';
