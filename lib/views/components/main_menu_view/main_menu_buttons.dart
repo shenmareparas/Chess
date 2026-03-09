@@ -1,9 +1,10 @@
-import 'package:en_passant/logic/game_state_storage.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/shared/rounded_button.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../logic/game_state_storage.dart';
+import '../../../model/app_model.dart';
 import '../../chess_view.dart';
 import '../../settings_view.dart';
+import '../shared/rounded_button.dart';
 
 class MainMenuButtons extends StatefulWidget {
   final AppModel appModel;

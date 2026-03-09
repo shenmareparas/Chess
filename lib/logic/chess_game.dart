@@ -1,16 +1,17 @@
-import 'dart:math';
-import 'package:en_passant/logic/chess_piece_sprite.dart';
-import 'package:en_passant/logic/game_controller.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
+import 'dart:math' as math;
+
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../model/app_model.dart';
+import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
+import 'chess_piece_sprite.dart';
+import 'game_controller.dart';
 import 'move_calculation/move_classes/move.dart';
+import 'shared_functions.dart';
 
 /// Rendering layer for the chess game. Delegates all game logic to
 /// [GameController], keeping this class focused on display and input routing.
@@ -18,7 +19,6 @@ class ChessGame extends FlameGame with TapCallbacks {
   double? width;
   double? tileSize;
   AppModel appModel;
-  BuildContext context;
 
   late final GameController controller;
   Map<ChessPiece, ChessPieceSprite> spriteMap = Map();
@@ -38,16 +38,14 @@ class ChessGame extends FlameGame with TapCallbacks {
   Paint _selectedPiecePaint = Paint();
   String? _cachedThemeName;
 
-  ChessGame(this.appModel, this.context) {
+  ChessGame(this.appModel) {
     controller = GameController(appModel);
     controller.onSnapSprites = () => snapSprites();
-    width = MediaQuery.of(context).size.width - 68;
-    tileSize = (width ?? 0) / 8;
+    // width and tileSize are calculated in onGameResize
     for (var piece
         in controller.board.player1Pieces + controller.board.player2Pieces) {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
-    _initSpritePositions();
     _updatePaints();
   }
 
@@ -102,6 +100,15 @@ class ChessGame extends FlameGame with TapCallbacks {
   // ── Rendering ──
 
   @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    width = size.x;
+    tileSize = width! / 8;
+    _initSpritePositions();
+    snapSprites();
+  }
+
+  @override
   void render(Canvas canvas) {
     super.render(canvas);
 
@@ -130,7 +137,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     if (appModel.enableRotation &&
         ((appModel.playingWithAI && appModel.playerSide == Player.player2) ||
             (!appModel.playingWithAI && appModel.turn == Player.player2))) {
-      newTargetRotation = pi;
+      newTargetRotation = math.pi;
     } else {
       newTargetRotation = 0;
     }
@@ -147,7 +154,7 @@ class ChessGame extends FlameGame with TapCallbacks {
 
       double curviness = animationProgress < 0.5
           ? 4 * animationProgress * animationProgress * animationProgress
-          : 1 - pow(-2 * animationProgress + 2, 3) / 2;
+          : 1 - math.pow(-2 * animationProgress + 2, 3) / 2;
 
       currentRotation =
           startRotation + (targetRotation - startRotation) * curviness;
@@ -229,8 +236,8 @@ class ChessGame extends FlameGame with TapCallbacks {
     for (var tile in validMoves) {
       canvas.drawCircle(
         Offset(
-          getXFromTile(tile, (tileSize ?? 0), appModel) + ((tileSize ?? 0) / 2),
-          getYFromTile(tile, (tileSize ?? 0), appModel) + ((tileSize ?? 0) / 2),
+          getXFromTile(tile, (tileSize ?? 0)) + ((tileSize ?? 0) / 2),
+          getYFromTile(tile, (tileSize ?? 0)) + ((tileSize ?? 0) / 2),
         ),
         (tileSize ?? 0) / 5,
         _moveHintPaint,
@@ -242,8 +249,8 @@ class ChessGame extends FlameGame with TapCallbacks {
     if (latestMove != null) {
       canvas.drawRect(
         Rect.fromLTWH(
-          getXFromTile(latestMove!.from, tileSize ?? 0, appModel),
-          getYFromTile(latestMove!.from, tileSize ?? 0, appModel),
+          getXFromTile(latestMove!.from, tileSize ?? 0),
+          getYFromTile(latestMove!.from, tileSize ?? 0),
           tileSize ?? 0,
           tileSize ?? 0,
         ),
@@ -251,8 +258,8 @@ class ChessGame extends FlameGame with TapCallbacks {
       );
       canvas.drawRect(
         Rect.fromLTWH(
-          getXFromTile(latestMove!.to, tileSize ?? 0, appModel),
-          getYFromTile(latestMove!.to, tileSize ?? 0, appModel),
+          getXFromTile(latestMove!.to, tileSize ?? 0),
+          getYFromTile(latestMove!.to, tileSize ?? 0),
           tileSize ?? 0,
           tileSize ?? 0,
         ),
@@ -265,8 +272,8 @@ class ChessGame extends FlameGame with TapCallbacks {
     if (checkHintTile != null) {
       canvas.drawRect(
         Rect.fromLTWH(
-          getXFromTile(checkHintTile!, tileSize ?? 0, appModel),
-          getYFromTile(checkHintTile!, tileSize ?? 0, appModel),
+          getXFromTile(checkHintTile!, tileSize ?? 0),
+          getYFromTile(checkHintTile!, tileSize ?? 0),
           tileSize ?? 0,
           tileSize ?? 0,
         ),
@@ -279,8 +286,8 @@ class ChessGame extends FlameGame with TapCallbacks {
     if (selectedPiece != null) {
       canvas.drawRect(
         Rect.fromLTWH(
-          getXFromTile(selectedPiece!.tile, tileSize ?? 0, appModel),
-          getYFromTile(selectedPiece!.tile, tileSize ?? 0, appModel),
+          getXFromTile(selectedPiece!.tile, tileSize ?? 0),
+          getYFromTile(selectedPiece!.tile, tileSize ?? 0),
           tileSize ?? 0,
           tileSize ?? 0,
         ),

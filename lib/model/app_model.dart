@@ -1,16 +1,16 @@
-import 'dart:math';
+import 'dart:math' as math;
 
-import 'package:en_passant/logic/audio_service.dart';
-import 'package:en_passant/logic/chess_game.dart';
-import 'package:en_passant/logic/game_state_storage.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/logic/timer_service.dart';
-import 'package:en_passant/model/player.dart';
-import 'package:en_passant/model/user_preferences.dart';
 import 'package:flutter/material.dart';
 
+import '../logic/audio_service.dart';
+import '../logic/chess_game.dart';
+import '../logic/game_state_storage.dart';
+import '../logic/move_calculation/move_classes/move_meta.dart';
+import '../logic/shared_functions.dart';
+import '../logic/timer_service.dart';
 import 'app_themes.dart';
+import 'player.dart';
+import 'user_preferences.dart';
 
 class AppModel extends ChangeNotifier {
   // ── Game Settings ──
@@ -39,10 +39,10 @@ class AppModel extends ChangeNotifier {
   int get pieceThemeIndex => prefs.pieceThemeIndex;
   List<String> get pieceThemes => prefs.pieceThemes;
 
-  Duration get player1TimeLeft => timerService.player1TimeLeft;
-  set player1TimeLeft(Duration val) => timerService.player1TimeLeft = val;
-  Duration get player2TimeLeft => timerService.player2TimeLeft;
-  set player2TimeLeft(Duration val) => timerService.player2TimeLeft = val;
+  ValueNotifier<Duration> get player1TimeLeft => timerService.player1TimeLeft;
+  set player1TimeLeft(ValueNotifier<Duration> val) => timerService.player1TimeLeft.value = val.value;
+  ValueNotifier<Duration> get player2TimeLeft => timerService.player2TimeLeft;
+  set player2TimeLeft(ValueNotifier<Duration> val) => timerService.player2TimeLeft.value = val.value;
 
   // ── Game State ──
   ChessGame? game;
@@ -62,9 +62,6 @@ class AppModel extends ChangeNotifier {
   AppModel() {
     // Wire up service callbacks
     prefs.onChanged = () => notifyListeners();
-    timerService.onTick = () {
-      if (timeLimit != 0) notifyListeners();
-    };
     timerService.onExpired = () => endGame();
     audio.enabled = prefs.soundEnabled;
 
@@ -73,7 +70,7 @@ class AppModel extends ChangeNotifier {
 
   // ── Game Lifecycle ──
 
-  void newGame(BuildContext context, {bool notify = true}) {
+  void newGame({bool notify = true}) {
     game?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
@@ -86,9 +83,9 @@ class AppModel extends ChangeNotifier {
     audio.enabled = prefs.soundEnabled;
     if (selectedSide == Player.random) {
       playerSide =
-          Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
+          math.Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
     }
-    game = ChessGame(this, context);
+    game = ChessGame(this);
     timerService.start(() => turn, () => gameOver);
     if (notify) {
       notifyListeners();
@@ -133,8 +130,8 @@ class AppModel extends ChangeNotifier {
       playingWithAI: playingWithAI,
       playerSide: playerSide,
       turn: turn,
-      player1TimeLeft: player1TimeLeft,
-      player2TimeLeft: player2TimeLeft,
+      player1TimeLeft: player1TimeLeft.value,
+      player2TimeLeft: player2TimeLeft.value,
     );
 
     audio.playGameEndSound(
@@ -142,8 +139,8 @@ class AppModel extends ChangeNotifier {
       playingWithAI: playingWithAI,
       playerSide: playerSide,
       turn: turn,
-      player1TimeLeft: player1TimeLeft,
-      player2TimeLeft: player2TimeLeft,
+      player1TimeLeft: player1TimeLeft.value,
+      player2TimeLeft: player2TimeLeft.value,
     );
 
     GameStateStorage.clearGameState();
@@ -228,7 +225,7 @@ class AppModel extends ChangeNotifier {
     GameStateStorage.saveGameState(this);
   }
 
-  Future<void> restoreGameState(BuildContext context) async {
+  Future<void> restoreGameState() async {
     final state = await GameStateStorage.loadGameState();
     if (state == null) return;
 
@@ -246,7 +243,7 @@ class AppModel extends ChangeNotifier {
     moveMetaList = [];
 
     // Create a fresh game and replay all moves
-    game = ChessGame(this, context);
+    game = ChessGame(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
       var meta = game!.board.push(move,
@@ -257,8 +254,8 @@ class AppModel extends ChangeNotifier {
     game!.snapSprites();
 
     // Restore timer durations
-    player1TimeLeft = Duration(milliseconds: state['player1TimeLeftMs'] as int);
-    player2TimeLeft = Duration(milliseconds: state['player2TimeLeftMs'] as int);
+    player1TimeLeft.value = Duration(milliseconds: state['player1TimeLeftMs'] as int);
+    player2TimeLeft.value = Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;

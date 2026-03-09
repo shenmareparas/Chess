@@ -1,8 +1,9 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+import '../../../../model/app_model.dart';
+import '../../../../model/player.dart';
+import '../../shared/text_variable.dart';
 
 /// State tuple for GameStatus — only rebuilds when these fields change.
 typedef _StatusState = ({

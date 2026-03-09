@@ -1,14 +1,14 @@
 import 'package:async/async.dart';
-import 'package:en_passant/logic/move_calculation/ai_move_calculation.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
 import 'package:flutter/foundation.dart';
 
+import '../model/app_model.dart';
+import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
+import 'move_calculation/ai_move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
+import 'move_calculation/move_classes/move_meta.dart';
+import 'shared_functions.dart';
 
 /// Top-level function for compute() — runs kingInCheckmate in a real isolate.
 /// compute() requires a top-level or static function, not a closure.

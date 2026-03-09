@@ -1,6 +1,7 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/game_info_and_controls/timer_widget.dart';
 import 'package:flutter/material.dart';
+
+import '../../../../model/app_model.dart';
+import 'timer_widget.dart';
 
 class Timers extends StatelessWidget {
   final AppModel appModel;

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:en_passant/logic/chess_piece.dart';
-import 'package:en_passant/model/app_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/app_model.dart';
+import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
 
 const _gameStateKey = 'saved_game_state';
@@ -37,8 +37,8 @@ class GameStateStorage {
       'turn': appModel.turn.index,
       'gameOver': appModel.gameOver,
       'stalemate': appModel.stalemate,
-      'player1TimeLeftMs': appModel.player1TimeLeft.inMilliseconds,
-      'player2TimeLeftMs': appModel.player2TimeLeft.inMilliseconds,
+      'player1TimeLeftMs': appModel.player1TimeLeft.value.inMilliseconds,
+      'player2TimeLeftMs': appModel.player2TimeLeft.value.inMilliseconds,
       'moves': moves,
     };
 

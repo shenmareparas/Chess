@@ -1,8 +1,9 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/app_themes.dart';
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+import '../../../model/app_model.dart';
+import '../../../model/app_themes.dart';
+import '../shared/text_variable.dart';
 
 class AppThemePicker extends StatefulWidget {
   @override
@@ -28,13 +29,14 @@ class _AppThemePickerState extends State<AppThemePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppModel>(
-      builder: (context, appModel, child) {
+    return Selector<AppModel, int>(
+      selector: (_, m) => m.themeIndex,
+      builder: (context, themeIndex, child) {
         if (_scrollController.hasClients &&
-            _scrollController.selectedItem != appModel.themeIndex) {
+            _scrollController.selectedItem != themeIndex) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
-              _scrollController.jumpToItem(appModel.themeIndex);
+              _scrollController.jumpToItem(themeIndex);
             }
           });
         }
@@ -57,7 +59,7 @@ class _AppThemePickerState extends State<AppThemePicker> {
                   background: Color(0x20000000),
                 ),
                 itemExtent: 50,
-                onSelectedItemChanged: appModel.setTheme,
+                onSelectedItemChanged: Provider.of<AppModel>(context, listen: false).setTheme,
                 children: themeList
                     .map(
                       (theme) => Container(

@@ -1,14 +1,14 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/settings_view/piece_theme_picker.dart';
-import 'package:en_passant/views/components/shared/rounded_button.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../model/app_model.dart';
+import '../model/app_themes.dart';
 import 'components/settings_view/app_theme_picker.dart';
+import 'components/settings_view/piece_theme_picker.dart';
 import 'components/settings_view/toggles.dart';
 import 'components/shared/bottom_padding.dart';
-
-import 'package:flutter/material.dart';
+import 'components/shared/rounded_button.dart';
 
 class SettingsView extends StatelessWidget {
   void _showResetConfirmation(BuildContext context, AppModel appModel) {
@@ -19,15 +19,16 @@ class SettingsView extends StatelessWidget {
       barrierLabel: '',
       transitionDuration: Duration(milliseconds: 250),
       pageBuilder: (dialogContext, anim1, anim2) {
-        return Consumer<AppModel>(
-          builder: (dialogContext, appModel, child) => Center(
+        return Selector<AppModel, AppTheme>(
+          selector: (_, m) => m.theme,
+          builder: (dialogContext, theme, child) => Center(
             child: Material(
               color: Colors.transparent,
               child: Container(
                 constraints: BoxConstraints(maxWidth: 340),
                 padding: EdgeInsets.all(30),
                 decoration: BoxDecoration(
-                  gradient: appModel.theme.background,
+                  gradient: theme.background,
                   borderRadius: BorderRadius.circular(25),
                   border: Border.all(
                       color: Colors.white.withValues(alpha: 0.15), width: 1.5),
@@ -63,12 +64,14 @@ class SettingsView extends StatelessWidget {
                       textAlign: TextAlign.center,
                     ),
                     SizedBox(height: 35),
-                    RoundedButton(
-                      'Reset',
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        appModel.resetSettingsToDefaults();
-                      },
+                    Consumer<AppModel>(
+                      builder: (context, appModel, child) => RoundedButton(
+                        'Reset',
+                        onPressed: () {
+                          Navigator.pop(dialogContext);
+                          appModel.resetSettingsToDefaults();
+                        },
+                      ),
                     ),
                     SizedBox(height: 15),
                     RoundedButton(
@@ -98,9 +101,10 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppModel>(
-      builder: (context, appModel, child) => Container(
-        decoration: BoxDecoration(gradient: appModel.theme.background),
+    return Selector<AppModel, AppTheme>(
+      selector: (_, m) => m.theme,
+      builder: (context, theme, child) => Container(
+        decoration: BoxDecoration(gradient: theme.background),
         child: Stack(
           children: [
             Padding(
@@ -118,7 +122,9 @@ class SettingsView extends StatelessWidget {
                           SizedBox(height: 10),
                           PieceThemePicker(),
                           SizedBox(height: 10),
-                          Toggles(appModel),
+                          Consumer<AppModel>(
+                            builder: (context, appModel, child) => Toggles(appModel),
+                          ),
                         ],
                       ),
                     ),
@@ -137,15 +143,17 @@ class SettingsView extends StatelessWidget {
             Positioned(
               top: MediaQuery.of(context).padding.top + 30,
               right: 30,
-              child: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  _showResetConfirmation(context, appModel);
-                },
-                child: Icon(
-                  Icons.settings_backup_restore_rounded,
-                  color: const Color(0x99FFFFFF), // semi-transparent white
-                  size: 28,
+              child: Consumer<AppModel>(
+                builder: (context, appModel, child) => CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    _showResetConfirmation(context, appModel);
+                  },
+                  child: Icon(
+                    Icons.settings_backup_restore_rounded,
+                    color: const Color(0x99FFFFFF), // semi-transparent white
+                    size: 28,
+                  ),
                 ),
               ),
             ),

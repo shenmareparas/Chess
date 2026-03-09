@@ -1,9 +1,8 @@
-import 'package:en_passant/model/player.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../../model/player.dart';
 import 'picker.dart';
 
-export 'package:en_passant/model/player.dart' show Player;
 class SidePicker extends StatelessWidget {
   final Map<Player, Text> colorOptions = const <Player, Text>{
     Player.player1: Text('White'),

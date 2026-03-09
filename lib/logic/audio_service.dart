@@ -1,5 +1,6 @@
-import 'package:en_passant/model/player.dart';
 import 'package:flame_audio/flame_audio.dart';
+
+import '../model/player.dart';
 
 /// Centralized audio playback service.
 /// Extracted from AppModel to follow single-responsibility principle.

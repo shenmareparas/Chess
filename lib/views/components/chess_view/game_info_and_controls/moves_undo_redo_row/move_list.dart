@@ -1,11 +1,12 @@
-import 'package:en_passant/logic/chess_piece.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+
+import '../../../../../logic/chess_piece.dart';
+import '../../../../../logic/move_calculation/move_classes/move_meta.dart';
+import '../../../../../logic/shared_functions.dart';
+import '../../../../../model/app_model.dart';
+import '../../../../../model/player.dart';
+import '../../../shared/text_variable.dart';
 
 class MoveList extends StatelessWidget {
   final AppModel appModel;

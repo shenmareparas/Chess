@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 
@@ -8,7 +8,7 @@ class BottomPadding extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       height: Platform.isAndroid
-          ? max(MediaQuery.of(context).viewInsets.bottom,
+          ? math.max(MediaQuery.of(context).viewInsets.bottom,
               MediaQuery.of(context).padding.bottom)
           : 0,
     );

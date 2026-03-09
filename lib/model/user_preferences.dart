@@ -1,5 +1,6 @@
-import 'package:en_passant/model/app_themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'app_themes.dart';
 
 const PIECE_THEMES = [
   'Classic',

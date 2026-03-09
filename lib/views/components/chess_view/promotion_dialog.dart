@@ -1,7 +1,8 @@
-import 'package:en_passant/logic/chess_constants.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/promotion_option.dart';
 import 'package:flutter/material.dart';
+
+import '../../../logic/chess_constants.dart';
+import '../../../model/app_model.dart';
+import 'promotion_option.dart';
 
 class PromotionDialog extends StatelessWidget {
   final AppModel appModel;

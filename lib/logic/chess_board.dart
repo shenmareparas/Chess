@@ -1,17 +1,16 @@
 import 'dart:math' as math;
 
-import 'package:en_passant/logic/chess_constants.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_stack_object.dart';
-import 'package:en_passant/logic/move_calculation/openings.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/player.dart';
-
+import '../model/player.dart';
+import 'chess_constants.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/direction.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_and_value.dart';
 import 'move_calculation/move_classes/move_meta.dart';
+import 'move_calculation/move_classes/move_stack_object.dart';
+import 'move_calculation/openings.dart';
 import 'move_calculation/piece_square_tables.dart';
+import 'shared_functions.dart';
 
 // Zobrist hashing constants
 // 12 piece types (6 types x 2 colors) x 64 squares + 1 side-to-move
@@ -546,8 +545,9 @@ class ChessBoard {
   }
 
   List<int> _rookMoves(ChessPiece rook, bool legal) {
-    return _movesFromDirections(rook, _ROOK_MOVES, true) +
-        _rookCastleMove(rook, legal);
+    var moves = _movesFromDirections(rook, _ROOK_MOVES, true);
+    moves.addAll(_rookCastleMove(rook, legal));
+    return moves;
   }
 
   List<int> _queenMoves(ChessPiece queen) {
@@ -555,8 +555,9 @@ class ChessBoard {
   }
 
   List<int> _kingMoves(ChessPiece king, bool legal) {
-    return _movesFromDirections(king, _KING_QUEEN_MOVES, false) +
-        _kingCastleMoves(king, legal);
+    var moves = _movesFromDirections(king, _KING_QUEEN_MOVES, false);
+    moves.addAll(_kingCastleMoves(king, legal));
+    return moves;
   }
 
   List<int> _rookCastleMove(ChessPiece rook, bool legal) {

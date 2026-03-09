@@ -1,9 +1,10 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/settings_view/piece_preview.dart';
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+import '../../../model/app_model.dart';
+import '../shared/text_variable.dart';
+import 'piece_preview.dart';
 
 class PieceThemePicker extends StatefulWidget {
   @override

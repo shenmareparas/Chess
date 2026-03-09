@@ -1,9 +1,9 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
 
+import '../model/app_model.dart';
+import '../model/player.dart';
 import 'chess_piece.dart';
 import 'shared_functions.dart';
 
@@ -34,10 +34,10 @@ class ChessPieceSprite {
     if (piece.tile != this.tile) {
       this.tile = piece.tile;
     }
-    var destX = getXFromTile(tile ?? 0, tileSize, appModel);
-    var destY = getYFromTile(tile ?? 0, tileSize, appModel);
+    var destX = getXFromTile(tile ?? 0, tileSize);
+    var destY = getYFromTile(tile ?? 0, tileSize);
     // Smooth interpolation using frame-rate independent lerp
-    double t = 1.0 - _pow(1.0 - _lerpSpeed * dt, 1);
+    double t = 1.0 - (1.0 - _lerpSpeed * dt).clamp(0.0, 1.0);
     if (t > 1.0) t = 1.0;
     if ((destX - (spriteX ?? 0)).abs() <= 0.5) {
       spriteX = destX;
@@ -51,10 +51,6 @@ class ChessPieceSprite {
     }
   }
 
-  static double _pow(double base, int exp) {
-    if (base <= 0) return 0;
-    return base;
-  }
 
   void initSprite(ChessPiece piece) async {
     String color = piece.player == Player.player1 ? 'white' : 'black';
@@ -67,14 +63,14 @@ class ChessPieceSprite {
   }
 
   void initSpritePosition(double tileSize, AppModel appModel) {
-    spriteX = getXFromTile(tile ?? 0, tileSize, appModel);
-    spriteY = getYFromTile(tile ?? 0, tileSize, appModel);
+    spriteX = getXFromTile(tile ?? 0, tileSize);
+    spriteY = getYFromTile(tile ?? 0, tileSize);
   }
 
   void snapToPiece(ChessPiece piece, double tileSize, AppModel appModel) {
     type = piece.type;
     tile = piece.tile;
-    spriteX = getXFromTile(tile ?? 0, tileSize, appModel);
-    spriteY = getYFromTile(tile ?? 0, tileSize, appModel);
+    spriteX = getXFromTile(tile ?? 0, tileSize);
+    spriteY = getYFromTile(tile ?? 0, tileSize);
   }
 }

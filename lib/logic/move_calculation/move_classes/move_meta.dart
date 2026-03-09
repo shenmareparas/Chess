@@ -1,5 +1,4 @@
-import 'package:en_passant/model/player.dart';
-
+import '../../../model/player.dart';
 import '../../chess_piece.dart';
 import 'move.dart';
 

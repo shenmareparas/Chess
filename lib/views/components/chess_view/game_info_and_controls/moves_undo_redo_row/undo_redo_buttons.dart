@@ -1,6 +1,7 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/game_info_and_controls/moves_undo_redo_row/rounded_icon_button.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../../../model/app_model.dart';
+import 'rounded_icon_button.dart';
 
 class UndoRedoButtons extends StatelessWidget {
   final AppModel appModel;

@@ -1,8 +1,9 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/game_info_and_controls/rounded_alert_button.dart';
-import 'package:en_passant/views/chess_view.dart';
-import 'package:en_passant/views/components/shared/rounded_button.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../../model/app_model.dart';
+import '../../../chess_view.dart';
+import '../../shared/rounded_button.dart';
+import 'rounded_alert_button.dart';
 
 class RestartExitButtons extends StatelessWidget {
   final AppModel appModel;
@@ -17,7 +18,7 @@ class RestartExitButtons extends StatelessWidget {
           child: RoundedAlertButton(
             'Restart',
             onConfirm: () {
-              appModel.newGame(context);
+              appModel.newGame();
             },
           ),
         ),

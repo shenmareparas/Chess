@@ -1,4 +1,4 @@
-import 'package:en_passant/model/player.dart';
+import '../model/player.dart';
 
 enum ChessPieceType { pawn, rook, knight, bishop, king, queen, promotion }
 

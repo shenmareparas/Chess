@@ -1,7 +1,8 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../model/app_model.dart';
+import '../../../model/player.dart';
 
 class ChessBoardWidget extends StatelessWidget {
   final AppModel appModel;

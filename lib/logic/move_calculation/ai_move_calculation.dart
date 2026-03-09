@@ -1,12 +1,11 @@
-import 'dart:math';
+import 'dart:math' as math;
 
-import 'package:en_passant/logic/move_calculation/move_classes/move_and_value.dart';
-import 'package:en_passant/logic/move_calculation/transposition_table.dart';
-import 'package:en_passant/model/player.dart';
-
+import '../../model/player.dart';
 import '../chess_board.dart';
 import '../shared_functions.dart';
 import 'move_classes/move.dart';
+import 'move_classes/move_and_value.dart';
+import 'transposition_table.dart';
 
 const INITIAL_ALPHA = -40000;
 const STALEMATE_ALPHA = -20000;
@@ -57,9 +56,9 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
     if (ttEntry.flag == TT_EXACT) {
       return MoveAndValue(ttEntry.bestMove ?? move, ttEntry.value);
     } else if (ttEntry.flag == TT_BETA) {
-      alpha = max(alpha, ttEntry.value);
+      alpha = math.max(alpha, ttEntry.value);
     } else if (ttEntry.flag == TT_ALPHA) {
-      beta = min(beta, ttEntry.value);
+      beta = math.min(beta, ttEntry.value);
     }
     if (alpha >= beta) {
       return MoveAndValue(ttEntry.bestMove ?? move, ttEntry.value);
@@ -154,7 +153,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
       if (result.value > bestMove.value) {
         bestMove = result;
       }
-      alpha = max(alpha, bestMove.value);
+      alpha = math.max(alpha, bestMove.value);
       if (alpha >= beta) {
         break;
       }
@@ -162,7 +161,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
       if (result.value < bestMove.value) {
         bestMove = result;
       }
-      beta = min(beta, bestMove.value);
+      beta = math.min(beta, bestMove.value);
       if (beta <= alpha) {
         break;
       }
@@ -242,5 +241,5 @@ Move _openingMove(ChessBoard board, Player aiPlayer) {
   List<Move> possibleMoves = board.possibleOpenings
       .map((opening) => opening[board.moveCount])
       .toList();
-  return possibleMoves[Random.secure().nextInt(possibleMoves.length)];
+  return possibleMoves[math.Random.secure().nextInt(possibleMoves.length)];
 }

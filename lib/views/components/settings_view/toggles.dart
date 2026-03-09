@@ -1,8 +1,8 @@
 
 
-import 'package:en_passant/model/app_model.dart';
 import 'package:flutter/material.dart';
 
+import '../../../model/app_model.dart';
 import 'toggle.dart';
 
 class Toggles extends StatelessWidget {

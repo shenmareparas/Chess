@@ -1,11 +1,12 @@
 import 'dart:ui';
 
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/app_model.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../logic/shared_functions.dart';
+import '../../../model/app_model.dart';
 
 class PiecePreview extends Game {
   AppModel appModel;

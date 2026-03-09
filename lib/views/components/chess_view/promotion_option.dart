@@ -1,8 +1,9 @@
-import 'package:en_passant/logic/chess_piece.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
 import 'package:flutter/material.dart';
+
+import '../../../logic/chess_piece.dart';
+import '../../../logic/shared_functions.dart';
+import '../../../model/app_model.dart';
+import '../../../model/player.dart';
 
 class PromotionOption extends StatelessWidget {
   final AppModel appModel;
