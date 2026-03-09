@@ -157,6 +157,7 @@ class AppModel extends ChangeNotifier {
   }
 
   void endGame() {
+    if (gameOver) return;
     gameOver = true;
 
     if (soundEnabled) {
@@ -343,7 +344,6 @@ class AppModel extends ChangeNotifier {
     playerSide = Player.values[state['playerSide'] as int];
     selectedSide = Player.values[state['selectedSide'] as int];
     timeLimit = state['timeLimit'] as int;
-    pieceTheme = state['pieceTheme'] as String;
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
     turn = Player.player1;

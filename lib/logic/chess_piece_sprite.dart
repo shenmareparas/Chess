@@ -25,8 +25,9 @@ class ChessPieceSprite {
   }
 
   void update(double tileSize, AppModel appModel, ChessPiece piece) {
-    if (piece.type != this.type) {
+    if (piece.type != this.type || appModel.pieceTheme != this.pieceTheme) {
       this.type = piece.type;
+      this.pieceTheme = appModel.pieceTheme;
       initSprite(piece);
     }
     if (piece.tile != this.tile) {

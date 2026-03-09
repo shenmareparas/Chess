@@ -32,7 +32,6 @@ class GameStateStorage {
       'stalemate': appModel.stalemate,
       'player1TimeLeftMs': appModel.player1TimeLeft.inMilliseconds,
       'player2TimeLeftMs': appModel.player2TimeLeft.inMilliseconds,
-      'pieceTheme': appModel.pieceTheme,
       'moves': moves,
     };
 

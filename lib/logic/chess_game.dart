@@ -206,7 +206,9 @@ class ChessGame extends FlameGame with TapCallbacks {
   }
 
   void _aiMove() async {
+    if (appModel.gameOver) return;
     await Future.delayed(Duration(milliseconds: 500));
+    if (appModel.gameOver) return;
     var args = Map();
     args['aiPlayer'] = appModel.aiTurn;
     args['aiDifficulty'] = appModel.aiDifficulty;

@@ -1,4 +1,4 @@
-import 'dart:io';
+
 
 import 'package:en_passant/model/app_model.dart';
 import 'package:flutter/material.dart';
@@ -39,13 +39,11 @@ class Toggles extends StatelessWidget {
           toggle: appModel.showMoveHistory,
           setFunc: appModel.setShowMoveHistory,
         ),
-        Platform.isAndroid
-            ? Toggle(
-                'Piece Sound',
-                toggle: appModel.soundEnabled,
-                setFunc: appModel.setSoundEnabled,
-              )
-            : Container(),
+        Toggle(
+          'Sound',
+          toggle: appModel.soundEnabled,
+          setFunc: appModel.setSoundEnabled,
+        ),
       ],
     );
   }
