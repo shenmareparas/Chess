@@ -34,6 +34,7 @@ class GameStateStorage {
     if (gameController == null) return;
 
     final prefs = await _getPrefs();
+    await prefs.setBool(_gameStateKey, true);
 
     // Save game metadata
     await prefs.setInt(_playerCountKey, appModel.playerCount);
@@ -60,7 +61,7 @@ class GameStateStorage {
     final prefs = await _getPrefs();
 
     // Check if any game state exists
-    if (!prefs.containsKey(_playerCountKey)) {
+    if (!prefs.containsKey(_gameStateKey)) {
       return null;
     }
 
@@ -87,6 +88,16 @@ class GameStateStorage {
   static Future<void> clearGameState() async {
     final prefs = await _getPrefs();
     await prefs.remove(_gameStateKey);
+    await prefs.remove(_playerCountKey);
+    await prefs.remove(_aiDifficultyKey);
+    await prefs.remove(_playerSideKey);
+    await prefs.remove(_selectedSideKey);
+    await prefs.remove(_timeLimitKey);
+    await prefs.remove(_player1TimeLeftMsKey);
+    await prefs.remove(_player2TimeLeftMsKey);
+    await prefs.remove(_gameOverKey);
+    await prefs.remove(_stalemateKey);
+    await prefs.remove(_movesKey);
   }
 
   static Future<bool> hasSavedGame() async {

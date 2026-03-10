@@ -25,14 +25,24 @@ class TimerService {
     player2TimeLeft.value = Duration(minutes: timeLimitMinutes);
   }
 
+  Player Function()? _getCurrentTurn;
+  bool Function()? _isGameOver;
+
   void start(Player Function() getCurrentTurn, bool Function() isGameOver) {
+    _getCurrentTurn = getCurrentTurn;
+    _isGameOver = isGameOver;
     if (_timeLimit == 0) return;
+    _startPeriodicTimer();
+  }
+
+  void _startPeriodicTimer() {
+    _timer?.cancel();
     _timer = async.Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (_) {
-      if (isGameOver()) {
+      if (_isGameOver?.call() ?? true) {
         stop();
         return;
       }
-      var turn = getCurrentTurn();
+      var turn = _getCurrentTurn?.call() ?? Player.player1;
       if (turn == Player.player1) {
         _decrementPlayer1();
       } else {
@@ -45,13 +55,26 @@ class TimerService {
     });
   }
 
-  void stop() {
+  void pause() {
     _timer?.cancel();
     _timer = null;
   }
 
+  void resume() {
+    if (_timeLimit > 0 && _timer == null && _getCurrentTurn != null && _isGameOver != null) {
+      _startPeriodicTimer();
+    }
+  }
+
+  void stop() {
+    _timer?.cancel();
+    _timer = null;
+    _getCurrentTurn = null;
+    _isGameOver = null;
+  }
+
   void reset() {
-    stop();
+    pause();
     player1TimeLeft.value = Duration(minutes: _timeLimit);
     player2TimeLeft.value = Duration(minutes: _timeLimit);
   }

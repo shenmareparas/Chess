@@ -75,6 +75,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive) {
       if (!appModel.gameOver) {
         appModel.saveGameState();
+        appModel.timerService.pause();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (!appModel.gameOver) {
+        appModel.timerService.resume();
       }
     }
   }
