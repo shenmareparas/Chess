@@ -59,6 +59,17 @@ class AppModel extends ChangeNotifier {
   bool get isAIsTurn => playingWithAI && (turn == aiTurn);
   bool get playingWithAI => playerCount == 1;
 
+  // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
+  bool animateBoardRotation = false;
+
+  bool get isBoardInverted {
+    if (playingWithAI) {
+      return playerSide == Player.player2;
+    } else {
+      return enableRotation && turn == Player.player2;
+    }
+  }
+
   AppModel() {
     // Wire up service callbacks
     prefs.onChanged = () => notifyListeners();
@@ -84,9 +95,24 @@ class AppModel extends ChangeNotifier {
     if (selectedSide == Player.random) {
       playerSide =
           math.Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
+    } else {
+      playerSide = selectedSide;
+    }
+    
+    // In a 2-player game, rotation is always relative to player1 being at the bottom.
+    if (!playingWithAI) {
+      playerSide = Player.player1;
     }
     game = ChessGame(this);
     timerService.start(() => turn, () => gameOver);
+    
+    // Disable animation on load, then enable it after the board is rendered.
+    animateBoardRotation = false;
+    Future.delayed(Duration(milliseconds: 50), () {
+      animateBoardRotation = true;
+      notifyListeners();
+    });
+
     if (notify) {
       notifyListeners();
     }
@@ -272,11 +298,19 @@ class AppModel extends ChangeNotifier {
 
     timerService.start(() => turn, () => gameOver);
 
+    game?.forceSnapRotation();
+
     notifyListeners();
 
     // Trigger AI move if it's AI's turn
     if (isAIsTurn && !gameOver) {
       game!.triggerAIMove();
     }
+
+    animateBoardRotation = false;
+    Future.delayed(Duration(milliseconds: 50), () {
+      animateBoardRotation = true;
+      notifyListeners();
+    });
   }
 }

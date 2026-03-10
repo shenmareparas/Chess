@@ -2,7 +2,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../../../model/app_model.dart';
-import '../../../model/player.dart';
 
 class ChessBoardWidget extends StatelessWidget {
   final AppModel appModel;
@@ -14,14 +13,10 @@ class ChessBoardWidget extends StatelessWidget {
     return Stack(
       children: [
         AnimatedRotation(
-          turns: appModel.enableRotation &&
-                  ((appModel.playingWithAI &&
-                          appModel.playerSide == Player.player2) ||
-                      (!appModel.playingWithAI &&
-                          appModel.turn == Player.player2))
-              ? 0.5
-              : 0,
-          duration: Duration(milliseconds: 600),
+          turns: appModel.isBoardInverted ? 0.5 : 0,
+          duration: appModel.animateBoardRotation
+              ? Duration(milliseconds: 600)
+              : Duration.zero,
           curve: Curves.easeInOut,
           child: Container(
             decoration: appModel.theme.name != 'Video Chess'
@@ -57,11 +52,7 @@ class ChessBoardWidget extends StatelessWidget {
             height: MediaQuery.of(context).size.width - 68,
             child: _NotationOverlay(
               appModel.theme.notation,
-              isRotated: appModel.enableRotation &&
-                  ((appModel.playingWithAI &&
-                          appModel.playerSide == Player.player2) ||
-                      (!appModel.playingWithAI &&
-                          appModel.turn == Player.player2)),
+              isRotated: appModel.isBoardInverted,
             ),
           ),
       ],

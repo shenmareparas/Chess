@@ -5,7 +5,6 @@ import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../model/app_model.dart';
-import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'chess_piece_sprite.dart';
@@ -47,6 +46,20 @@ class ChessGame extends FlameGame with TapCallbacks {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
     _updatePaints();
+    forceSnapRotation();
+  }
+
+  void forceSnapRotation() {
+    if (appModel.isBoardInverted) {
+      currentRotation = math.pi;
+      targetRotation = math.pi;
+      startRotation = math.pi;
+    } else {
+      currentRotation = 0;
+      targetRotation = 0;
+      startRotation = 0;
+    }
+    animationProgress = 1.0;
   }
 
   // ── Delegated Accessors (backward compatibility for views) ──
@@ -134,9 +147,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
 
     double newTargetRotation = 0;
-    if (appModel.enableRotation &&
-        ((appModel.playingWithAI && appModel.playerSide == Player.player2) ||
-            (!appModel.playingWithAI && appModel.turn == Player.player2))) {
+    if (appModel.isBoardInverted) {
       newTargetRotation = math.pi;
     } else {
       newTargetRotation = 0;
