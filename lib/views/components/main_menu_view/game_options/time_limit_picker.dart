@@ -1,5 +1,6 @@
-import 'package:en_passant/views/components/main_menu_view/game_options/picker.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'picker.dart';
 
 class TimeLimitPicker extends StatelessWidget {
   final int? selectedTime;

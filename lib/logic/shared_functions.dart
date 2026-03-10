@@ -1,6 +1,5 @@
-import 'package:en_passant/logic/chess_piece.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
+import '../model/player.dart';
+import 'chess_piece.dart';
 
 int tileToRow(int tile) {
   return (tile / 8).floor();
@@ -10,11 +9,11 @@ int tileToCol(int tile) {
   return tile % 8;
 }
 
-double getXFromTile(int tile, double tileSize, AppModel appModel) {
+double getXFromTile(int tile, double tileSize) {
   return tileToCol(tile) * tileSize;
 }
 
-double getYFromTile(int tile, double tileSize, AppModel appModel) {
+double getYFromTile(int tile, double tileSize) {
   return tileToRow(tile) * tileSize;
 }
 

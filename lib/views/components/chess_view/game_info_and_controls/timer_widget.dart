@@ -1,8 +1,10 @@
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../shared/text_variable.dart';
 
 class TimerWidget extends StatelessWidget {
-  final Duration timeLeft;
+  final ValueListenable<Duration> timeLeft;
   final Color color;
 
   TimerWidget({required this.timeLeft, required this.color});
@@ -10,16 +12,21 @@ class TimerWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        height: 60,
-        child: Center(
-          child: TextRegular(_durationToString(timeLeft)),
-        ),
-        decoration: BoxDecoration(
-          border: Border.all(color: color, width: 2),
-          borderRadius: BorderRadius.circular(14),
-          color: Color(0x20000000),
-        ),
+      child: ValueListenableBuilder<Duration>(
+        valueListenable: timeLeft,
+        builder: (context, duration, child) {
+          return Container(
+            height: 60,
+            child: Center(
+              child: TextRegular(_durationToString(duration)),
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: color, width: 2),
+              borderRadius: BorderRadius.circular(14),
+              color: Color(0x20000000),
+            ),
+          );
+        },
       ),
     );
   }

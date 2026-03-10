@@ -1,6 +1,7 @@
-import 'package:en_passant/model/app_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../../../../model/app_model.dart';
 import '../../shared/rounded_button.dart';
 
 class RoundedAlertButton extends StatelessWidget {

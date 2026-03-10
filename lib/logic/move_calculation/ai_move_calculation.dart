@@ -1,13 +1,11 @@
-import 'dart:math';
+import 'dart:math' as math;
 
-import 'package:en_passant/logic/move_calculation/move_classes/move_and_value.dart';
-import 'package:en_passant/logic/move_calculation/transposition_table.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
-
+import '../../model/player.dart';
 import '../chess_board.dart';
 import '../shared_functions.dart';
-import 'move_calculation.dart';
 import 'move_classes/move.dart';
+import 'move_classes/move_and_value.dart';
+import 'transposition_table.dart';
 
 const INITIAL_ALPHA = -40000;
 const STALEMATE_ALPHA = -20000;
@@ -58,9 +56,9 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
     if (ttEntry.flag == TT_EXACT) {
       return MoveAndValue(ttEntry.bestMove ?? move, ttEntry.value);
     } else if (ttEntry.flag == TT_BETA) {
-      alpha = max(alpha, ttEntry.value);
+      alpha = math.max(alpha, ttEntry.value);
     } else if (ttEntry.flag == TT_ALPHA) {
-      beta = min(beta, ttEntry.value);
+      beta = math.min(beta, ttEntry.value);
     }
     if (alpha >= beta) {
       return MoveAndValue(ttEntry.bestMove ?? move, ttEntry.value);
@@ -76,13 +74,13 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
   // try passing the turn to see if we can still cause a cutoff
   if (allowNull &&
       depth + NULL_MOVE_REDUCTION + 1 < maxDepth &&
-      !kingInCheck(player, board)) {
+      !board.kingInCheck(player)) {
     // "Pass" the turn by searching from the opponent's perspective
     // without making a move, at reduced depth
-    board.zobristHash ^= zobristSideToMove;
+    board.zobristHash ^= ChessBoard.zobristSideToMoveValue;
     var nullResult = _alphaBeta(board, oppositePlayer(player), move,
         depth + 1 + NULL_MOVE_REDUCTION, maxDepth, alpha, beta, tt, false);
-    board.zobristHash ^= zobristSideToMove;
+    board.zobristHash ^= ChessBoard.zobristSideToMoveValue;
     if (player == Player.player1) {
       if (nullResult.value >= beta) {
         return MoveAndValue(move, beta);
@@ -94,7 +92,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
     }
   }
 
-  var moves = allMoves(player, board, maxDepth);
+  var moves = board.allMoves(player, maxDepth);
 
   // Order the TT best move first if available
   if (ttEntry != null && ttEntry.bestMove != null) {
@@ -112,7 +110,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
 
   for (int i = 0; i < moves.length; i++) {
     var currentMove = moves[i];
-    push(currentMove, board, promotionType: currentMove.promotionType);
+    board.push(currentMove, promotionType: currentMove.promotionType);
 
     MoveAndValue result;
     int remaining = maxDepth - depth - 1;
@@ -124,7 +122,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
         remaining >= LMR_DEPTH_THRESHOLD &&
         !isCapture &&
         !isPromotion &&
-        !kingInCheck(oppositePlayer(player), board)) {
+        !board.kingInCheck(oppositePlayer(player))) {
       // Search at reduced depth first
       result = _alphaBeta(board, oppositePlayer(player), currentMove, depth + 2,
           maxDepth, alpha, beta, tt, true);
@@ -149,13 +147,13 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
       result.move = currentMove;
     }
 
-    pop(board);
+    board.pop();
 
     if (player == Player.player1) {
       if (result.value > bestMove.value) {
         bestMove = result;
       }
-      alpha = max(alpha, bestMove.value);
+      alpha = math.max(alpha, bestMove.value);
       if (alpha >= beta) {
         break;
       }
@@ -163,7 +161,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
       if (result.value < bestMove.value) {
         bestMove = result;
       }
-      beta = min(beta, bestMove.value);
+      beta = math.min(beta, bestMove.value);
       if (beta <= alpha) {
         break;
       }
@@ -171,8 +169,8 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
   }
 
   // Stalemate / no-moves detection
-  if (bestMove.value.abs() == INITIAL_BETA && !kingInCheck(player, board)) {
-    if (piecesForPlayer(player, board).length == 1) {
+  if (bestMove.value.abs() == INITIAL_BETA && !board.kingInCheck(player)) {
+    if (board.piecesForPlayer(player).length == 1) {
       bestMove.value =
           player == Player.player1 ? STALEMATE_BETA : STALEMATE_ALPHA;
     } else {
@@ -200,7 +198,7 @@ MoveAndValue _alphaBeta(ChessBoard board, Player player, Move move, int depth,
 /// to avoid the horizon effect
 int _quiescence(
     ChessBoard board, Player player, int alpha, int beta, int qDepth) {
-  int standPat = boardValue(board);
+  int standPat = board.boardValue;
 
   if (qDepth >= MAX_QUIESCENCE_DEPTH) {
     return standPat;
@@ -210,12 +208,12 @@ int _quiescence(
     if (standPat >= beta) return beta;
     if (standPat > alpha) alpha = standPat;
 
-    var captures = allMoves(player, board, 0, capturesOnly: true);
+    var captures = board.allMoves(player, 0, capturesOnly: true);
     for (var move in captures) {
-      push(move, board, promotionType: move.promotionType);
+      board.push(move, promotionType: move.promotionType);
       int value =
           _quiescence(board, oppositePlayer(player), alpha, beta, qDepth + 1);
-      pop(board);
+      board.pop();
 
       if (value >= beta) return beta;
       if (value > alpha) alpha = value;
@@ -225,12 +223,12 @@ int _quiescence(
     if (standPat <= alpha) return alpha;
     if (standPat < beta) beta = standPat;
 
-    var captures = allMoves(player, board, 0, capturesOnly: true);
+    var captures = board.allMoves(player, 0, capturesOnly: true);
     for (var move in captures) {
-      push(move, board, promotionType: move.promotionType);
+      board.push(move, promotionType: move.promotionType);
       int value =
           _quiescence(board, oppositePlayer(player), alpha, beta, qDepth + 1);
-      pop(board);
+      board.pop();
 
       if (value <= alpha) return alpha;
       if (value < beta) beta = value;
@@ -243,5 +241,5 @@ Move _openingMove(ChessBoard board, Player aiPlayer) {
   List<Move> possibleMoves = board.possibleOpenings
       .map((opening) => opening[board.moveCount])
       .toList();
-  return possibleMoves[Random.secure().nextInt(possibleMoves.length)];
+  return possibleMoves[math.Random.secure().nextInt(possibleMoves.length)];
 }

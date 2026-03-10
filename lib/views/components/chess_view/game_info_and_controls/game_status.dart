@@ -1,17 +1,36 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
-import 'package:en_passant/views/components/shared/text_variable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
+
+import '../../../../model/app_model.dart';
+import '../../../../model/player.dart';
+import '../../shared/text_variable.dart';
+
+/// State tuple for GameStatus — only rebuilds when these fields change.
+typedef _StatusState = ({
+  bool gameOver,
+  int playerCount,
+  bool isAIsTurn,
+  Player turn,
+  bool stalemate,
+  int aiDifficulty,
+});
 
 class GameStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppModel>(
-      builder: (context, appModel, child) => Row(
+    return Selector<AppModel, _StatusState>(
+      selector: (_, m) => (
+        gameOver: m.gameOver,
+        playerCount: m.playerCount,
+        isAIsTurn: m.isAIsTurn,
+        turn: m.turn,
+        stalemate: m.stalemate,
+        aiDifficulty: m.aiDifficulty,
+      ),
+      builder: (context, state, child) => Row(
         children: [
-          TextRegular(_getStatus(appModel)),
-          !appModel.gameOver && appModel.playerCount == 1 && appModel.isAIsTurn
+          TextRegular(_getStatus(state)),
+          !state.gameOver && state.playerCount == 1 && state.isAIsTurn
               ? CupertinoActivityIndicator(radius: 12)
               : Container()
         ],
@@ -20,33 +39,33 @@ class GameStatus extends StatelessWidget {
     );
   }
 
-  String _getStatus(AppModel appModel) {
-    if (!appModel.gameOver) {
-      if (appModel.playerCount == 1) {
-        if (appModel.isAIsTurn) {
-          return 'AI [Level ${appModel.aiDifficulty}] is thinking ';
+  String _getStatus(_StatusState s) {
+    if (!s.gameOver) {
+      if (s.playerCount == 1) {
+        if (s.isAIsTurn) {
+          return 'AI [Level ${s.aiDifficulty}] is thinking ';
         } else {
           return 'Your turn';
         }
       } else {
-        if (appModel.turn == Player.player1) {
+        if (s.turn == Player.player1) {
           return 'White\'s turn';
         } else {
           return 'Black\'s turn';
         }
       }
     } else {
-      if (appModel.stalemate) {
+      if (s.stalemate) {
         return 'Stalemate';
       } else {
-        if (appModel.playerCount == 1) {
-          if (appModel.isAIsTurn) {
+        if (s.playerCount == 1) {
+          if (s.isAIsTurn) {
             return 'You Win!';
           } else {
             return 'You Lose :(';
           }
         } else {
-          if (appModel.turn == Player.player1) {
+          if (s.turn == Player.player1) {
             return 'Black wins!';
           } else {
             return 'White wins!';

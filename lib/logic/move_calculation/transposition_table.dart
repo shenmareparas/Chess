@@ -17,18 +17,25 @@ class TTEntry {
 }
 
 class TranspositionTable {
-  final List<TTEntry> _table = List.generate(TT_SIZE, (_) => TTEntry());
+  final List<TTEntry?> _table = List.filled(TT_SIZE, null);
 
   TTEntry? probe(int hash) {
     var entry = _table[hash & TT_MASK];
-    if (entry.key == hash) {
+    if (entry != null && entry.key == hash) {
       return entry;
     }
     return null;
   }
 
   void store(int hash, int depth, int value, int flag, Move? bestMove) {
-    var entry = _table[hash & TT_MASK];
+    var index = hash & TT_MASK;
+    var entry = _table[index];
+    
+    if (entry == null) {
+      entry = TTEntry();
+      _table[index] = entry;
+    }
+    
     // Always replace if new entry is deeper or same position
     if (entry.key != hash || depth >= entry.depth) {
       entry.key = hash;
@@ -40,12 +47,6 @@ class TranspositionTable {
   }
 
   void clear() {
-    for (var entry in _table) {
-      entry.key = 0;
-      entry.depth = 0;
-      entry.value = 0;
-      entry.flag = 0;
-      entry.bestMove = null;
-    }
+    _table.fillRange(0, TT_SIZE, null);
   }
 }

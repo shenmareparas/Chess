@@ -1,26 +1,24 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../logic/chess_game.dart';
+import '../../../model/app_model.dart';
+
 class ChessBoardWidget extends StatelessWidget {
   final AppModel appModel;
+  final ChessGame chessGame;
 
-  ChessBoardWidget(this.appModel);
+  ChessBoardWidget(this.appModel, this.chessGame);
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         AnimatedRotation(
-          turns: appModel.enableRotation &&
-                  ((appModel.playingWithAI &&
-                          appModel.playerSide == Player.player2) ||
-                      (!appModel.playingWithAI &&
-                          appModel.turn == Player.player2))
-              ? 0.5
-              : 0,
-          duration: Duration(milliseconds: 600),
+          turns: appModel.isBoardInverted ? 0.5 : 0,
+          duration: appModel.animateBoardRotation
+              ? Duration(milliseconds: 600)
+              : Duration.zero,
           curve: Curves.easeInOut,
           child: Container(
             decoration: appModel.theme.name != 'Video Chess'
@@ -45,7 +43,7 @@ class ChessBoardWidget extends StatelessWidget {
               child: Container(
                 width: MediaQuery.of(context).size.width - 68,
                 height: MediaQuery.of(context).size.width - 68,
-                child: GameWidget(game: appModel.game!),
+                child: GameWidget(game: chessGame),
               ),
             ),
           ),
@@ -56,11 +54,7 @@ class ChessBoardWidget extends StatelessWidget {
             height: MediaQuery.of(context).size.width - 68,
             child: _NotationOverlay(
               appModel.theme.notation,
-              isRotated: appModel.enableRotation &&
-                  ((appModel.playingWithAI &&
-                          appModel.playerSide == Player.player2) ||
-                      (!appModel.playingWithAI &&
-                          appModel.turn == Player.player2)),
+              isRotated: appModel.isBoardInverted,
             ),
           ),
       ],

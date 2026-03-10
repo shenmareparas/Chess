@@ -1,4 +1,4 @@
-import 'package:en_passant/logic/chess_piece.dart';
+import '../../chess_piece.dart';
 
 class Move {
   int from;
@@ -8,8 +8,9 @@ class Move {
   Move(this.from, this.to, {this.promotionType = ChessPieceType.promotion});
 
   @override
-  bool operator ==(move) =>
-      this.from == (move as Move).from && this.to == move.to;
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Move && from == other.from && to == other.to;
   @override
-  int get hashCode => super.hashCode;
+  int get hashCode => from * 64 + to;
 }

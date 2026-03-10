@@ -1,15 +1,27 @@
-import 'package:en_passant/model/app_model.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../model/app_model.dart';
 import 'game_info_and_controls/moves_undo_redo_row.dart';
 import 'game_info_and_controls/restart_exit_buttons.dart';
 import 'game_info_and_controls/timers.dart';
 
-class GameInfoAndControls extends StatelessWidget {
+class GameInfoAndControls extends StatefulWidget {
   final AppModel appModel;
-  final ScrollController scrollController = ScrollController();
 
   GameInfoAndControls(this.appModel);
+
+  @override
+  _GameInfoAndControlsState createState() => _GameInfoAndControlsState();
+}
+
+class _GameInfoAndControlsState extends State<GameInfoAndControls> {
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +36,17 @@ class GameInfoAndControls extends StatelessWidget {
         shrinkWrap: true,
         padding: EdgeInsets.zero,
         children: [
-          Timers(appModel),
-          MovesUndoRedoRow(appModel),
-          RestartExitButtons(appModel),
+          Timers(widget.appModel),
+          MovesUndoRedoRow(widget.appModel),
+          RestartExitButtons(widget.appModel),
         ],
       ),
     );
   }
 
   void _scrollToBottom() {
-    scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    if (scrollController.hasClients) {
+      scrollController.jumpTo(scrollController.position.maxScrollExtent);
+    }
   }
 }

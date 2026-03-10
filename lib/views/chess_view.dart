@@ -1,15 +1,17 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/chess_board_widget.dart';
-import 'package:en_passant/views/components/chess_view/game_info_and_controls.dart';
-import 'package:en_passant/views/components/chess_view/promotion_dialog.dart';
-import 'package:en_passant/views/components/shared/rounded_button.dart';
+import 'package:confetti/confetti.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:confetti/confetti.dart';
 
+import '../logic/chess_game.dart';
+import '../model/app_model.dart';
+import '../model/app_themes.dart';
+import 'components/chess_view/chess_board_widget.dart';
+import 'components/chess_view/game_info_and_controls.dart';
 import 'components/chess_view/game_info_and_controls/game_status.dart';
+import 'components/chess_view/promotion_dialog.dart';
 import 'components/shared/bottom_padding.dart';
+import 'components/shared/rounded_button.dart';
 
 class ChessView extends StatefulWidget {
   final AppModel appModel;
@@ -23,6 +25,7 @@ class ChessView extends StatefulWidget {
 
 class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
+  ChessGame? chessGame;
   late ConfettiController _confettiController;
 
   _ChessViewState(this.appModel);
@@ -39,11 +42,24 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     // blocking the navigation animation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isResuming) {
-        appModel.restoreGameState(context);
+        appModel.restoreGameState().then((_) => _initFlameGame());
       } else {
-        appModel.newGame(context);
+        appModel.newGame(notify: false);
+        _initFlameGame();
       }
     });
+  }
+
+  void _initFlameGame() {
+    if (appModel.gameController != null) {
+      setState(() {
+        chessGame = ChessGame(appModel.gameController!, appModel);
+      });
+      // Defer notifying listeners if needed to let the flame engine setup
+      Future.delayed(Duration(milliseconds: 50), () {
+         if (mounted) appModel.update();
+      });
+    }
   }
 
   @override
@@ -59,6 +75,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         state == AppLifecycleState.inactive) {
       if (!appModel.gameOver) {
         appModel.saveGameState();
+        appModel.timerService.pause();
+      }
+    } else if (state == AppLifecycleState.resumed) {
+      if (!appModel.gameOver) {
+        appModel.timerService.resume();
       }
     }
   }
@@ -67,10 +88,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Consumer<AppModel>(
       builder: (context, appModel, child) {
+        final theme = appModel.theme;
         // Show themed background while game initializes
-        if (appModel.game == null) {
+        if (appModel.gameController == null || chessGame == null) {
           return Container(
-            decoration: BoxDecoration(gradient: appModel.theme.background),
+            decoration: BoxDecoration(gradient: theme.background),
           );
         }
 
@@ -100,12 +122,12 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           child: Stack(
             children: [
               Container(
-                decoration: BoxDecoration(gradient: appModel.theme.background),
+                decoration: BoxDecoration(gradient: theme.background),
                 padding: EdgeInsets.all(30),
                 child: Column(
                   children: [
                     Spacer(),
-                    ChessBoardWidget(appModel),
+                    ChessBoardWidget(appModel, chessGame!),
                     SizedBox(height: 30),
                     GameStatus(),
                     Spacer(),
@@ -121,10 +143,10 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                   blastDirectionality: BlastDirectionality.explosive,
                   shouldLoop: false,
                   colors: [
-                    appModel.theme.lightTile,
-                    appModel.theme.darkTile,
-                    appModel.theme.moveHint,
-                    appModel.theme.latestMove,
+                    theme.lightTile,
+                    theme.darkTile,
+                    theme.moveHint,
+                    theme.latestMove,
                   ],
                 ),
               ),
@@ -153,15 +175,16 @@ void showExitDialog(BuildContext context) {
     barrierLabel: '',
     transitionDuration: Duration(milliseconds: 250),
     pageBuilder: (dialogContext, anim1, anim2) {
-      return Consumer<AppModel>(
-        builder: (dialogContext, appModel, child) => Center(
+      return Selector<AppModel, AppTheme>(
+        selector: (_, m) => m.theme,
+        builder: (dialogContext, theme, child) => Center(
           child: Material(
             color: Colors.transparent,
             child: Container(
               constraints: BoxConstraints(maxWidth: 340),
               padding: EdgeInsets.all(30),
               decoration: BoxDecoration(
-                gradient: appModel.theme.background,
+                gradient: theme.background,
                 borderRadius: BorderRadius.circular(25),
                 border: Border.all(
                     color: Colors.white.withValues(alpha: 0.15), width: 1.5),
@@ -196,23 +219,27 @@ void showExitDialog(BuildContext context) {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 35),
-                  RoundedButton(
-                    'Save & Exit',
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      appModel.saveAndExitChessView();
-                      Navigator.of(context).pop();
-                    },
+                  SizedBox(height: 15),
+                  Consumer<AppModel>(
+                    builder: (context, appModel, child) => RoundedButton(
+                      'Save & Exit',
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        appModel.saveAndExitChessView();
+                        Navigator.of(context).pop();
+                      },
+                    ),
                   ),
                   SizedBox(height: 15),
-                  RoundedButton(
-                    'Exit',
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      appModel.exitChessView();
-                      Navigator.of(context).pop();
-                    },
+                  Consumer<AppModel>(
+                    builder: (context, appModel, child) => RoundedButton(
+                      'Exit',
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        appModel.exitChessView();
+                        Navigator.of(context).pop();
+                      },
+                    ),
                   ),
                   SizedBox(height: 15),
                   RoundedButton(

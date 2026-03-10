@@ -1,56 +1,51 @@
-import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 
-import 'package:en_passant/logic/chess_board.dart';
-import 'package:en_passant/logic/chess_game.dart';
-import 'package:en_passant/logic/game_state_storage.dart';
-import 'package:en_passant/logic/move_calculation/move_calculation.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move_meta.dart';
-import 'package:en_passant/logic/shared_functions.dart';
-import 'package:en_passant/views/components/main_menu_view/game_options/side_picker.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../logic/audio_service.dart';
+import '../logic/game_controller.dart';
+import '../logic/game_state_storage.dart';
+import '../logic/move_calculation/move_classes/move_meta.dart';
+import '../logic/shared_functions.dart';
+import '../logic/timer_service.dart';
 import 'app_themes.dart';
-
-const TIMER_ACCURACY_MS = 100;
-const PIECE_THEMES = [
-  'Classic',
-  'Angular',
-  '8-Bit',
-  'Letters',
-  'Video Chess',
-  'Lewis Chessmen',
-  'Mexico City'
-];
-
-final List<String> _sortedPieceThemes = () {
-  var list = List<String>.from(PIECE_THEMES);
-  list.sort();
-  return list;
-}();
+import 'player.dart';
+import 'user_preferences.dart';
 
 class AppModel extends ChangeNotifier {
+  // ── Game Settings ──
   int playerCount = 1;
   int aiDifficulty = 3;
   Player selectedSide = Player.player1;
   Player playerSide = Player.player1;
-  int timeLimit = 0;
-  String pieceTheme = 'Classic';
-  String themeName = 'Jargon Jade';
-  bool showMoveHistory = true;
-  bool allowUndoRedo = true;
-  bool soundEnabled = true;
-  bool showHints = true;
-  bool showNotation = false;
-  bool enableRotation = true;
 
-  // Cached SharedPreferences instance
-  SharedPreferences? _prefs;
+  // ── Services ──
+  final UserPreferences prefs = UserPreferences();
+  final AudioService audio = AudioService();
+  final TimerService timerService = TimerService();
 
-  ChessGame? game;
-  Timer? timer;
+  // ── Delegated Accessors (backward compatibility) ──
+  int get timeLimit => timerService.timeLimit;
+  String get pieceTheme => prefs.pieceTheme;
+  String get themeName => prefs.themeName;
+  bool get showMoveHistory => prefs.showMoveHistory;
+  bool get allowUndoRedo => prefs.allowUndoRedo;
+  bool get soundEnabled => prefs.soundEnabled;
+  bool get showHints => prefs.showHints;
+  bool get showNotation => prefs.showNotation;
+  bool get enableRotation => prefs.enableRotation;
+  AppTheme get theme => prefs.theme;
+  int get themeIndex => prefs.themeIndex;
+  int get pieceThemeIndex => prefs.pieceThemeIndex;
+  List<String> get pieceThemes => prefs.pieceThemes;
+
+  ValueNotifier<Duration> get player1TimeLeft => timerService.player1TimeLeft;
+  set player1TimeLeft(ValueNotifier<Duration> val) => timerService.player1TimeLeft.value = val.value;
+  ValueNotifier<Duration> get player2TimeLeft => timerService.player2TimeLeft;
+  set player2TimeLeft(ValueNotifier<Duration> val) => timerService.player2TimeLeft.value = val.value;
+
+  // ── Game State ──
+  GameController? gameController;
   bool gameOver = false;
   bool stalemate = false;
   bool promotionRequested = false;
@@ -58,153 +53,142 @@ class AppModel extends ChangeNotifier {
   bool userWon = false;
   Player turn = Player.player1;
   List<MoveMeta> moveMetaList = [];
-  Duration player1TimeLeft = Duration.zero;
-  Duration player2TimeLeft = Duration.zero;
 
-  List<String> get pieceThemes => _sortedPieceThemes;
+  // ── Computed Properties ──
+  Player get aiTurn => oppositePlayer(playerSide);
+  bool get isAIsTurn => playingWithAI && (turn == aiTurn);
+  bool get playingWithAI => playerCount == 1;
 
-  AppTheme get theme {
-    return themeList[themeIndex];
-  }
+  // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
+  bool animateBoardRotation = false;
 
-  int get themeIndex {
-    var idx = themeList.indexWhere((theme) => theme.name == themeName);
-    return idx >= 0 ? idx : 0;
-  }
-
-  int get pieceThemeIndex {
-    var idx = pieceThemes.indexWhere((theme) => theme == pieceTheme);
-    return idx >= 0 ? idx : 0;
-  }
-
-  Player get aiTurn {
-    return oppositePlayer(playerSide);
-  }
-
-  bool get isAIsTurn {
-    return playingWithAI && (turn == aiTurn);
-  }
-
-  bool get playingWithAI {
-    return playerCount == 1;
+  bool get isBoardInverted {
+    if (playingWithAI) {
+      return playerSide == Player.player2;
+    } else {
+      return enableRotation && turn == Player.player2;
+    }
   }
 
   AppModel() {
-    loadSharedPrefs();
+    // Wire up service callbacks
+    prefs.onChanged = () => notifyListeners();
+    timerService.onExpired = () => endGame();
+    audio.enabled = prefs.soundEnabled;
+
+    prefs.load();
   }
 
-  void newGame(BuildContext context, {bool notify = true}) {
-    game?.cancelAIMove();
-    timer?.cancel();
+  // ── Game Lifecycle ──
+
+  void newGame({bool notify = true}) {
+    gameController?.cancelAIMove();
+    timerService.stop();
     GameStateStorage.clearGameState();
     gameOver = false;
     stalemate = false;
     userWon = false;
     turn = Player.player1;
     moveMetaList = [];
-    player1TimeLeft = Duration(minutes: timeLimit);
-    player2TimeLeft = Duration(minutes: timeLimit);
+    timerService.configure(timeLimit);
+    audio.enabled = prefs.soundEnabled;
     if (selectedSide == Player.random) {
       playerSide =
-          Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
+          math.Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
+    } else {
+      playerSide = selectedSide;
     }
-    game = ChessGame(this, context);
-    _startTimer();
+    
+    // In a 2-player game, rotation is always relative to player1 being at the bottom.
+    if (!playingWithAI) {
+      playerSide = Player.player1;
+    }
+    gameController = GameController(this);
+    timerService.start(() => turn, () => gameOver);
+    
+    // Disable animation on load, then enable it after the board is rendered.
+    animateBoardRotation = false;
+    Future.delayed(Duration(milliseconds: 50), () {
+      animateBoardRotation = true;
+      notifyListeners();
+    });
+
     if (notify) {
       notifyListeners();
     }
   }
 
-  void _startTimer() {
-    if (timeLimit == 0) return;
-    timer = Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (timer) {
-      turn == Player.player1
-          ? decrementPlayer1Timer()
-          : decrementPlayer2Timer();
-      if (player1TimeLeft == Duration.zero ||
-          player2TimeLeft == Duration.zero) {
-        endGame();
-      }
-    });
-  }
-
   void exitChessView() {
-    game?.cancelAIMove();
-    timer?.cancel();
+    gameController?.cancelAIMove();
+    timerService.stop();
     GameStateStorage.clearGameState();
     notifyListeners();
   }
 
   void saveAndExitChessView() {
     saveGameState();
-    game?.cancelAIMove();
-    timer?.cancel();
+    gameController?.cancelAIMove();
+    timerService.stop();
     notifyListeners();
   }
 
-  void pushMoveMeta(MoveMeta meta) {
+  // ── Move State Management ──
+
+  void pushMoveMeta(MoveMeta meta, {bool silent = false}) {
     moveMetaList.add(meta);
     moveListUpdated = true;
-    notifyListeners();
+    if (!silent) notifyListeners();
     saveGameState();
   }
 
-  void popMoveMeta() {
+  void popMoveMeta({bool silent = false}) {
     moveMetaList.removeLast();
     moveListUpdated = true;
-    notifyListeners();
+    if (!silent) notifyListeners();
     saveGameState();
   }
 
-  void endGame() {
+  void endGame({bool silent = false}) {
     if (gameOver) return;
     gameOver = true;
 
-    if (soundEnabled) {
-      if (stalemate) {
-        FlameAudio.play('tie.wav');
-      } else {
-        Player winner;
-        if (player1TimeLeft == Duration.zero) {
-          winner = Player.player2;
-        } else if (player2TimeLeft == Duration.zero) {
-          winner = Player.player1;
-        } else {
-          winner = turn;
-        }
+    userWon = audio.didUserWin(
+      playingWithAI: playingWithAI,
+      playerSide: playerSide,
+      turn: turn,
+      player1TimeLeft: player1TimeLeft.value,
+      player2TimeLeft: player2TimeLeft.value,
+    );
 
-        if (playingWithAI) {
-          if (winner == playerSide) {
-            userWon = true;
-            FlameAudio.play('win.wav');
-          } else {
-            FlameAudio.play('lose.wav');
-          }
-        } else {
-          userWon = true;
-          FlameAudio.play('win.wav');
-        }
-      }
-    }
+    audio.playGameEndSound(
+      stalemate: stalemate,
+      playingWithAI: playingWithAI,
+      playerSide: playerSide,
+      turn: turn,
+      player1TimeLeft: player1TimeLeft.value,
+      player2TimeLeft: player2TimeLeft.value,
+    );
 
     GameStateStorage.clearGameState();
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
-  void undoEndGame() {
+  void undoEndGame({bool silent = false}) {
     gameOver = false;
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
-  void changeTurn() {
+  void changeTurn({bool silent = false}) {
     turn = oppositePlayer(turn);
-    notifyListeners();
+    if (!silent) notifyListeners();
   }
 
   void requestPromotion() {
     promotionRequested = true;
     notifyListeners();
   }
+
+  // ── Game Options ──
 
   void setPlayerCount(int? count) {
     if (count != null) {
@@ -232,97 +216,32 @@ class AppModel extends ChangeNotifier {
 
   void setTimeLimit(int? duration) {
     if (duration != null) {
-      timeLimit = duration;
-      player1TimeLeft = Duration(minutes: timeLimit);
-      player2TimeLeft = Duration(minutes: timeLimit);
+      timerService.configure(duration);
       notifyListeners();
     }
   }
 
-  void decrementPlayer1Timer() {
-    if (player1TimeLeft.inMilliseconds > 0 && !gameOver) {
-      player1TimeLeft = Duration(
-          milliseconds: player1TimeLeft.inMilliseconds - TIMER_ACCURACY_MS);
-      if (timeLimit != 0) notifyListeners();
-    }
-  }
+  // ── Preference Delegation ──
 
-  void decrementPlayer2Timer() {
-    if (player2TimeLeft.inMilliseconds > 0 && !gameOver) {
-      player2TimeLeft = Duration(
-          milliseconds: player2TimeLeft.inMilliseconds - TIMER_ACCURACY_MS);
-      if (timeLimit != 0) notifyListeners();
-    }
+  void setTheme(int index) => prefs.setTheme(index);
+  void setPieceTheme(int index) => prefs.setPieceTheme(index);
+  void setShowMoveHistory(bool show) => prefs.setShowMoveHistory(show);
+  void setSoundEnabled(bool enabled) {
+    prefs.setSoundEnabled(enabled);
+    audio.enabled = enabled;
   }
+  void setShowHints(bool show) => prefs.setShowHints(show);
+  void setShowNotation(bool show) => prefs.setShowNotation(show);
+  void setEnableRotation(bool enable) => prefs.setEnableRotation(enable);
+  void setAllowUndoRedo(bool allow) => prefs.setAllowUndoRedo(allow);
 
-  void setTheme(int index) async {
-    themeName = themeList[index].name ?? "";
-    _prefs ??= await SharedPreferences.getInstance();
-    _prefs!.setString('themeName', themeName);
+  Future<void> resetSettingsToDefaults() async {
+    await prefs.resetToDefaults();
+    audio.enabled = prefs.soundEnabled;
     notifyListeners();
   }
 
-  void setPieceTheme(int index) async {
-    pieceTheme = pieceThemes[index];
-    _prefs ??= await SharedPreferences.getInstance();
-    _prefs!.setString('pieceTheme', pieceTheme);
-    notifyListeners();
-  }
-
-  void setShowMoveHistory(bool show) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    showMoveHistory = show;
-    _prefs!.setBool('showMoveHistory', show);
-    notifyListeners();
-  }
-
-  void setSoundEnabled(bool enabled) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    soundEnabled = enabled;
-    _prefs!.setBool('soundEnabled', enabled);
-    notifyListeners();
-  }
-
-  void setShowHints(bool show) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    showHints = show;
-    _prefs!.setBool('showHints', show);
-    notifyListeners();
-  }
-
-  void setShowNotation(bool show) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    showNotation = show;
-    _prefs!.setBool('showNotation', show);
-    notifyListeners();
-  }
-
-  void setEnableRotation(bool enableRotation) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    this.enableRotation = enableRotation;
-    _prefs!.setBool('enableRotation', enableRotation);
-    notifyListeners();
-  }
-
-  void setAllowUndoRedo(bool allow) async {
-    _prefs ??= await SharedPreferences.getInstance();
-    this.allowUndoRedo = allow;
-    _prefs!.setBool('allowUndoRedo', allow);
-    notifyListeners();
-  }
-
-  void loadSharedPrefs() async {
-    _prefs = await SharedPreferences.getInstance();
-    themeName = _prefs!.getString('themeName') ?? 'Jargon Jade';
-    pieceTheme = _prefs!.getString('pieceTheme') ?? 'Classic';
-    showMoveHistory = _prefs!.getBool('showMoveHistory') ?? true;
-    soundEnabled = _prefs!.getBool('soundEnabled') ?? true;
-    showHints = _prefs!.getBool('showHints') ?? true;
-    showNotation = _prefs!.getBool('showNotation') ?? false;
-    enableRotation = _prefs!.getBool('enableRotation') ?? true;
-    allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
-    notifyListeners();
-  }
+  // ── Utilities ──
 
   void update() {
     notifyListeners();
@@ -332,37 +251,37 @@ class AppModel extends ChangeNotifier {
     GameStateStorage.saveGameState(this);
   }
 
-  Future<void> restoreGameState(BuildContext context) async {
+  Future<void> restoreGameState() async {
     final state = await GameStateStorage.loadGameState();
     if (state == null) return;
 
-    game?.cancelAIMove();
-    timer?.cancel();
+    gameController?.cancelAIMove();
+    timerService.stop();
 
     playerCount = state['playerCount'] as int;
     aiDifficulty = state['aiDifficulty'] as int;
     playerSide = Player.values[state['playerSide'] as int];
     selectedSide = Player.values[state['selectedSide'] as int];
-    timeLimit = state['timeLimit'] as int;
+    timerService.configure(state['timeLimit'] as int);
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
     turn = Player.player1;
     moveMetaList = [];
 
     // Create a fresh game and replay all moves
-    game = ChessGame(this, context);
+    gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
-      var meta = push(move, game!.board,
+      var meta = gameController!.board.push(move,
           getMeta: true, promotionType: move.promotionType);
       moveMetaList.add(meta);
       turn = oppositePlayer(turn);
     }
-    game!.snapSprites();
+    gameController!.snapSprites();
 
     // Restore timer durations
-    player1TimeLeft = Duration(milliseconds: state['player1TimeLeftMs'] as int);
-    player2TimeLeft = Duration(milliseconds: state['player2TimeLeftMs'] as int);
+    player1TimeLeft.value = Duration(milliseconds: state['player1TimeLeftMs'] as int);
+    player2TimeLeft.value = Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
@@ -370,20 +289,28 @@ class AppModel extends ChangeNotifier {
 
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
-      game!.latestMove = moveMetaList.last.move;
+      gameController!.latestMove = moveMetaList.last.move;
       var oppositeTurn = oppositePlayer(turn);
-      if (kingInCheck(oppositeTurn, game!.board)) {
-        game!.checkHintTile = kingForPlayer(oppositeTurn, game!.board)?.tile;
+      if (gameController!.board.kingInCheck(oppositeTurn)) {
+        gameController!.checkHintTile = gameController!.board.kingForPlayer(oppositeTurn)?.tile;
       }
     }
 
-    _startTimer();
+    timerService.start(() => turn, () => gameOver);
+
+
 
     notifyListeners();
 
     // Trigger AI move if it's AI's turn
     if (isAIsTurn && !gameOver) {
-      game!.triggerAIMove();
+      gameController!.triggerAIMove();
     }
+
+    animateBoardRotation = false;
+    Future.delayed(Duration(milliseconds: 50), () {
+      animateBoardRotation = true;
+      notifyListeners();
+    });
   }
 }

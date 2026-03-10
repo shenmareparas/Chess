@@ -14,14 +14,14 @@ A feature-rich chess application built with **Flutter** and **Flame** engine, of
 
 ### 🎮 Game Modes
 
--   **Single Player**: Play against an intelligent AI opponent with 6 difficulty levels
+-   **Single Player**: Play against an intelligent AI opponent with 5 difficulty levels
 -   **Two Player Mode**: Offline multiplayer on the same device
 -   **Side Selection**: Choose to play as white, black, or random
 -   **Timed Games**: Optional time controls for competitive play
 
 ### 🎨 Customization
 
--   **7 Beautiful Themes**: Including Grey, Dark, Amoled, Lewis, Cherry Funk, Sage, Warm Tan, and Jargon Jade
+-   **8 Beautiful Themes**: Including Grey, Dark, Amoled, Lewis, Cherry Funk, Sage, Warm Tan, and Jargon Jade
 -   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, and Mexico City
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Jura font for elegant typography
@@ -40,10 +40,12 @@ A feature-rich chess application built with **Flutter** and **Flame** engine, of
 
 ### 🤖 AI Features
 
--   **6 Difficulty Levels**: From beginner to expert (depth 1-6)
+-   **5 Difficulty Levels**: From beginner to expert (depth 1-5)
 -   **Minimax Algorithm**: With alpha-beta pruning optimization
--   **Strategic Evaluation**: Intelligent position analysis
--   **Responsive Thinking**: Adjustable AI processing time based on difficulty
+-   **Iterative Deepening**: Ensures best move ordering
+-   **Quiescence Search**: Avoids horizon effect for captures
+-   **Null Move Pruning & LMR**: Advanced search optimizations
+-   **Opening Book**: Pre-calculated moves for distinct openings
 
 ## 📸 Screenshots
 
@@ -105,13 +107,18 @@ lib/
 ├── main.dart                 # App entry point
 ├── model/
 │   ├── app_model.dart       # Main app state management
-│   └── app_themes.dart      # Theme definitions
+│   ├── app_themes.dart      # Theme definitions
+│   ├── user_preferences.dart # SharedPreferences wrapper
+│   └── player.dart          # Player enumerations
 ├── logic/
 │   ├── chess_board.dart     # Board logic
 │   ├── chess_game.dart      # Game controller
 │   ├── chess_piece.dart     # Piece models
 │   ├── chess_piece_sprite.dart  # Piece rendering
 │   ├── shared_functions.dart    # Utility functions
+│   ├── game_state_storage.dart  # History & undo/redo
+│   ├── timer_service.dart   # Game clocks
+│   ├── audio_service.dart   # Sound manager
 │   └── move_calculation/    # Move validation and AI logic
 └── views/
     ├── main_menu_view.dart  # Main menu screen
@@ -128,13 +135,13 @@ The chess AI uses the **Minimax algorithm with alpha-beta pruning** to determine
 
 1. **Minimax Algorithm**: Evaluates the game tree by simulating moves and counter-moves
 2. **Alpha-Beta Pruning**: Optimizes search by eliminating branches that won't affect the final decision
-3. **Depth-Based Difficulty**:
+3. **Advanced Optimizations**: Utilizes Quiescence Search, Null Move Pruning, and Late Move Reductions (LMR)
+4. **Depth-Based Difficulty**:
     - Level 1: Depth 1 (1 half-move lookahead)
     - Level 2: Depth 2 (1 full move)
     - Level 3: Depth 3 (1.5 full moves)
     - Level 4: Depth 4 (2 full moves)
     - Level 5: Depth 5 (2.5 full moves)
-    - Level 6: Depth 6 (3 full moves)
 
 ### Position Evaluation
 
@@ -158,13 +165,14 @@ The app stores user preferences locally using SharedPreferences:
 -   Sound settings
 -   Hint display settings
 -   Board Rotation preference
+-   Board Notation visibility
 -   Undo/Redo availability
 
 ## 🎯 Usage
 
 1. **Start a New Game**: From the main menu, configure your game settings
 2. **Select Mode**: Choose between 1-player (vs AI) or 2-player mode
-3. **Choose Difficulty**: For AI games, select from 6 difficulty levels
+3. **Choose Difficulty**: For AI games, select from 5 difficulty levels
 4. **Customize**: Pick your preferred theme and piece style
 5. **Play**: Tap pieces to select them, then tap valid squares to move
 
@@ -180,7 +188,7 @@ Contributions are welcome! Here's how you can help:
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## 👨‍💻 Author
 

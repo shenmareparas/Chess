@@ -1,6 +1,6 @@
-import 'package:en_passant/model/app_model.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../model/app_model.dart';
 import 'game_options/ai_difficulty_picker.dart';
 import 'game_options/game_mode_picker.dart';
 import 'game_options/side_picker.dart';

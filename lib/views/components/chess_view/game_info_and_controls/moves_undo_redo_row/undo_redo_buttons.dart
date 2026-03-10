@@ -1,26 +1,23 @@
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/views/components/chess_view/game_info_and_controls/moves_undo_redo_row/rounded_icon_button.dart';
 import 'package:flutter/cupertino.dart';
+
+import '../../../../../model/app_model.dart';
+import 'rounded_icon_button.dart';
 
 class UndoRedoButtons extends StatelessWidget {
   final AppModel appModel;
 
   bool get undoEnabled {
-    if (appModel.playingWithAI) {
-      return (appModel.game?.board.moveStack.length ?? 0) > 1 &&
-          !appModel.isAIsTurn;
-    } else {
-      return appModel.game?.board.moveStack.isNotEmpty ?? false;
-    }
+    return appModel.gameController != null &&
+        appModel.gameController!.board.moveStack.isNotEmpty &&
+        (!appModel.playingWithAI ||
+            appModel.gameController!.board.moveStack.length > 1);
   }
 
   bool get redoEnabled {
-    if (appModel.playingWithAI) {
-      return (appModel.game?.board.redoStack.length ?? 0) > 1 &&
-          !appModel.isAIsTurn;
-    } else {
-      return appModel.game?.board.redoStack.isNotEmpty ?? false;
-    }
+    return appModel.gameController != null &&
+        appModel.gameController!.board.redoStack.isNotEmpty &&
+        (!appModel.playingWithAI ||
+            appModel.gameController!.board.redoStack.length > 1);
   }
 
   UndoRedoButtons(this.appModel);
@@ -47,18 +44,22 @@ class UndoRedoButtons extends StatelessWidget {
   }
 
   void undo() {
-    if (appModel.playingWithAI) {
-      appModel.game?.undoTwoMoves();
-    } else {
-      appModel.game?.undoMove();
+    if (appModel.gameController != null) {
+      if (appModel.playingWithAI) {
+        appModel.gameController!.undoTwoMoves();
+      } else {
+        appModel.gameController!.undoMove();
+      }
     }
   }
 
   void redo() {
-    if (appModel.playingWithAI) {
-      appModel.game?.redoTwoMoves();
-    } else {
-      appModel.game?.redoMove();
+    if (appModel.gameController != null) {
+      if (appModel.playingWithAI) {
+        appModel.gameController!.redoTwoMoves();
+      } else {
+        appModel.gameController!.redoMove();
+      }
     }
   }
 }
