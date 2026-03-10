@@ -27,11 +27,7 @@ class GameController {
   /// Called when the view needs to refresh sprites (e.g. after game restore).
   VoidCallback? onSnapSprites;
 
-  GameController(this.appModel) {
-    if (appModel.isAIsTurn) {
-      _aiMove();
-    }
-  }
+  GameController(this.appModel) {}
 
   // ── Piece Selection ──
 

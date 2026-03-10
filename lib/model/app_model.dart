@@ -105,6 +105,11 @@ class AppModel extends ChangeNotifier {
     }
     gameController = GameController(this);
     timerService.start(() => turn, () => gameOver);
+
+    // Trigger AI move if it's AI's turn natively for standard games
+    if (isAIsTurn && !gameOver) {
+      gameController!.triggerAIMove();
+    }
     
     // Disable animation on load, then enable it after the board is rendered.
     animateBoardRotation = false;
