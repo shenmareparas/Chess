@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../logic/audio_service.dart';
-import '../logic/chess_game.dart';
+import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/shared_functions.dart';
@@ -45,7 +45,7 @@ class AppModel extends ChangeNotifier {
   set player2TimeLeft(ValueNotifier<Duration> val) => timerService.player2TimeLeft.value = val.value;
 
   // ── Game State ──
-  ChessGame? game;
+  GameController? gameController;
   bool gameOver = false;
   bool stalemate = false;
   bool promotionRequested = false;
@@ -82,7 +82,7 @@ class AppModel extends ChangeNotifier {
   // ── Game Lifecycle ──
 
   void newGame({bool notify = true}) {
-    game?.cancelAIMove();
+    gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
     gameOver = false;
@@ -103,7 +103,7 @@ class AppModel extends ChangeNotifier {
     if (!playingWithAI) {
       playerSide = Player.player1;
     }
-    game = ChessGame(this);
+    gameController = GameController(this);
     timerService.start(() => turn, () => gameOver);
     
     // Disable animation on load, then enable it after the board is rendered.
@@ -119,7 +119,7 @@ class AppModel extends ChangeNotifier {
   }
 
   void exitChessView() {
-    game?.cancelAIMove();
+    gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
     notifyListeners();
@@ -127,7 +127,7 @@ class AppModel extends ChangeNotifier {
 
   void saveAndExitChessView() {
     saveGameState();
-    game?.cancelAIMove();
+    gameController?.cancelAIMove();
     timerService.stop();
     notifyListeners();
   }
@@ -255,7 +255,7 @@ class AppModel extends ChangeNotifier {
     final state = await GameStateStorage.loadGameState();
     if (state == null) return;
 
-    game?.cancelAIMove();
+    gameController?.cancelAIMove();
     timerService.stop();
 
     playerCount = state['playerCount'] as int;
@@ -269,15 +269,15 @@ class AppModel extends ChangeNotifier {
     moveMetaList = [];
 
     // Create a fresh game and replay all moves
-    game = ChessGame(this);
+    gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
-      var meta = game!.board.push(move,
+      var meta = gameController!.board.push(move,
           getMeta: true, promotionType: move.promotionType);
       moveMetaList.add(meta);
       turn = oppositePlayer(turn);
     }
-    game!.snapSprites();
+    gameController!.snapSprites();
 
     // Restore timer durations
     player1TimeLeft.value = Duration(milliseconds: state['player1TimeLeftMs'] as int);
@@ -289,22 +289,22 @@ class AppModel extends ChangeNotifier {
 
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
-      game!.latestMove = moveMetaList.last.move;
+      gameController!.latestMove = moveMetaList.last.move;
       var oppositeTurn = oppositePlayer(turn);
-      if (game!.board.kingInCheck(oppositeTurn)) {
-        game!.checkHintTile = game!.board.kingForPlayer(oppositeTurn)?.tile;
+      if (gameController!.board.kingInCheck(oppositeTurn)) {
+        gameController!.checkHintTile = gameController!.board.kingForPlayer(oppositeTurn)?.tile;
       }
     }
 
     timerService.start(() => turn, () => gameOver);
 
-    game?.forceSnapRotation();
+
 
     notifyListeners();
 
     // Trigger AI move if it's AI's turn
     if (isAIsTurn && !gameOver) {
-      game!.triggerAIMove();
+      gameController!.triggerAIMove();
     }
 
     animateBoardRotation = false;

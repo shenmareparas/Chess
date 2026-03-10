@@ -2,7 +2,7 @@ import 'package:async/async.dart';
 import 'package:flutter/foundation.dart';
 
 import '../model/app_model.dart';
-import '../model/player.dart';
+
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'move_calculation/ai_move_calculation.dart';
@@ -10,13 +10,7 @@ import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'shared_functions.dart';
 
-/// Top-level function for compute() — runs kingInCheckmate in a real isolate.
-/// compute() requires a top-level or static function, not a closure.
-bool _computeCheckmate(Map args) {
-  Player player = args['player'];
-  ChessBoard board = args['board'];
-  return board.kingInCheckmate(player);
-}
+
 
 /// Handles game logic orchestration: move execution, AI, undo/redo, promotion.
 /// Separated from ChessGame (the view/rendering layer) for clean MVVM.
@@ -182,12 +176,8 @@ class GameController {
       checkHintTile = board.kingForPlayer(oppositeTurn)?.tile;
     }
 
-    // kingInCheckmate is expensive (O(pieces × moves²) with push/pop).
-    // Run it in a real isolate to avoid blocking the UI thread.
-    bool isCheckmate = await compute(_computeCheckmate, {
-      'player': oppositeTurn,
-      'board': board,
-    });
+    // Run synchronously to avoid expensive object graph serialization in Isolates
+    bool isCheckmate = board.kingInCheckmate(oppositeTurn);
     if (isCheckmate) {
       if (!meta.isCheck) {
         appModel.stalemate = true;

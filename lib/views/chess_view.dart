@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../logic/chess_game.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
 import 'components/chess_view/chess_board_widget.dart';
@@ -24,6 +25,7 @@ class ChessView extends StatefulWidget {
 
 class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
+  ChessGame? chessGame;
   late ConfettiController _confettiController;
 
   _ChessViewState(this.appModel);
@@ -40,11 +42,24 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     // blocking the navigation animation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isResuming) {
-        appModel.restoreGameState();
+        appModel.restoreGameState().then((_) => _initFlameGame());
       } else {
-        appModel.newGame();
+        appModel.newGame(notify: false);
+        _initFlameGame();
       }
     });
+  }
+
+  void _initFlameGame() {
+    if (appModel.gameController != null) {
+      setState(() {
+        chessGame = ChessGame(appModel.gameController!, appModel);
+      });
+      // Defer notifying listeners if needed to let the flame engine setup
+      Future.delayed(Duration(milliseconds: 50), () {
+         if (mounted) appModel.update();
+      });
+    }
   }
 
   @override
@@ -70,7 +85,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
       builder: (context, appModel, child) {
         final theme = appModel.theme;
         // Show themed background while game initializes
-        if (appModel.game == null) {
+        if (appModel.gameController == null || chessGame == null) {
           return Container(
             decoration: BoxDecoration(gradient: theme.background),
           );
@@ -107,7 +122,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 child: Column(
                   children: [
                     Spacer(),
-                    ChessBoardWidget(appModel),
+                    ChessBoardWidget(appModel, chessGame!),
                     SizedBox(height: 30),
                     GameStatus(),
                     Spacer(),

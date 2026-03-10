@@ -15,7 +15,7 @@ class PromotionOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        appModel.game?.promote(promotionType);
+        appModel.gameController!.promote(promotionType);
         appModel.update();
         Navigator.pop(context);
       },

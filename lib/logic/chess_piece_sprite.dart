@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/sprite.dart';
@@ -36,8 +38,8 @@ class ChessPieceSprite {
     }
     var destX = getXFromTile(tile ?? 0, tileSize);
     var destY = getYFromTile(tile ?? 0, tileSize);
-    // Smooth interpolation using frame-rate independent lerp
-    double t = 1.0 - (1.0 - _lerpSpeed * dt).clamp(0.0, 1.0);
+    // Smooth interpolation using frame-rate independent exponential decay
+    double t = 1.0 - math.exp(-_lerpSpeed * dt);
     if (t > 1.0) t = 1.0;
     if ((destX - (spriteX ?? 0)).abs() <= 0.5) {
       spriteX = destX;

@@ -1,12 +1,14 @@
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
+import '../../../logic/chess_game.dart';
 import '../../../model/app_model.dart';
 
 class ChessBoardWidget extends StatelessWidget {
   final AppModel appModel;
+  final ChessGame chessGame;
 
-  ChessBoardWidget(this.appModel);
+  ChessBoardWidget(this.appModel, this.chessGame);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +43,7 @@ class ChessBoardWidget extends StatelessWidget {
               child: Container(
                 width: MediaQuery.of(context).size.width - 68,
                 height: MediaQuery.of(context).size.width - 68,
-                child: GameWidget(game: appModel.game!),
+                child: GameWidget(game: chessGame),
               ),
             ),
           ),

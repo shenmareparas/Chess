@@ -37,8 +37,7 @@ class ChessGame extends FlameGame with TapCallbacks {
   Paint _selectedPiecePaint = Paint();
   String? _cachedThemeName;
 
-  ChessGame(this.appModel) {
-    controller = GameController(appModel);
+  ChessGame(this.controller, this.appModel) {
     controller.onSnapSprites = () => snapSprites();
     // width and tileSize are calculated in onGameResize
     for (var piece
