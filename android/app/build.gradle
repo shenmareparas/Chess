@@ -37,7 +37,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace "com.pscottzero.en_passant"
+    namespace "com.shenmareparas.chess"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
