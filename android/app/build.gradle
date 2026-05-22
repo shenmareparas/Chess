@@ -1,10 +1,9 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def kotlin_version = '2.1.0'
+def kotlin_version = '2.2.20'
 
 
 def localProperties = new Properties()
