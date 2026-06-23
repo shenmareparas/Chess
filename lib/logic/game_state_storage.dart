@@ -19,6 +19,7 @@ const String _gameOverKey = 'gameOver';
 const String _stalemateKey = 'stalemate';
 const String _movesKey = 'moves';
 const String _gameStateKey = 'chess_game_state';
+const String _availableUndosKey = 'availableUndos';
 
 class GameStateStorage {
   static SharedPreferences? _prefs;
@@ -55,6 +56,9 @@ class GameStateStorage {
       return '${mso.move.from}-${mso.move.to}';
     }).toList();
     await prefs.setStringList(_movesKey, moveList);
+
+    // Save undo bank
+    await prefs.setInt(_availableUndosKey, appModel.availableUndos);
   }
 
   static Future<Map<String, dynamic>?> loadGameState() async {
@@ -77,6 +81,7 @@ class GameStateStorage {
         'gameOver': prefs.getBool(_gameOverKey),
         'stalemate': prefs.getBool(_stalemateKey),
         'moves': prefs.getStringList(_movesKey),
+        'availableUndos': prefs.getInt(_availableUndosKey),
       };
       return state;
     } catch (_) {
@@ -98,6 +103,7 @@ class GameStateStorage {
     await prefs.remove(_gameOverKey);
     await prefs.remove(_stalemateKey);
     await prefs.remove(_movesKey);
+    await prefs.remove(_availableUndosKey);
   }
 
   static Future<bool> hasSavedGame() async {

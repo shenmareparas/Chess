@@ -3,6 +3,7 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'logic/ad_service.dart';
 import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
 import 'model/user_preferences.dart';
@@ -12,6 +13,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await _loadFlameAssets();
+  // Initialize AdMob SDK and preload the first rewarded interstitial ad.
+  await AdService.instance.initialize();
   runApp(
     ChangeNotifierProvider(
       create: (context) => AppModel(),

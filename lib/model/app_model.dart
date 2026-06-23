@@ -59,6 +59,29 @@ class AppModel extends ChangeNotifier {
   bool get isAIsTurn => playingWithAI && (turn == aiTurn);
   bool get playingWithAI => playerCount == 1;
 
+  // ── Undo Bank ──
+  /// Number of free undos remaining for the current game.
+  /// Starts at 3 for each new game. Players can earn 1 more by watching an ad.
+  int _availableUndos = 3;
+  int get availableUndos => _availableUndos;
+
+  void resetUndos() {
+    _availableUndos = 3;
+    notifyListeners();
+  }
+
+  void decrementUndo() {
+    if (_availableUndos > 0) {
+      _availableUndos--;
+      notifyListeners();
+    }
+  }
+
+  void grantUndoFromAd() {
+    _availableUndos++;
+    notifyListeners();
+  }
+
   // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
   bool animateBoardRotation = false;
 
@@ -92,6 +115,8 @@ class AppModel extends ChangeNotifier {
     moveMetaList = [];
     timerService.configure(timeLimit);
     audio.enabled = prefs.soundEnabled;
+    // Reset undo bank for the new game.
+    _availableUndos = 3;
     if (selectedSide == Player.random) {
       playerSide =
           math.Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
@@ -291,6 +316,9 @@ class AppModel extends ChangeNotifier {
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
+
+    // Restore undo bank (falls back to 3 for saves predating this feature).
+    _availableUndos = (state['availableUndos'] as int?) ?? 3;
 
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
