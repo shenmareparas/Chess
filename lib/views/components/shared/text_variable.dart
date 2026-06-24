@@ -12,7 +12,7 @@ class TextDefault extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 16,
-        fontFamily: 'Jura',
+        fontFamily: 'Inter',
         color: color,
       ),
     );

@@ -29,6 +29,23 @@ final List<AppTheme> themeList = _buildThemeList();
 List<AppTheme> _buildThemeList() {
   var list = <AppTheme>[
     AppTheme(
+      name: 'Stitch',
+      background: const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF0A0F0C),
+          Color(0xFF131313),
+        ],
+      ),
+      lightTile: const Color(0xFFB5CCBB),
+      darkTile: const Color(0xFF374B3E),
+      moveHint: const Color(0xAAE9C349),
+      latestMove: const Color(0xAAFFE088),
+      border: const Color(0xFF0A0F0C),
+      notation: const Color(0xFFB5CCBB),
+    ),
+    AppTheme(
       name: 'Grey',
       background: LinearGradient(
         begin: Alignment.topCenter,

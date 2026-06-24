@@ -204,7 +204,7 @@ void showExitDialog(BuildContext context) {
                     'Leave Game?',
                     style: TextStyle(
                       fontSize: 32,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
@@ -214,7 +214,7 @@ void showExitDialog(BuildContext context) {
                     'Would you like to save your progress?',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white70,
                     ),
                     textAlign: TextAlign.center,

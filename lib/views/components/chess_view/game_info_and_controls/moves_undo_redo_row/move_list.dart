@@ -40,7 +40,7 @@ class MoveList extends StatelessWidget {
               'Moves copied to clipboard',
               style: TextStyle(
                 color: CupertinoColors.white,
-                fontFamily: 'Jura',
+                fontFamily: 'Inter',
                 fontSize: 14,
                 decoration: TextDecoration.none,
               ),

@@ -125,7 +125,7 @@ class UndoRedoButtons extends StatelessWidget {
                     'Out of Undos',
                     style: TextStyle(
                       fontSize: 28,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -136,7 +136,7 @@ class UndoRedoButtons extends StatelessWidget {
                     'You\'ve used all your free undos for this game. Watch a short ad to earn 1 extra undo.',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white70,
                     ),
                     textAlign: TextAlign.center,
@@ -231,7 +231,7 @@ class UndoRedoButtons extends StatelessWidget {
                     'Ad Not Ready',
                     style: TextStyle(
                       fontSize: 28,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
@@ -242,7 +242,7 @@ class UndoRedoButtons extends StatelessWidget {
                     'No ad is available right now. Please try again in a moment.',
                     style: TextStyle(
                       fontSize: 16,
-                      fontFamily: 'Jura',
+                      fontFamily: 'Inter',
                       color: Colors.white70,
                     ),
                     textAlign: TextAlign.center,
@@ -320,7 +320,7 @@ class _UndoBadge extends StatelessWidget {
           fontSize: 11,
           fontWeight: FontWeight.bold,
           color: Colors.white,
-          fontFamily: 'Jura',
+          fontFamily: 'Inter',
         ),
       ),
     );

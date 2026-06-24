@@ -51,8 +51,8 @@ class Chess extends StatelessWidget {
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
         textTheme: CupertinoTextThemeData(
-          textStyle: TextStyle(fontFamily: 'Jura', fontSize: 16),
-          pickerTextStyle: TextStyle(fontFamily: 'Jura'),
+          textStyle: TextStyle(fontFamily: 'Inter', fontSize: 16),
+          pickerTextStyle: TextStyle(fontFamily: 'Inter'),
         ),
       ),
       home: MainMenuView(),

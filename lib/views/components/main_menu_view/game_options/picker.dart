@@ -20,7 +20,7 @@ class Picker<T extends Object> extends StatelessWidget {
           child: CupertinoTheme(
             data: CupertinoThemeData(
               textTheme: CupertinoTextThemeData(
-                textStyle: TextStyle(fontFamily: 'Jura', fontSize: 8),
+                textStyle: TextStyle(fontFamily: 'Inter', fontSize: 8),
               ),
             ),
             child: CupertinoSlidingSegmentedControl<T>(

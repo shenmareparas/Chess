@@ -39,7 +39,7 @@ class PromotionDialog extends StatelessWidget {
               'Promote Pawn',
               style: TextStyle(
                 fontSize: 28,
-                fontFamily: 'Jura',
+                fontFamily: 'Inter',
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),

@@ -32,8 +32,6 @@ dependencies:
     confetti: ^0.8.0
     google_mobile_ads: ^5.1.0
 
-    # The following adds the Cupertino Icons font to your application.
-    # Use with the CupertinoIcons class for iOS style icons.
     cupertino_icons: ^1.0.0
 
 dev_dependencies:
@@ -55,9 +53,9 @@ flutter_icons:
 # The following section is specific to Flutter.
 flutter:
     fonts:
-        - family: Jura
+        - family: Inter
           fonts:
-              - asset: assets/font/Jura-VariableFont_wght.ttf
+              - asset: assets/font/Inter-VariableFont_slnt,wght.ttf
 
     # The following line ensures that the Material Icons font is
     # included with your application, so that you can use the icons in
