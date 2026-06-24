@@ -75,7 +75,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       if (!appModel.gameOver) {
-        appModel.saveGameState();
+        appModel.saveGameStateImmediate();
         appModel.timerService.pause();
       }
     } else if (state == AppLifecycleState.resumed) {
@@ -122,64 +122,21 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           },
           child: Stack(
             children: [
-              // Background Gradient
-              Container(
-                decoration: BoxDecoration(gradient: theme.background),
-              ),
-
-              // Dot Grid Background
+              // ── Static background ──────────────────────────────────────
+              // Driven by Selector so it only rebuilds on theme change,
+              // NOT on every move / AI turn / timer tick.
               Positioned.fill(
-                child: CustomPaint(
-                  painter: DotGridPainter(
-                    color: theme.lightTile.withValues(alpha: 0.04),
-                  ),
+                child: Selector<AppModel, AppTheme>(
+                  selector: (_, m) => m.theme,
+                  builder: (_, theme, __) => _ChessBackground(theme: theme),
                 ),
               ),
 
-              // Glowing Blur Backgrounds
-              Positioned(
-                top: 150,
-                right: -50,
-                child: Container(
-                  width: 280,
-                  height: 280,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.lightTile.withValues(alpha: 0.05),
-                        blurRadius: 120,
-                        spreadRadius: 30,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              Positioned(
-                bottom: 100,
-                left: -50,
-                child: Container(
-                  width: 250,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.darkTile.withValues(alpha: 0.04),
-                        blurRadius: 100,
-                        spreadRadius: 20,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Main content
+              // ── Game content ───────────────────────────────────────────
               SafeArea(
                 child: Column(
                   children: [
-                    // Top App Bar (Turn Status centered, Settings on right)
+                    // Top App Bar
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
@@ -230,7 +187,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 ),
               ),
 
-              // Confetti Overlay
+              // ── Confetti Overlay ───────────────────────────────────────
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
@@ -258,6 +215,81 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
       builder: (BuildContext context) {
         return PromotionDialog(appModel);
       },
+    );
+  }
+}
+
+/// Static decorative background for [ChessView].
+///
+/// Separated from the game-content [Consumer] so it is only rebuilt when the
+/// theme changes — not on every move, AI result, or timer tick.
+class _ChessBackground extends StatelessWidget {
+  final AppTheme theme;
+
+  const _ChessBackground({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Gradient fill
+        Container(
+          decoration: BoxDecoration(gradient: theme.background),
+        ),
+
+        // Dot grid
+        Positioned.fill(
+          child: CustomPaint(
+            painter: DotGridPainter(
+              color: theme.lightTile.withValues(alpha: 0.04),
+            ),
+          ),
+        ),
+
+        // Glow blobs — RepaintBoundary keeps the expensive boxShadow on its
+        // own GPU layer so the Selector's infrequent rebuilds don't cause jank.
+        Positioned(
+          top: 150,
+          right: -50,
+          child: RepaintBoundary(
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.lightTile.withValues(alpha: 0.05),
+                    blurRadius: 120,
+                    spreadRadius: 30,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        Positioned(
+          bottom: 100,
+          left: -50,
+          child: RepaintBoundary(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.darkTile.withValues(alpha: 0.04),
+                    blurRadius: 100,
+                    spreadRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

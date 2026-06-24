@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -60,6 +61,9 @@ class AppModel extends ChangeNotifier {
   Player get aiTurn => oppositePlayer(playerSide);
   bool get isAIsTurn => playingWithAI && (turn == aiTurn);
   bool get playingWithAI => playerCount == 1;
+
+  // ── Save Debounce ──
+  Timer? _saveDebounceTimer;
 
   // ── Undo Bank ──
   /// Number of free undos remaining for the current game.
@@ -132,6 +136,7 @@ class AppModel extends ChangeNotifier {
       playerSide = Player.player1;
     }
     gameController = GameController(this);
+    gameController!.clearTranspositionTable();
     timerService.start(() => turn, () => gameOver);
 
     // Trigger AI move if it's AI's turn natively for standard games
@@ -281,7 +286,23 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Schedules a save after a short debounce window (400 ms).
+  /// Rapid undo/redo or move bursts collapse into a single write,
+  /// preventing SharedPreferences I/O on every single event.
   void saveGameState() {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => GameStateStorage.saveGameState(this),
+    );
+  }
+
+  /// Immediately flushes the game state to disk, bypassing the debounce.
+  /// Use this in lifecycle events (app pause, explicit exit) to ensure
+  /// no data is lost.
+  void saveGameStateImmediate() {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     GameStateStorage.saveGameState(this);
   }
 

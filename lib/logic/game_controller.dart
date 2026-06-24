@@ -5,9 +5,11 @@ import '../model/app_model.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
+import 'move_calculation/ai_move_args.dart';
 import 'move_calculation/ai_move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
+import 'move_calculation/transposition_table.dart';
 import 'shared_functions.dart';
 
 /// Handles game logic orchestration: move execution, AI, undo/redo, promotion.
@@ -15,6 +17,11 @@ import 'shared_functions.dart';
 class GameController {
   final AppModel appModel;
   final ChessBoard board = ChessBoard();
+
+  /// Persistent transposition table shared across all AI moves in a game.
+  /// This avoids allocating and GC-ing the ~8 MB table on every AI turn.
+  /// Call [clearTranspositionTable] (which does a soft-clear) between games.
+  final TranspositionTable _tt = TranspositionTable();
 
   CancelableOperation? aiOperation;
   List<int> validMoves = [];
@@ -26,6 +33,10 @@ class GameController {
   VoidCallback? onSnapSprites;
 
   GameController(this.appModel) {}
+
+  /// Soft-clears the transposition table so it can be reused in the next game
+  /// without triggering GC of the entire backing list.
+  void clearTranspositionTable() => _tt.softClear();
 
   // ── Piece Selection ──
 
@@ -62,10 +73,12 @@ class GameController {
     if (appModel.gameOver) return;
     await Future.delayed(Duration(milliseconds: 500));
     if (appModel.gameOver) return;
-    var args = Map();
-    args['aiPlayer'] = appModel.aiTurn;
-    args['aiDifficulty'] = appModel.aiDifficulty;
-    args['board'] = board;
+    final args = AIMoveArgs(
+      board: board,
+      aiPlayer: appModel.aiTurn,
+      aiDifficulty: appModel.aiDifficulty,
+      tt: _tt,
+    );
     aiOperation = CancelableOperation.fromFuture(
       compute(calculateAIMove, args),
     );

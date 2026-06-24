@@ -24,8 +24,18 @@ class _GameInfoAndControlsState extends State<GameInfoAndControls> {
   }
 
   @override
+  void didUpdateWidget(GameInfoAndControls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only request a scroll-to-bottom when the move list actually changed,
+    // not on every arbitrary rebuild. This avoids registering a new
+    // addPostFrameCallback on every Consumer<AppModel> notification.
+    if (widget.appModel.moveListUpdated) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     final hasTimer = widget.appModel.timeLimit != 0;
     final extraHeight = hasTimer ? 74 : 0;
 

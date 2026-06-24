@@ -29,7 +29,7 @@ final List<AppTheme> themeList = _buildThemeList();
 List<AppTheme> _buildThemeList() {
   var list = <AppTheme>[
     AppTheme(
-      name: 'Stitch',
+      name: 'Forest Mint',
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,

@@ -1,49 +1,33 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../logic/game_state_storage.dart';
 import '../../../model/app_model.dart';
 import '../../../model/app_themes.dart';
 import '../../chess_view.dart';
 
-class MainMenuButtons extends StatefulWidget {
+class MainMenuButtons extends StatelessWidget {
   final AppModel appModel;
+  final bool hasSavedGame;
+  final VoidCallback onGameReturned;
   final VoidCallback? onResetScroll;
 
-  const MainMenuButtons(this.appModel, {Key? key, this.onResetScroll})
-      : super(key: key);
-
-  @override
-  _MainMenuButtonsState createState() => _MainMenuButtonsState();
-}
-
-class _MainMenuButtonsState extends State<MainMenuButtons> {
-  bool _hasSavedGame = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkSavedGame();
-  }
-
-  void _checkSavedGame() async {
-    final hasSaved = await GameStateStorage.hasSavedGame();
-    if (mounted) {
-      setState(() {
-        _hasSavedGame = hasSaved;
-      });
-    }
-  }
+  const MainMenuButtons(
+    this.appModel, {
+    Key? key,
+    required this.hasSavedGame,
+    required this.onGameReturned,
+    this.onResetScroll,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = widget.appModel.theme;
+    final theme = appModel.theme;
 
     return Container(
       width: double.infinity,
       child: Column(
         children: [
-          if (_hasSavedGame) ...[
+          if (hasSavedGame) ...[
             _buildButton(
               label: 'Resume Game',
               isPrimary: false,
@@ -54,15 +38,15 @@ class _MainMenuButtonsState extends State<MainMenuButtons> {
                   context,
                   CupertinoPageRoute(
                     builder: (context) {
-                      return ChessView(widget.appModel, isResuming: true);
+                      return ChessView(appModel, isResuming: true);
                     },
                   ),
                 ).then((_) {
-                  _checkSavedGame();
+                  onGameReturned();
                 });
                 Future.delayed(
                   const Duration(milliseconds: 300),
-                  () => widget.onResetScroll?.call(),
+                  () => onResetScroll?.call(),
                 );
               },
             ),
@@ -77,15 +61,15 @@ class _MainMenuButtonsState extends State<MainMenuButtons> {
                 context,
                 CupertinoPageRoute(
                   builder: (context) {
-                    return ChessView(widget.appModel);
+                    return ChessView(appModel);
                   },
                 ),
               ).then((_) {
-                _checkSavedGame();
+                onGameReturned();
               });
               Future.delayed(
                 const Duration(milliseconds: 300),
-                () => widget.onResetScroll?.call(),
+                () => onResetScroll?.call(),
               );
             },
           ),

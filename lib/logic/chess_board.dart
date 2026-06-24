@@ -176,8 +176,14 @@ class ChessBoard {
   MoveMeta push(Move move,
       {bool getMeta = false,
       ChessPieceType promotionType = ChessPieceType.promotion}) {
-    var mso = MoveStackObject(move, tiles[move.from], tiles[move.to],
-        enPassantPiece, List.from(possibleOpenings));
+    var mso = MoveStackObject(
+        move,
+        tiles[move.from],
+        tiles[move.to],
+        enPassantPiece,
+        // Only copy the openings list while it is still relevant.
+        // After the opening book is exhausted the copy is a pure waste.
+        possibleOpenings.isNotEmpty ? List.from(possibleOpenings) : []);
     mso.previousHash = zobristHash;
     mso.previousBoardValue = incrementalValue;
     mso.previousInEndGame = inEndGameCached;
@@ -252,7 +258,10 @@ class ChessBoard {
 
   List<Move> allMoves(Player player, int aiDifficulty,
       {bool capturesOnly = false}) {
-    List<MoveAndValue> moves = [];
+    // Pre-allocate with a typical upper bound to avoid repeated internal resizing.
+    // A chess position has at most ~218 legal moves; 48 is a reasonable starting
+    // capacity that covers most quiet positions without over-allocating.
+    final List<MoveAndValue> moves = List<MoveAndValue>.empty(growable: true);
     for (var piece in piecesForPlayer(player)) {
       var tiles = movesForPiece(piece);
       for (var tile in tiles) {
@@ -316,11 +325,72 @@ class ChessBoard {
     return moves;
   }
 
+  /// Returns [true] if [player]'s king is currently under attack.
+  ///
+  /// Checks each opponent piece's raw (pseudo-legal) attack squares using
+  /// direct tile iteration rather than building and searching a full moves
+  /// list, avoiding per-piece list allocations in the hot path.
   bool kingInCheck(Player player) {
+    final kingTile = kingForPlayer(player)?.tile;
+    if (kingTile == null) return false;
     for (var piece in piecesForPlayer(oppositePlayer(player))) {
-      if (movesForPiece(piece, legal: false)
-          .contains(kingForPlayer(player)?.tile)) {
-        return true;
+      if (_pieceAttacksTile(piece, kingTile)) return true;
+    }
+    return false;
+  }
+
+  /// Returns [true] if [piece] can attack [targetTile] (pseudo-legal, no
+  /// king-safety check) without allocating a complete move list.
+  bool _pieceAttacksTile(ChessPiece piece, int targetTile) {
+    switch (piece.type) {
+      case ChessPieceType.pawn:
+        final diagonals = piece.player == Player.player1
+            ? _PAWN_DIAGONALS_1
+            : _PAWN_DIAGONALS_2;
+        for (final d in diagonals) {
+          final r = tileToRow(piece.tile) + d.up;
+          final c = tileToCol(piece.tile) + d.right;
+          if (_inBounds(r, c) && _rowColToTile(r, c) == targetTile) return true;
+        }
+        return false;
+      case ChessPieceType.knight:
+        for (final d in _KNIGHT_MOVES) {
+          final r = tileToRow(piece.tile) + d.up;
+          final c = tileToCol(piece.tile) + d.right;
+          if (_inBounds(r, c) && _rowColToTile(r, c) == targetTile) return true;
+        }
+        return false;
+      case ChessPieceType.bishop:
+        return _slidingAttacks(piece, _BISHOP_MOVES, targetTile);
+      case ChessPieceType.rook:
+        return _slidingAttacks(piece, _ROOK_MOVES, targetTile);
+      case ChessPieceType.queen:
+        return _slidingAttacks(piece, _KING_QUEEN_MOVES, targetTile);
+      case ChessPieceType.king:
+        for (final d in _KING_QUEEN_MOVES) {
+          final r = tileToRow(piece.tile) + d.up;
+          final c = tileToCol(piece.tile) + d.right;
+          if (_inBounds(r, c) && _rowColToTile(r, c) == targetTile) return true;
+        }
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  /// Checks whether a sliding piece (bishop / rook / queen) attacks [targetTile].
+  bool _slidingAttacks(
+      ChessPiece piece, List<Direction> directions, int targetTile) {
+    for (final dir in directions) {
+      var r = tileToRow(piece.tile);
+      var c = tileToCol(piece.tile);
+      while (true) {
+        r += dir.up;
+        c += dir.right;
+        if (!_inBounds(r, c)) break;
+        final t = _rowColToTile(r, c);
+        if (t == targetTile) return true;
+        if (tiles[t] != null) break; // Blocked
       }
     }
     return false;

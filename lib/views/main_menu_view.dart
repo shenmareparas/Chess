@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../logic/game_state_storage.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
 import 'components/main_menu_view/game_options.dart';
@@ -17,17 +18,28 @@ class MainMenuView extends StatefulWidget {
 
 class _MainMenuViewState extends State<MainMenuView> {
   late final ScrollController _scrollController;
+  bool _hasSavedGame = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
+    _checkSavedGame();
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _checkSavedGame() async {
+    final hasSaved = await GameStateStorage.hasSavedGame();
+    if (mounted) {
+      setState(() {
+        _hasSavedGame = hasSaved;
+      });
+    }
   }
 
   void _resetScroll() {
@@ -57,23 +69,25 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
-                // 2. Glowing Blur Backgrounds
+                // 2. Glowing Blur Background
                 Positioned(
                   top: 100,
                   left: MediaQuery.of(context).size.width * 0.2,
-                  child: Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.lightTile.withValues(
-                              alpha: 0.06), // Very soft theme-colored glow
-                          blurRadius: 100,
-                          spreadRadius: 20,
-                        ),
-                      ],
+                  child: RepaintBoundary(
+                    child: Container(
+                      width: 250,
+                      height: 250,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.lightTile.withValues(
+                                alpha: 0.06), // Very soft theme-colored glow
+                            blurRadius: 100,
+                            spreadRadius: 20,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -87,8 +101,11 @@ class _MainMenuViewState extends State<MainMenuView> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: GameOptions(appModel,
-                              scrollController: _scrollController),
+                          child: GameOptions(
+                            appModel,
+                            hasSavedGame: _hasSavedGame,
+                            scrollController: _scrollController,
+                          ),
                         ),
                       ),
                     ],
@@ -145,6 +162,8 @@ class _MainMenuViewState extends State<MainMenuView> {
                       children: [
                         MainMenuButtons(
                           appModel,
+                          hasSavedGame: _hasSavedGame,
+                          onGameReturned: _checkSavedGame,
                           onResetScroll: _resetScroll,
                         ),
                         BottomPadding(),

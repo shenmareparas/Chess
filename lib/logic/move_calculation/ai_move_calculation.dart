@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import '../../model/player.dart';
 import '../chess_board.dart';
 import '../shared_functions.dart';
+import 'ai_move_args.dart';
 import 'move_classes/move.dart';
 import 'move_classes/move_and_value.dart';
 import 'transposition_table.dart';
@@ -22,14 +23,19 @@ const LMR_DEPTH_THRESHOLD = 3;
 // Quiescence search depth limit to prevent explosion
 const MAX_QUIESCENCE_DEPTH = 8;
 
-Move calculateAIMove(Map args) {
-  ChessBoard board = args['board'];
+/// Entry point for [compute]. Accepts a typed [AIMoveArgs] instead of a
+/// bare [Map] to avoid boxing overhead during isolate message passing.
+Move calculateAIMove(AIMoveArgs args) {
+  final ChessBoard board = args.board;
   if (board.possibleOpenings.isNotEmpty) {
-    return _openingMove(board, args['aiPlayer']);
+    return _openingMove(board, args.aiPlayer);
   } else {
-    int maxDepth = args['aiDifficulty'];
-    Player aiPlayer = args['aiPlayer'];
-    var tt = TranspositionTable();
+    final int maxDepth = args.aiDifficulty;
+    final Player aiPlayer = args.aiPlayer;
+    // Re-use the caller-provided TranspositionTable that survives across AI
+    // moves (soft-cleared between games). This avoids allocating and GC-ing
+    // the ~8 MB table on every turn.
+    final TranspositionTable tt = args.tt;
 
     // Iterative deepening: search depth 1, 2, ..., maxDepth
     // Each iteration informs move ordering for the next

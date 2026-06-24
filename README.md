@@ -21,7 +21,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🎨 Customization
 
--   **9 Beautiful Themes**: Amoled, Cherry Funk, Dark, Grey, Jargon Jade, Lewis, Sage, Stitch, and Warm Tan
+-   **9 Beautiful Themes**: Amoled, Cherry Funk, Dark, Forest Mint, Grey, Jargon Jade, Lewis, Sage, and Warm Tan
 -   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, and Mexico City
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Inter font for clean, readable UI typography

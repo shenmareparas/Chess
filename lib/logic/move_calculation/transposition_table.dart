@@ -46,7 +46,21 @@ class TranspositionTable {
     }
   }
 
+  /// Fully empties the table, freeing all entries (used when resizing or
+  /// needing a guaranteed clean slate).
   void clear() {
     _table.fillRange(0, TT_SIZE, null);
+  }
+
+  /// Soft-clears the table by invalidating keys without deallocating entries.
+  /// Re-using existing [TTEntry] objects avoids the GC pressure of allocating
+  /// a fresh 1 M-entry list every AI move.
+  void softClear() {
+    for (int i = 0; i < TT_SIZE; i++) {
+      final entry = _table[i];
+      if (entry != null) {
+        entry.key = 0;
+      }
+    }
   }
 }
