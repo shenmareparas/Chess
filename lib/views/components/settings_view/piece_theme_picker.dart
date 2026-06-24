@@ -79,10 +79,6 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
                         scrollController: _scrollController,
                         selectionOverlay: Container(
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: theme.lightTile.withValues(alpha: 0.4),
-                              width: 1.5,
-                            ),
                             borderRadius: BorderRadius.circular(8),
                             color:
                                 CupertinoColors.white.withValues(alpha: 0.03),
@@ -98,7 +94,6 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
                                   t,
                                   style: const TextStyle(
                                     fontSize: 18,
-                                    fontFamily: 'Inter',
                                     fontWeight: FontWeight.w600,
                                     color: Color(0xFFE5E2E1),
                                   ),

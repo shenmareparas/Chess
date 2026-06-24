@@ -26,9 +26,14 @@ class _GameInfoAndControlsState extends State<GameInfoAndControls> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    final hasTimer = widget.appModel.timeLimit != 0;
+    final extraHeight = hasTimer ? 74 : 0;
+
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height > 700 ? 204 : 134,
+        maxHeight: MediaQuery.of(context).size.height > 700
+            ? (204 + extraHeight).toDouble()
+            : (134 + extraHeight).toDouble(),
       ),
       child: ListView(
         controller: scrollController,

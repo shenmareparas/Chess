@@ -6,7 +6,8 @@ class AIDifficultyPicker extends StatelessWidget {
   final int aiDifficulty;
   final Function(int?) setFunc;
 
-  const AIDifficultyPicker(this.aiDifficulty, this.setFunc, {Key? key}) : super(key: key);
+  const AIDifficultyPicker(this.aiDifficulty, this.setFunc, {Key? key})
+      : super(key: key);
 
   String _getDifficultyTier(int level) {
     switch (level) {
@@ -29,16 +30,20 @@ class AIDifficultyPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Provider.of<AppModel>(context).theme;
     final primaryColor = theme.lightTile;
-    final activeBgColor = theme.darkTile.withOpacity(0.4);
-    final badgeColor = theme.moveHint.withOpacity(1.0);
-    final badgeBgColor = theme.moveHint.withOpacity(0.12);
+    final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
+    final badgeColor = theme.moveHint.withValues(alpha: 1.0);
+    final badgeBgColor = theme.moveHint.withValues(alpha: 0.12);
 
     final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
-    final isDarkBg = ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
+    final isDarkBg =
+        ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
 
-    final trackBgColor = isDarkBg ? const Color(0x660E0E0E) : const Color(0x1A000000);
-    final trackBorderColor = isDarkBg ? const Color(0x14FFFFFF) : const Color(0x1F000000);
-    final inactiveTextColor = isDarkBg ? const Color(0x99C3C8C2) : const Color(0x99313030);
+    final trackBgColor =
+        isDarkBg ? const Color(0x660E0E0E) : const Color(0x1A000000);
+    final trackBorderColor =
+        isDarkBg ? const Color(0x14FFFFFF) : const Color(0x1F000000);
+    final inactiveTextColor =
+        isDarkBg ? const Color(0x99C3C8C2) : const Color(0x99313030);
 
     final String tierLabel = _getDifficultyTier(aiDifficulty);
 
@@ -56,7 +61,6 @@ class AIDifficultyPicker extends StatelessWidget {
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 1.5,
-                fontFamily: 'Inter',
               ),
             ),
             Container(
@@ -71,7 +75,6 @@ class AIDifficultyPicker extends StatelessWidget {
                   color: badgeColor,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  fontFamily: 'Inter',
                 ),
               ),
             ),
@@ -107,8 +110,8 @@ class AIDifficultyPicker extends StatelessWidget {
                       style: TextStyle(
                         color: isSelected ? primaryColor : inactiveTextColor,
                         fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontFamily: 'Inter',
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
                       ),
                     ),
                   ),

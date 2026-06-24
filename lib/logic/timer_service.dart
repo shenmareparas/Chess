@@ -37,7 +37,8 @@ class TimerService {
 
   void _startPeriodicTimer() {
     _timer?.cancel();
-    _timer = async.Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (_) {
+    _timer =
+        async.Timer.periodic(Duration(milliseconds: TIMER_ACCURACY_MS), (_) {
       if (_isGameOver?.call() ?? true) {
         stop();
         return;
@@ -61,7 +62,10 @@ class TimerService {
   }
 
   void resume() {
-    if (_timeLimit > 0 && _timer == null && _getCurrentTurn != null && _isGameOver != null) {
+    if (_timeLimit > 0 &&
+        _timer == null &&
+        _getCurrentTurn != null &&
+        _isGameOver != null) {
       _startPeriodicTimer();
     }
   }
@@ -82,14 +86,16 @@ class TimerService {
   void _decrementPlayer1() {
     if (player1TimeLeft.value.inMilliseconds > 0) {
       player1TimeLeft.value = Duration(
-          milliseconds: player1TimeLeft.value.inMilliseconds - TIMER_ACCURACY_MS);
+          milliseconds:
+              player1TimeLeft.value.inMilliseconds - TIMER_ACCURACY_MS);
     }
   }
 
   void _decrementPlayer2() {
     if (player2TimeLeft.value.inMilliseconds > 0) {
       player2TimeLeft.value = Duration(
-          milliseconds: player2TimeLeft.value.inMilliseconds - TIMER_ACCURACY_MS);
+          milliseconds:
+              player2TimeLeft.value.inMilliseconds - TIMER_ACCURACY_MS);
     }
   }
 }

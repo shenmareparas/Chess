@@ -70,17 +70,14 @@ class _AppThemePickerState extends State<AppThemePicker> {
                   scrollController: _scrollController,
                   selectionOverlay: Container(
                     decoration: BoxDecoration(
-                      border: Border.all(
-                        color: theme.lightTile.withValues(alpha: 0.4),
-                        width: 1.5,
-                      ),
                       borderRadius: BorderRadius.circular(8),
                       color: Colors.white.withValues(alpha: 0.03),
                     ),
                   ),
                   itemExtent: 44,
                   onSelectedItemChanged: (index) {
-                    Provider.of<AppModel>(context, listen: false).setTheme(index);
+                    Provider.of<AppModel>(context, listen: false)
+                        .setTheme(index);
                   },
                   children: themeList
                       .map(
@@ -90,7 +87,6 @@ class _AppThemePickerState extends State<AppThemePicker> {
                             t.name ?? "",
                             style: const TextStyle(
                               fontSize: 18,
-                              fontFamily: 'Inter',
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFE5E2E1),
                             ),

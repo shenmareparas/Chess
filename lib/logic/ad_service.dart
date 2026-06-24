@@ -62,7 +62,8 @@ class AdService {
         onAdFailedToLoad: (error) {
           _isLoading = false;
           _rewardedInterstitialAd = null;
-          debugPrint('[AdService] Failed to load rewarded interstitial ad: $error');
+          debugPrint(
+              '[AdService] Failed to load rewarded interstitial ad: $error');
         },
       ),
     );
@@ -104,7 +105,8 @@ class AdService {
         }
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        debugPrint('[AdService] Ad failed to show: $error. Preloading next ad.');
+        debugPrint(
+            '[AdService] Ad failed to show: $error. Preloading next ad.');
         ad.dispose();
         _loadAd(); // Preload next even after failure.
       },
@@ -112,12 +114,12 @@ class AdService {
 
     ad.show(
       onUserEarnedReward: (_, reward) {
-        debugPrint('[AdService] User earned reward: ${reward.amount} ${reward.type}');
+        debugPrint(
+            '[AdService] User earned reward: ${reward.amount} ${reward.type}');
         rewardEarned = true;
       },
     );
   }
-
 
   /// Whether a rewarded ad is currently preloaded and ready to show.
   bool get isAdLoaded => _rewardedInterstitialAd != null;

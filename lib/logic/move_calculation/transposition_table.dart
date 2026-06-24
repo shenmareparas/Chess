@@ -30,12 +30,12 @@ class TranspositionTable {
   void store(int hash, int depth, int value, int flag, Move? bestMove) {
     var index = hash & TT_MASK;
     var entry = _table[index];
-    
+
     if (entry == null) {
       entry = TTEntry();
       _table[index] = entry;
     }
-    
+
     // Always replace if new entry is deeper or same position
     if (entry.key != hash || depth >= entry.depth) {
       entry.key = hash;

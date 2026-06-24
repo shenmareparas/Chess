@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
@@ -12,7 +10,8 @@ class Toggles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = const Color(0x1A424843); // outline-variant/10 (0x1A is ~10% opacity)
+    final themeColor =
+        const Color(0x1A424843); // outline-variant/10 (0x1A is ~10% opacity)
 
     return GlassPanel(
       padding: EdgeInsets.zero,
@@ -64,4 +63,3 @@ class Toggles extends StatelessWidget {
     );
   }
 }
-

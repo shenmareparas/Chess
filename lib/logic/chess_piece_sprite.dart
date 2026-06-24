@@ -53,7 +53,6 @@ class ChessPieceSprite {
     }
   }
 
-
   void initSprite(ChessPiece piece) async {
     String color = piece.player == Player.player1 ? 'white' : 'black';
     String pieceName = pieceTypeToString(piece.type);

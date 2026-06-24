@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 
 import '../../../../model/app_model.dart';
 import '../../../../model/player.dart';
-import '../../shared/text_variable.dart';
 
 /// State tuple for GameStatus — only rebuilds when these fields change.
 typedef _StatusState = ({
@@ -27,15 +26,57 @@ class GameStatus extends StatelessWidget {
         stalemate: m.stalemate,
         aiDifficulty: m.aiDifficulty,
       ),
-      builder: (context, state, child) => Row(
-        children: [
-          TextRegular(_getStatus(state)),
-          !state.gameOver && state.playerCount == 1 && state.isAIsTurn
-              ? CupertinoActivityIndicator(radius: 12)
-              : Container()
-        ],
-        mainAxisAlignment: MainAxisAlignment.center,
-      ),
+      builder: (context, state, child) {
+        final appModel = Provider.of<AppModel>(context, listen: false);
+        final theme = appModel.theme;
+        final statusText = _getStatus(state).toUpperCase();
+
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0x28201F1F),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: const Color(0x14F5F5F0),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.lightTile.withValues(alpha: 0.08),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _PulseDot(color: theme.lightTile),
+                const SizedBox(width: 8),
+                Text(
+                  statusText,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: theme.lightTile,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                if (!state.gameOver &&
+                    state.playerCount == 1 &&
+                    state.isAIsTurn) ...[
+                  const SizedBox(width: 8),
+                  CupertinoActivityIndicator(
+                    radius: 8,
+                    color: theme.lightTile,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -43,7 +84,7 @@ class GameStatus extends StatelessWidget {
     if (!s.gameOver) {
       if (s.playerCount == 1) {
         if (s.isAIsTurn) {
-          return 'AI [Level ${s.aiDifficulty}] is thinking ';
+          return 'AI is thinking';
         } else {
           return 'Your turn';
         }
@@ -73,5 +114,61 @@ class GameStatus extends StatelessWidget {
         }
       }
     }
+  }
+}
+
+class _PulseDot extends StatefulWidget {
+  final Color color;
+
+  const _PulseDot({required this.color});
+
+  @override
+  _PulseDotState createState() => _PulseDotState();
+}
+
+class _PulseDotState extends State<_PulseDot>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.3, end: 1.0).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) => Opacity(
+        opacity: _animation.value,
+        child: Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: widget.color,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.5),
+                blurRadius: 6,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -12,7 +12,6 @@ class TextDefault extends StatelessWidget {
       text,
       style: TextStyle(
         fontSize: 16,
-        fontFamily: 'Inter',
         color: color,
       ),
     );

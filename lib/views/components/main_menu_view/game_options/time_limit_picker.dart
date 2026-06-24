@@ -6,7 +6,8 @@ class TimeLimitPicker extends StatelessWidget {
   final int? selectedTime;
   final Function(int?)? setTime;
 
-  TimeLimitPicker({Key? key, this.selectedTime, this.setTime}) : super(key: key);
+  TimeLimitPicker({Key? key, this.selectedTime, this.setTime})
+      : super(key: key);
 
   final Map<int, String> timeOptions = const <int, String>{
     0: 'None',
@@ -20,14 +21,18 @@ class TimeLimitPicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Provider.of<AppModel>(context).theme;
     final primaryColor = theme.lightTile;
-    final activeBgColor = theme.darkTile.withOpacity(0.4);
+    final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
 
     final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
-    final isDarkBg = ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
+    final isDarkBg =
+        ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
 
-    final trackBgColor = isDarkBg ? const Color(0x660E0E0E) : const Color(0x1A000000);
-    final trackBorderColor = isDarkBg ? const Color(0x14FFFFFF) : const Color(0x1F000000);
-    final inactiveTextColor = isDarkBg ? const Color(0x99C3C8C2) : const Color(0x99313030);
+    final trackBgColor =
+        isDarkBg ? const Color(0x660E0E0E) : const Color(0x1A000000);
+    final trackBorderColor =
+        isDarkBg ? const Color(0x14FFFFFF) : const Color(0x1F000000);
+    final inactiveTextColor =
+        isDarkBg ? const Color(0x99C3C8C2) : const Color(0x99313030);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +44,6 @@ class TimeLimitPicker extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.5,
-            fontFamily: 'Inter',
           ),
         ),
         const SizedBox(height: 12),
@@ -77,8 +81,8 @@ class TimeLimitPicker extends StatelessWidget {
                       style: TextStyle(
                         color: isSelected ? primaryColor : inactiveTextColor,
                         fontSize: 12,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontFamily: 'Inter',
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
                       ),
                     ),
                   ),

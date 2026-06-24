@@ -1,23 +1,26 @@
 import 'package:flutter/cupertino.dart';
+import '../../../shared/glass_panel.dart';
 
 class RoundedIconButton extends StatelessWidget {
   final IconData icon;
   final void Function()? onPressed;
 
-  RoundedIconButton(this.icon, {this.onPressed});
+  const RoundedIconButton(this.icon, {this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: CupertinoButton(
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      onPressed: onPressed,
+      child: GlassPanel(
         padding: EdgeInsets.zero,
-        color: Color(0x20000000),
-        child: Icon(icon, color: Color(0xffffffff)),
-        borderRadius: BorderRadius.all(Radius.circular(15)),
-        onPressed: onPressed,
+        borderRadius: 14,
+        child: SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: Icon(icon, color: const Color(0xffffffff), size: 22),
+        ),
       ),
-      width: double.infinity,
-      height: 60,
     );
   }
 }

@@ -1,5 +1,3 @@
-
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/app_model.dart';
@@ -43,8 +41,10 @@ class GameStateStorage {
     await prefs.setInt(_playerSideKey, appModel.playerSide.index);
     await prefs.setInt(_selectedSideKey, appModel.selectedSide.index);
     await prefs.setInt(_timeLimitKey, appModel.timeLimit);
-    await prefs.setInt(_player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
-    await prefs.setInt(_player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
+    await prefs.setInt(
+        _player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
+    await prefs.setInt(
+        _player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
     await prefs.setBool(_gameOverKey, appModel.gameOver);
     await prefs.setBool(_stalemateKey, appModel.stalemate);
 
@@ -122,7 +122,8 @@ class GameStateStorage {
       if (parts.length == 3) {
         promotionType = _parsePromotionChar(parts[2]);
       }
-      return Move(from, to, promotionType: promotionType ?? ChessPieceType.promotion);
+      return Move(from, to,
+          promotionType: promotionType ?? ChessPieceType.promotion);
     }).toList();
   }
 

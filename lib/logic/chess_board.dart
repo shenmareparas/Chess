@@ -356,8 +356,8 @@ class ChessBoard {
     }
     mso.movedPiece?.moveCount++;
     if (mso.takenPiece != null) {
-      incrementalValue -= mso.takenPiece!.value +
-          squareValue(mso.takenPiece!, inEndGameCached);
+      incrementalValue -=
+          mso.takenPiece!.value + squareValue(mso.takenPiece!, inEndGameCached);
       _removePiece(mso.takenPiece);
       meta.took = true;
     }
@@ -425,16 +425,14 @@ class ChessBoard {
   void _promote(MoveStackObject mso, MoveMeta meta) {
     var piece = mso.movedPiece;
     if (piece != null) {
-      incrementalValue -=
-          piece.value + squareValue(piece, inEndGameCached);
+      incrementalValue -= piece.value + squareValue(piece, inEndGameCached);
     }
     mso.movedPiece?.type = mso.promotionType ?? ChessPieceType.promotion;
     if (mso.promotionType != ChessPieceType.promotion) {
       addPromotedPiece(mso);
     }
     if (piece != null) {
-      incrementalValue +=
-          piece.value + squareValue(piece, inEndGameCached);
+      incrementalValue += piece.value + squareValue(piece, inEndGameCached);
     }
     meta.promotion = true;
     mso.promotion = true;
@@ -480,8 +478,8 @@ class ChessBoard {
     var tile = (mso.movedPiece?.tile ?? 0) + offset;
     var takenPiece = tiles[tile];
     if (takenPiece != null && takenPiece == enPassantPiece) {
-      incrementalValue -= takenPiece.value +
-          squareValue(takenPiece, inEndGameCached);
+      incrementalValue -=
+          takenPiece.value + squareValue(takenPiece, inEndGameCached);
       _removePiece(takenPiece);
       _setTile(takenPiece.tile, null);
       mso.enPassant = true;
@@ -590,8 +588,7 @@ class ChessBoard {
         tile += offset;
         if ((tiles[tile] != null && tile != king?.tile) ||
             (legal &&
-                _kingInCheckAtTile(
-                    tile, king?.player ?? Player.player1))) {
+                _kingInCheckAtTile(tile, king?.player ?? Player.player1))) {
           return false;
         }
       }
@@ -650,8 +647,7 @@ class ChessBoard {
 
   void _checkMoveAmbiguity(Move move, MoveMeta moveMeta) {
     var piece = tiles[move.from];
-    for (var otherPiece
-        in _piecesOfTypeForPlayer(piece?.type, piece?.player)) {
+    for (var otherPiece in _piecesOfTypeForPlayer(piece?.type, piece?.player)) {
       if (piece != otherPiece) {
         if (movesForPiece(otherPiece).contains(move.to)) {
           if (tileToCol(otherPiece.tile) == tileToCol(piece?.tile ?? 0)) {
@@ -667,8 +663,7 @@ class ChessBoard {
   void _filterPossibleOpenings(Move move) {
     possibleOpenings = possibleOpenings
         .where((opening) =>
-            opening[moveCount] == move &&
-            opening.length > moveCount + 1)
+            opening[moveCount] == move && opening.length > moveCount + 1)
         .toList();
   }
 

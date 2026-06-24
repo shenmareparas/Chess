@@ -16,6 +16,26 @@ class MainMenuView extends StatefulWidget {
 }
 
 class _MainMenuViewState extends State<MainMenuView> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _resetScroll() {
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appModel = Provider.of<AppModel>(context);
@@ -33,7 +53,7 @@ class _MainMenuViewState extends State<MainMenuView> {
                 Positioned.fill(
                   child: CustomPaint(
                     painter: DotGridPainter(
-                        color: theme.lightTile.withOpacity(0.05)),
+                        color: theme.lightTile.withValues(alpha: 0.05)),
                   ),
                 ),
 
@@ -48,8 +68,8 @@ class _MainMenuViewState extends State<MainMenuView> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: theme.lightTile.withOpacity(
-                              0.06), // Very soft theme-colored glow
+                          color: theme.lightTile.withValues(
+                              alpha: 0.06), // Very soft theme-colored glow
                           blurRadius: 100,
                           spreadRadius: 20,
                         ),
@@ -67,7 +87,8 @@ class _MainMenuViewState extends State<MainMenuView> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: GameOptions(appModel),
+                          child: GameOptions(appModel,
+                              scrollController: _scrollController),
                         ),
                       ),
                     ],
@@ -86,6 +107,10 @@ class _MainMenuViewState extends State<MainMenuView> {
                         CupertinoPageRoute(
                           builder: (context) => SettingsView(),
                         ),
+                      );
+                      Future.delayed(
+                        const Duration(milliseconds: 300),
+                        () => _resetScroll(),
                       );
                     },
                     child: Builder(
@@ -118,7 +143,10 @@ class _MainMenuViewState extends State<MainMenuView> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        MainMenuButtons(appModel),
+                        MainMenuButtons(
+                          appModel,
+                          onResetScroll: _resetScroll,
+                        ),
                         BottomPadding(),
                       ],
                     ),

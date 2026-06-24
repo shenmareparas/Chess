@@ -27,13 +27,40 @@ class SettingsView extends StatelessWidget {
             child: Material(
               color: Colors.transparent,
               child: GlassPanel(
-                borderRadius: 24,
+                borderRadius: 32,
                 padding: const EdgeInsets.all(28),
+                color: const Color(0x80201F1F),
                 child: Container(
-                  constraints: const BoxConstraints(maxWidth: 320),
+                  constraints: const BoxConstraints(maxWidth: 340),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Luminous Icon Header
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: theme.darkTile.withValues(alpha: 0.4),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.lightTile.withValues(alpha: 0.3),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: theme.lightTile.withValues(alpha: 0.15),
+                              blurRadius: 15,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.settings_backup_restore_rounded,
+                          color: theme.lightTile,
+                          size: 30,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
                       const Text(
                         'Reset Settings?',
                         style: TextStyle(
@@ -54,41 +81,58 @@ class SettingsView extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 28),
-                      Row(
+                      Column(
                         children: [
-                          Expanded(
-                            child: CupertinoButton(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              color: Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  color: Color(0xFFE5E2E1),
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
-                                ),
+                          // Reset Button
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                              appModel.resetSettingsToDefaults();
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 54,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F0),
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x20000000),
+                                    blurRadius: 10,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.refresh_rounded,
+                                      color: const Color(0xFF131313), size: 20),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Reset Defaults',
+                                    style: TextStyle(
+                                      color: Color(0xFF131313),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: CupertinoButton(
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              color: theme.lightTile.withValues(alpha: 0.8),
-                              borderRadius: BorderRadius.circular(12),
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                                appModel.resetSettingsToDefaults();
-                              },
-                              child: const Text(
-                                'Reset',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
+                          const SizedBox(height: 8),
+                          // Cancel Button
+                          CupertinoButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Color(0xFF8D928C),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
                               ),
                             ),
                           ),
@@ -178,7 +222,6 @@ class SettingsView extends StatelessWidget {
                               const Text(
                                 'Settings',
                                 style: TextStyle(
-                                  fontFamily: 'Playfair Display',
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFFE5E2E1),
@@ -225,7 +268,6 @@ class SettingsView extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFFC3C8C2),
-                                        fontFamily: 'Inter',
                                       ),
                                     ),
                                     Icon(
@@ -238,7 +280,6 @@ class SettingsView extends StatelessWidget {
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Color(0xFFC3C8C2),
-                                        fontFamily: 'Inter',
                                       ),
                                     ),
                                   ],

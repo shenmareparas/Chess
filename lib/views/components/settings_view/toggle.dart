@@ -28,7 +28,9 @@ class Toggle extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isActive ? theme.lightTile : const Color(0xFFC3C8C2).withValues(alpha: 0.6),
+            color: isActive
+                ? theme.lightTile
+                : const Color(0xFFC3C8C2).withValues(alpha: 0.6),
             size: 24,
           ),
           const SizedBox(width: 16),
@@ -37,7 +39,6 @@ class Toggle extends StatelessWidget {
               label,
               style: const TextStyle(
                 fontSize: 16,
-                fontFamily: 'Inter',
                 fontWeight: FontWeight.w500,
                 color: Color(0xFFE5E2E1),
               ),
@@ -54,5 +55,3 @@ class Toggle extends StatelessWidget {
     );
   }
 }
-
-

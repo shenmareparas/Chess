@@ -13,7 +13,7 @@ class SidePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Provider.of<AppModel>(context).theme;
     final primaryColor = theme.lightTile;
-    final activeBgColor = theme.darkTile.withOpacity(0.4);
+    final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
 
     final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
     final isDarkBg =
@@ -36,7 +36,6 @@ class SidePicker extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.5,
-            fontFamily: 'Inter',
           ),
         ),
         const SizedBox(height: 12),
@@ -111,7 +110,6 @@ class SidePicker extends StatelessWidget {
             color: isSelected ? primaryColor : inactiveTextColor,
             fontSize: 14,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            fontFamily: 'Inter',
           ),
         ),
       ),

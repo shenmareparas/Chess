@@ -172,8 +172,7 @@ class ChessGame extends FlameGame with TapCallbacks {
       currentRotation = targetRotation;
     }
 
-    for (var piece
-        in board.player1Pieces.followedBy(board.player2Pieces)) {
+    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
       spriteMap[piece]?.update(tileSize ?? 0, appModel, piece, t);
     }
   }

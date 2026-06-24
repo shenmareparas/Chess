@@ -5,12 +5,14 @@ class GlassPanel extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
+  final Color? color;
 
   const GlassPanel({
     Key? key,
     required this.child,
     this.padding = const EdgeInsets.all(20),
     this.borderRadius = 16.0,
+    this.color,
   }) : super(key: key);
 
   @override
@@ -22,10 +24,11 @@ class GlassPanel extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: const Color(0x28201F1F), // Dark semi-transparent
+            color: color ?? const Color(0x28201F1F), // Dark semi-transparent
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: const Color(0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
+              color: const Color(
+                  0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
               width: 1.0,
             ),
             boxShadow: const [
@@ -64,5 +67,6 @@ class DotGridPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant DotGridPainter oldDelegate) => oldDelegate.color != color;
+  bool shouldRepaint(covariant DotGridPainter oldDelegate) =>
+      oldDelegate.color != color;
 }
