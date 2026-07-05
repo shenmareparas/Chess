@@ -46,6 +46,9 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Quiescence Search**: Avoids horizon effect for captures
 -   **Null Move Pruning & LMR**: Advanced search optimizations
 -   **Opening Book**: Pre-calculated moves for distinct openings
+-   **Transposition Table Caching**: Reuses computed position evaluation records with optimized cache soft-clearing to eliminate redundant sub-tree searches
+-   **High-Performance Attack Detection**: Fast pseudo-legal attack logic and pre-built board layout structures to reduce garbage collection overhead and frame-rate dips during computation
+
 
 ## 📸 Screenshots
 

@@ -32,3 +32,7 @@ Please adhere to the following guidelines:
 5. **Settings UI**: Keep the app theme and piece theme pickers visually consistent. Selected picker rows use a subtle fill without an outline border.
 6. **Formatting & Analysis**: Run `dart format` on changed Dart files and `flutter analyze` before handing off.
 7. **No Destructive Overrides**: Do not remove core AI features (Undo/Redo, Timers, Difficulty Levels) unless explicitly requested. Currently supports 5 difficulty levels.
+8. **Performance & Rendering**: Use `RepaintBoundary` and isolate rebuilds via `Selector` for heavy drawing/custom paint components (like the chess board background `_ChessBackground`).
+9. **AI Search & GC Pressure**: Re-use Transposition Table structures during Minimax evaluations rather than re-allocating them on every search. Use `softClear()` to invalidate stale entries without releasing/reallocating the backing lists.
+10. **State Saving & Debouncing**: Game state saving (`saveGameState`) is debounced (400ms) to limit disk writes. Use `saveGameStateImmediate` for critical lifecycle events (e.g. app pause or close) where writes must complete synchronously.
+

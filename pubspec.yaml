@@ -30,7 +30,7 @@ dependencies:
     shared_preferences:
     async:
     confetti: ^0.8.0
-    google_mobile_ads: ^5.1.0
+    google_mobile_ads: ^9.0.0
 
     cupertino_icons: ^1.0.0
 
