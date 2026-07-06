@@ -107,8 +107,10 @@ class _NotationOverlayState extends State<_NotationOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final isColorDark = ThemeData.estimateBrightnessForColor(widget.color) == Brightness.dark;
-    final shadowColor = isColorDark ? const Color(0xB8FFFFFF) : const Color(0xB8000000);
+    final isColorDark =
+        ThemeData.estimateBrightnessForColor(widget.color) == Brightness.dark;
+    final shadowColor =
+        isColorDark ? const Color(0xB8FFFFFF) : const Color(0xB8000000);
     final textShadows = [
       Shadow(color: shadowColor, offset: const Offset(1, 1), blurRadius: 1.5),
       Shadow(color: shadowColor, offset: const Offset(-1, 1), blurRadius: 1.5),

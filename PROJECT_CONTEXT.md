@@ -18,7 +18,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 ### 2. UI & Views (`lib/views/`)
 
 - **`main_menu_view.dart`**: The starting screen to configure the game (1P/2P, difficulty, time control, side selection).
-- **`chess_view.dart`**: The primary game interface displaying the Flame-rendered board, move history, captured pieces, and timers.
+- **`chess_view.dart`**: The primary game interface displaying the Flame-rendered board, move history, captured pieces, and timers. Reacts dynamically to `GameController` swaps (e.g., on game restart) to re-initialize the Flame layer.
 - **`settings_view.dart`**: For customizing themes, sounds, and other UI preferences.
 - **`components/`**: Directory containing view-specific subcomponents and shared widgets.
 
@@ -34,7 +34,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 
 - Images are located in `assets/images` (with piece subdirectories).
 - Audio effects are in `assets/audio`.
-- Fonts (`Jura`) are in `assets/font`.
+- Fonts (`Inter`) are in `assets/font`.
 
 ## Important Note to AI
 

@@ -97,6 +97,17 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           );
         }
 
+        if (chessGame != null &&
+            appModel.gameController != null &&
+            chessGame!.controller != appModel.gameController) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _initFlameGame();
+          });
+          return Container(
+            decoration: BoxDecoration(gradient: theme.background),
+          );
+        }
+
         if (appModel.promotionRequested) {
           appModel.promotionRequested = false;
           WidgetsBinding.instance
