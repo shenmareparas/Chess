@@ -36,4 +36,5 @@ Please adhere to the following guidelines:
 9. **AI Search & GC Pressure**: Re-use Transposition Table structures during Minimax evaluations rather than re-allocating them on every search. Use `softClear()` to invalidate stale entries without releasing/reallocating the backing lists.
 10. **State Saving & Debouncing**: Game state saving (`saveGameState`) is debounced (400ms) to limit disk writes. Use `saveGameStateImmediate` for critical lifecycle events (e.g. app pause or close) where writes must complete synchronously.
 11. **Game Restart Reactive Handling**: When game controllers are swapped or restarted, `ChessView` automatically detects the controller change and recreates the rendering Flame layer to prevent canvas state desyncs.
+12. **Ad Reward & Fallback Handling**: Rewarded ads (e.g., for granting undos) must degrade gracefully. If an ad fails to display (`onAdFailedToShowFullScreenContent`) or is unavailable/offline, the reward is granted anyway so the player is never blocked/stuck. Additionally, rewards like undos should be granted to the model allowing the player to manually execute them, rather than auto-executing.
 

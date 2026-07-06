@@ -231,8 +231,8 @@ class UndoRedoButtons extends StatelessWidget {
   }
 
   /// Asks [AdService] to show a rewarded interstitial ad.
-  /// On reward earned: grants an undo in the model, then immediately
-  /// executes the undo so the experience feels seamless.
+  /// On reward earned: grants an undo in the model, allowing the player
+  /// to execute it manually when they are ready.
   void _requestAdUndo(BuildContext context) {
     AdService.instance.showRewardedUndoAd(
       onRewardEarned: () {
@@ -240,7 +240,8 @@ class UndoRedoButtons extends StatelessWidget {
         appModel.grantUndoFromAd();
       },
       onAdNotAvailable: () {
-        // Ad not ready yet — inform the player gracefully.
+        // Ad not ready yet (e.g. offline/loading failure) — grant the undo anyway to prevent the user from being stuck.
+        appModel.grantUndoFromAd();
         _showAdNotReadyDialog(context);
       },
     );
@@ -304,7 +305,7 @@ class UndoRedoButtons extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'No ad is available right now. Please try again in a moment.',
+                      'No ad is available right now. To keep you from getting stuck, we have granted you a free undo!',
                       style: TextStyle(
                         fontSize: 15,
                         color: Color(0xFFC3C8C2),

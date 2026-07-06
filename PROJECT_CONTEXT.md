@@ -28,6 +28,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 - **`chess_board.dart`**: Handles the board representation and rendering logic via Flame engine components.
 - **`move_calculation/`**: Contains the critical logic for move generation, validation (checks, stalemates), and the AI's Minimax algorithm with optimizations like Quiescence Search, Null Move Pruning, and Iterative Deepening.
 - **`timer_service.dart` & `audio_service.dart`**: Independent services for game timers and sound effects.
+- **`ad_service.dart`**: Integrates `google_mobile_ads` for rewarded ads (such as for granting undos), implementing fallback mechanisms that grant rewards even when offline or upon ad display failures.
 - **`game_state_storage.dart`**: Logic for managing game history, states, undo and redo functionality.
 
 ## Assets

@@ -109,6 +109,7 @@ class AdService {
             '[AdService] Ad failed to show: $error. Preloading next ad.');
         ad.dispose();
         _loadAd(); // Preload next even after failure.
+        onRewardEarned(); // Grant reward anyway to prevent user getting stuck.
       },
     );
 
