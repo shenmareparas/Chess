@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../model/app_model.dart';
 
@@ -44,9 +44,10 @@ class Toggle extends StatelessWidget {
               ),
             ),
           ),
-          CupertinoSwitch(
+          Switch.adaptive(
             value: isActive,
-            activeTrackColor: theme.lightTile,
+            activeThumbColor: theme.lightTile,
+            activeTrackColor: theme.lightTile.withValues(alpha: 0.5),
             inactiveTrackColor: const Color(0xFF353534),
             onChanged: setFunc,
           ),

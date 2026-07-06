@@ -1,5 +1,5 @@
 import 'package:flame/game.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../../../logic/chess_game.dart';
 import '../../../model/app_model.dart';
@@ -107,6 +107,15 @@ class _NotationOverlayState extends State<_NotationOverlay> {
 
   @override
   Widget build(BuildContext context) {
+    final isColorDark = ThemeData.estimateBrightnessForColor(widget.color) == Brightness.dark;
+    final shadowColor = isColorDark ? const Color(0xB8FFFFFF) : const Color(0xB8000000);
+    final textShadows = [
+      Shadow(color: shadowColor, offset: const Offset(1, 1), blurRadius: 1.5),
+      Shadow(color: shadowColor, offset: const Offset(-1, 1), blurRadius: 1.5),
+      Shadow(color: shadowColor, offset: const Offset(1, -1), blurRadius: 1.5),
+      Shadow(color: shadowColor, offset: const Offset(-1, -1), blurRadius: 1.5),
+    ];
+
     return IgnorePointer(
       child: AnimatedOpacity(
         duration: Duration(milliseconds: _opacity == 0.0 ? 100 : 300),
@@ -127,6 +136,7 @@ class _NotationOverlayState extends State<_NotationOverlay> {
                     color: widget.color,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
+                    shadows: textShadows,
                   ),
                   textAlign: TextAlign.right,
                 ),
@@ -143,6 +153,7 @@ class _NotationOverlayState extends State<_NotationOverlay> {
                     color: widget.color,
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
+                    shadows: textShadows,
                   ),
                 ),
               ),

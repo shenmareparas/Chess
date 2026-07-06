@@ -44,7 +44,7 @@ class GameModePicker extends StatelessWidget {
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: trackBgColor,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: trackBorderColor, width: 1),
           ),
           child: Row(
@@ -99,16 +99,7 @@ class GameModePicker extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected ? activeBgColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(26),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: primaryColor.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
           label,

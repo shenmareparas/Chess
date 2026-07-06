@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../../model/app_model.dart';
@@ -85,16 +86,18 @@ class MainMenuButtons extends StatelessWidget {
     required VoidCallback onPressed,
     double secondaryAlpha = 0.12,
   }) {
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final resolvedAlpha =
+        isAndroid ? (secondaryAlpha * 1.6).clamp(0.0, 0.9) : secondaryAlpha;
+
     final primaryBg = theme.moveHint.withValues(alpha: 1.0);
-    final secondaryBg = theme.lightTile.withValues(alpha: secondaryAlpha);
+    final secondaryBg = theme.lightTile.withValues(alpha: resolvedAlpha);
     final secondaryBorder = theme.lightTile;
 
     final isDark = ThemeData.estimateBrightnessForColor(
             isPrimary ? primaryBg : secondaryBg) ==
         Brightness.dark;
-    final textColor = isPrimary
-        ? (isDark ? Colors.white : const Color(0xFF241A00))
-        : theme.lightTile;
+    final textColor = isDark ? Colors.white : const Color(0xFF241A00);
 
     return Container(
       width: double.infinity,

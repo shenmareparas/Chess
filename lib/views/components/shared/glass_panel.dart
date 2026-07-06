@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 
 class GlassPanel extends StatelessWidget {
   final Widget child;
@@ -17,31 +18,50 @@ class GlassPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+
+    // Resolve background color: if Android (no blur), use a much higher opacity
+    // to maintain readability and contrast against background elements.
+    final resolvedColor = isAndroid
+        ? (color != null
+            ? color!.withValues(alpha: (color!.a * 1.8).clamp(0.0, 0.95))
+            : const Color(0xB0201F1F))
+        : (color ?? const Color(0x28201F1F));
+
+    final panelContent = Container(
+      padding: padding,
+      decoration: BoxDecoration(
+        color: resolvedColor,
+        borderRadius: BorderRadius.circular(borderRadius),
+        border: Border.all(
+          color: const Color(
+              0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
+          width: 1.0,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x33000000), // Darker shadow
+            blurRadius: 24,
+            spreadRadius: -1,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
+    );
+
+    if (isAndroid) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: panelContent,
+      );
+    }
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: color ?? const Color(0x28201F1F), // Dark semi-transparent
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: const Color(
-                  0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
-              width: 1.0,
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x33000000), // Darker shadow
-                blurRadius: 24,
-                spreadRadius: -1,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: child,
-        ),
+        child: panelContent,
       ),
     );
   }
