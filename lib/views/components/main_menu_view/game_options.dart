@@ -40,7 +40,7 @@ class GameOptions extends StatelessWidget {
           child: Column(
             children: [
               Image.asset(
-                'assets/images/logo2.png',
+                'assets/images/logo.png',
                 width: 80,
                 height: 80,
                 fit: BoxFit.contain,

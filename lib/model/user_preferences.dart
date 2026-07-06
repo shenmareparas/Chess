@@ -11,7 +11,7 @@ const PIECE_THEMES = [
   'Lewis Chessmen',
   'Mexico City',
   'Old School',
-  'Fairy'
+  'Fairy Tale'
 ];
 
 final List<String> sortedPieceThemes = () {

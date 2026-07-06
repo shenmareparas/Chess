@@ -102,7 +102,7 @@ flutter:
         - assets/images/pieces/lewischessmen/
         - assets/images/pieces/mexicocity/
         - assets/images/pieces/oldschool/
-        - assets/images/pieces/fairy/
+        - assets/images/pieces/fairytale/
         - assets/audio/piece_moved.mp3
         - assets/audio/win.wav
         - assets/audio/lose.wav
