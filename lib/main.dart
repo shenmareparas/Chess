@@ -6,10 +6,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'logic/ad_service.dart';
+import 'logic/deep_link_service.dart';
 import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
 import 'model/user_preferences.dart';
 import 'views/main_menu_view.dart';
+
+/// Global navigator key used by [DeepLinkService] to push routes from
+/// outside the widget tree (e.g. on incoming App Actions deep links).
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,12 +31,20 @@ void main() async {
   // Initialize AdMob SDK in the background, don't await to block startup
   AdService.instance.initialize();
 
+  final appModel = AppModel(prefs: prefs);
+
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => AppModel(prefs: prefs),
+    ChangeNotifierProvider.value(
+      value: appModel,
       child: Chess(),
     ),
   );
+
+  // Initialize deep link handling for App Actions (chess://start, chess://resume)
+  DeepLinkService(
+    appModel: appModel,
+    navigatorKey: navigatorKey,
+  ).initialize();
 }
 
 Future<void> _loadFlameAssets(String activeTheme) async {
@@ -108,6 +121,7 @@ class Chess extends StatelessWidget {
     return CupertinoApp(
       debugShowCheckedModeBanner: false,
       title: 'Chess',
+      navigatorKey: navigatorKey,
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
         textTheme: CupertinoTextThemeData(

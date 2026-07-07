@@ -31,6 +31,7 @@ dependencies:
     async:
     confetti: ^0.8.0
     google_mobile_ads: ^9.0.0
+    app_links: ^7.2.0
 
     cupertino_icons: ^1.0.0
 
