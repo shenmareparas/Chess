@@ -14,6 +14,7 @@ import 'views/main_menu_view.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   // Load preferences first to get the active piece theme
   final prefs = UserPreferences();

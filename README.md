@@ -52,7 +52,13 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ## 📸 Screenshots
 
-_Add your app screenshots here_
+<p align="center">
+  <img src="screenshots/slide1.png" width="19%" alt="Slide 1"/>
+  <img src="screenshots/slide2.png" width="19%" alt="Slide 2"/>
+  <img src="screenshots/slide3.png" width="19%" alt="Slide 3"/>
+  <img src="screenshots/slide4.png" width="19%" alt="Slide 4"/>
+  <img src="screenshots/slide5.png" width="19%" alt="Slide 5"/>
+</p>
 
 ## 🛠️ Technologies Used
 
@@ -104,6 +110,26 @@ _Add your app screenshots here_
     # iOS
     flutter build ios --release
     ```
+
+### 🎨 Marketing & Screenshots Editor
+
+To design, preview, and bulk-export Google Play Store screenshots:
+
+1. **Navigate to the editor directory**
+    ```bash
+    cd screenshots_editor
+    ```
+2. **Install dependencies**
+    ```bash
+    bun install   # or npm install / pnpm install / yarn install
+    ```
+3. **Start the local server**
+    ```bash
+    bun dev       # or npm run dev / pnpm dev / yarn dev
+    ```
+4. **Open in browser**
+    Visit [http://localhost:3000](http://localhost:3000) to edit layouts, snap-center elements, toggle bezel notches, adjust background film noise, and export high-resolution assets.
+
 
 ## 📁 Project Structure
 

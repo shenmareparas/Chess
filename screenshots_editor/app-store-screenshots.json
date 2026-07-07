@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 2,
+  "appName": "Chess",
+  "themeId": "forest-mint",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "android",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [],
+    "android": [
+      {
+        "id": "s_chess_1",
+        "layout": "hero",
+        "themeId": "forest-mint",
+        "label": {
+          "en": "AI CHESS"
+        },
+        "headline": {
+          "en": "Challenge our advanced\nchess engine"
+        },
+        "screenshot": "/screenshots/android/phone/en/ai_chess.png",
+        "transforms": {
+          "device": {
+            "x": 221.01000979919434,
+            "y": 674.8778176109106,
+            "width": 679,
+            "height": 1471,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "caption": {
+            "x": 86.5,
+            "y": 170.63785257782806,
+            "width": 907,
+            "height": 538,
+            "rotation": 0,
+            "zIndex": 1
+          }
+        }
+      },
+      {
+        "id": "s_chess_2",
+        "layout": "device-top",
+        "themeId": "midnight-slate",
+        "label": {
+          "en": "OFFLINE MULTIPLAYER"
+        },
+        "headline": {
+          "en": "Play with friends\nlocally on one device"
+        },
+        "screenshot": "/screenshots/android/phone/en/offline_multiplayer.png",
+        "transforms": {
+          "caption": {
+            "x": 86.5,
+            "y": 1373.405423641717,
+            "width": 907,
+            "height": 538,
+            "rotation": 0,
+            "zIndex": 1
+          },
+          "device": {
+            "x": 200.70773943511358,
+            "y": -195.16216591963897,
+            "width": 679,
+            "height": 1471,
+            "rotation": 0,
+            "zIndex": 2
+          }
+        }
+      },
+      {
+        "id": "s_chess_3",
+        "layout": "three-devices",
+        "themeId": "royal-velvet",
+        "label": {
+          "en": "CUSTOM THEMES"
+        },
+        "headline": {
+          "en": "Personalise your board and\npiece styles"
+        },
+        "screenshot": "/screenshots/android/phone/en/custom_themes_primary.png",
+        "screenshotSecondary": "/screenshots/android/phone/en/custom_themes_secondary.png",
+        "screenshotTertiary": "/screenshots/android/phone/en/custom_themes_tertiary.png",
+        "transforms": {
+          "deviceSecondary": {
+            "x": -129.5999999999999,
+            "y": 631.8736599423636,
+            "width": 576.7967723342939,
+            "height": 1249.7263400576367,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "device": {
+            "x": 251.60161383285322,
+            "y": 651.0736599423635,
+            "width": 576.7967723342939,
+            "height": 1249.7263400576367,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "caption": {
+            "x": 86.5,
+            "y": 95.99999547322591,
+            "width": 907,
+            "height": 538,
+            "rotation": 0,
+            "zIndex": 1
+          }
+        }
+      },
+      {
+        "id": "s_chess_4",
+        "layout": "device-top",
+        "themeId": "warm-walnut",
+        "label": {
+          "en": "UNDO / REDO"
+        },
+        "headline": {
+          "en": "Take back moves\nand learn from mistakes"
+        },
+        "screenshot": "/screenshots/android/phone/en/undo_redo.png",
+        "transforms": {
+          "device": {
+            "x": 200.70778097982657,
+            "y": -192,
+            "width": 678.5844380403457,
+            "height": 1470.266282420749,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "caption": {
+            "x": 86.39999999999998,
+            "y": 1371.2432432432392,
+            "width": 907.2,
+            "height": 537.6,
+            "rotation": 0,
+            "zIndex": 1
+          }
+        }
+      },
+      {
+        "id": "s_chess_5",
+        "layout": "device-bottom",
+        "themeId": "jargon-jade",
+        "label": {
+          "en": "MORE FEATURES"
+        },
+        "headline": {
+          "en": "Customizable Settings"
+        },
+        "screenshot": "/screenshots/android/phone/en/more_features.png",
+        "transforms": {
+          "device": {
+            "x": 200.70778097982748,
+            "y": 411.33371757925113,
+            "width": 678.5844380403457,
+            "height": 1470.266282420749,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "caption": {
+            "x": 86.5,
+            "y": 80.08649581610192,
+            "width": 907,
+            "height": 538,
+            "rotation": 0,
+            "zIndex": 1
+          }
+        }
+      }
+    ],
+    "ipad": [],
+    "android-7": [
+      {
+        "id": "s_chess_d7_1",
+        "layout": "hero",
+        "themeId": "forest-mint",
+        "label": {
+          "en": "CHESS ON TABLET"
+        },
+        "headline": {
+          "en": "Challenge our advanced\nchess engine."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-10": [
+      {
+        "id": "s_chess_d10_1",
+        "layout": "hero",
+        "themeId": "forest-mint",
+        "label": {
+          "en": "CHESS ON TABLET"
+        },
+        "headline": {
+          "en": "Challenge our advanced\nchess engine."
+        },
+        "screenshot": ""
+      }
+    ],
+    "feature-graphic": [
+      {
+        "id": "s_chess_fg",
+        "layout": "feature-graphic",
+        "themeId": "forest-mint",
+        "label": {},
+        "headline": {
+          "en": "Play Chess, master the board."
+        },
+        "screenshot": ""
+      }
+    ]
+  },
+  "crossScreenMockupsByDevice": {
+    "iphone": [],
+    "ipad": [],
+    "android": [],
+    "android-7": [],
+    "android-10": [],
+    "feature-graphic": []
+  },
+  "showCameraDot": false,
+  "thinBezels": true
+}

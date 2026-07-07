@@ -31,6 +31,15 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 - **`ad_service.dart`**: Integrates `google_mobile_ads` for rewarded ads (such as for granting undos), implementing fallback mechanisms that grant rewards even when offline or upon ad display failures.
 - **`game_state_storage.dart`**: Logic for managing game history, states, undo and redo functionality.
 
+### 4. Marketing & Screenshots (`screenshots_editor/`)
+
+- **`screenshots_editor/`**: A Next.js-based local web tool for designing and exporting Google Play Store screenshots.
+  - Automatically loads slide-specific game themes (Forest Mint, Midnight Slate, etc.).
+  - Configured with custom thin bezel layouts, concentric rounded corners, and layouts (`two-devices`, `three-devices`).
+  - Supports premium background overlays (adjustable film noise opacity) and camera notch bezel toggle settings.
+  - Supports horizontal & vertical alignment (both custom text elements and slide headlines) and stage snap-centering actions.
+  - Auto-saves layout configurations in real-time to `screenshots_editor/app-store-screenshots.json`.
+
 ## Assets
 
 - Images are located in `assets/images` (with piece subdirectories).
@@ -40,3 +49,4 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 ## Important Note to AI
 
 This context provides a high-level map of the codebase to assist in making localized or architectural changes without breaking existing features. If you are modifying UI look in `views/` and `model/`. If modifying how pieces move or AI difficulty, look inside `logic/`.
+If you need to make changes to the app store screenshot generator, modify the Next.js code under `screenshots_editor/` and run `bun dev` to test it.
