@@ -9,7 +9,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 
 ### 1. App Entry & State
 
-- **`lib/main.dart`**: Initializes settings, loads Flame assets (audio & images), and wraps the `CupertinoApp` with a `ChangeNotifierProvider` for `AppModel`.
+- **`lib/main.dart`**: Initializes settings (loading preferences first), preloads essential assets (the active piece theme, Classic theme, and the home screen logo) synchronously to speed up startup, launches remaining theme preloading and AdService initialization asynchronously, and wraps the `CupertinoApp` with a `ChangeNotifierProvider` for `AppModel`.
 - **`lib/model/app_model.dart`**: The central brain for state management, notifying the UI of game state changes, theme changes, and settings.
 - **`lib/model/user_preferences.dart`**: Handles saving and loading settings to local storage.
 - **`lib/model/app_themes.dart`**: Specifies board and UI colors.
