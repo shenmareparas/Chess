@@ -16,12 +16,12 @@ import 'user_preferences.dart';
 class AppModel extends ChangeNotifier {
   // ── Game Settings ──
   int playerCount = 1;
-  int aiDifficulty = 3;
+  int aiDifficulty = 1;
   Player selectedSide = Player.player1;
   Player playerSide = Player.player1;
 
   // ── Services ──
-  final UserPreferences prefs = UserPreferences();
+  final UserPreferences prefs;
   final AudioService audio = AudioService();
   final TimerService timerService = TimerService();
 
@@ -99,13 +99,16 @@ class AppModel extends ChangeNotifier {
     }
   }
 
-  AppModel() {
+  AppModel({UserPreferences? prefs}) : prefs = prefs ?? UserPreferences() {
     // Wire up service callbacks
-    prefs.onChanged = () => notifyListeners();
+    this.prefs.onChanged = () => notifyListeners();
     timerService.onExpired = () => endGame();
-    audio.enabled = prefs.soundEnabled;
+    audio.enabled = this.prefs.soundEnabled;
+    audio.initialize();
 
-    prefs.load();
+    if (prefs == null) {
+      this.prefs.load();
+    }
   }
 
   // ── Game Lifecycle ──
@@ -136,7 +139,6 @@ class AppModel extends ChangeNotifier {
       playerSide = Player.player1;
     }
     gameController = GameController(this);
-    gameController!.clearTranspositionTable();
     timerService.start(() => turn, () => gameOver);
 
     // Trigger AI move if it's AI's turn natively for standard games

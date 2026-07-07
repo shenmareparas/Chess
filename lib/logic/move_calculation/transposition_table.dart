@@ -1,6 +1,6 @@
 import 'move_classes/move.dart';
 
-const int TT_SIZE = 1 << 20; // ~1 million entries
+const int TT_SIZE = 1 << 16; // ~65k entries
 const int TT_MASK = TT_SIZE - 1;
 
 // Flag types for transposition table entries

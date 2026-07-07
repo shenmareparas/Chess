@@ -6,14 +6,32 @@ import '../model/player.dart';
 /// Extracted from AppModel to follow single-responsibility principle.
 class AudioService {
   bool _enabled;
+  AudioPool? _moveSoundPool;
 
   AudioService({bool enabled = true}) : _enabled = enabled;
+
+  Future<void> initialize() async {
+    try {
+      _moveSoundPool = await FlameAudio.createPool(
+        'piece_moved.mp3',
+        minPlayers: 1,
+        maxPlayers: 4,
+      );
+    } catch (_) {
+      // Fallback gracefully if pool initialization fails
+    }
+  }
 
   bool get enabled => _enabled;
   set enabled(bool value) => _enabled = value;
 
   void playMovedSound() {
-    if (_enabled) FlameAudio.play('piece_moved.mp3');
+    if (!_enabled) return;
+    if (_moveSoundPool != null) {
+      _moveSoundPool!.start();
+    } else {
+      FlameAudio.play('piece_moved.mp3');
+    }
   }
 
   void playGameEndSound({

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flame/flame.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,34 +14,91 @@ import 'views/main_menu_view.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  await _loadFlameAssets();
-  // Initialize AdMob SDK and preload the first rewarded interstitial ad.
-  await AdService.instance.initialize();
+
+  // Load preferences first to get the active piece theme
+  final prefs = UserPreferences();
+  await prefs.load();
+
+  // Load essential assets (active theme and fallback Classic) to speed up startup
+  await _loadFlameAssets(prefs.pieceTheme);
+
+  // Initialize AdMob SDK in the background, don't await to block startup
+  AdService.instance.initialize();
+
   runApp(
     ChangeNotifierProvider(
-      create: (context) => AppModel(),
+      create: (context) => AppModel(prefs: prefs),
       child: Chess(),
     ),
   );
 }
 
-Future<void> _loadFlameAssets() async {
-  List<String> pieceImages = [];
-  for (var theme in PIECE_THEMES) {
+Future<void> _loadFlameAssets(String activeTheme) async {
+  // Preload and cache logo.png in Flutter's ImageCache to prevent any blinking/delay at startup
+  final logoProvider = const AssetImage('assets/images/logo.png');
+  final logoStream = logoProvider.resolve(ImageConfiguration.empty);
+  final completer = Completer<void>();
+  final listener = ImageStreamListener(
+    (ImageInfo info, bool synchronousCall) {
+      if (!completer.isCompleted) completer.complete();
+    },
+    onError: (Object exception, StackTrace? stackTrace) {
+      if (!completer.isCompleted) completer.complete();
+    },
+  );
+  logoStream.addListener(listener);
+  await completer.future;
+  logoStream.removeListener(listener);
+
+  List<String> essentialImages = [];
+
+  // 1. Preload active theme and Classic fallback theme images
+  for (var theme in {activeTheme, 'Classic'}) {
     for (var color in ['black', 'white']) {
       for (var piece in ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn']) {
-        pieceImages
+        essentialImages
             .add('pieces/${formatPieceTheme(theme)}/${piece}_$color.png');
       }
     }
   }
-  await Flame.images.loadAll(pieceImages);
+
+  await Flame.images.loadAll(essentialImages);
   await FlameAudio.audioCache.loadAll([
     'piece_moved.mp3',
     'win.wav',
     'lose.wav',
     'tie.wav',
   ]);
+
+  // 2. Preload remaining themes asynchronously in the background
+  _preloadRemainingThemesInBackground(activeTheme);
+}
+
+void _preloadRemainingThemesInBackground(String activeTheme) {
+  Future(() async {
+    List<String> remainingImages = [];
+    for (var theme in PIECE_THEMES) {
+      if (theme == activeTheme || theme == 'Classic') continue;
+      for (var color in ['black', 'white']) {
+        for (var piece in [
+          'king',
+          'queen',
+          'rook',
+          'bishop',
+          'knight',
+          'pawn'
+        ]) {
+          remainingImages
+              .add('pieces/${formatPieceTheme(theme)}/${piece}_$color.png');
+        }
+      }
+    }
+    try {
+      await Flame.images.loadAll(remainingImages);
+    } catch (e) {
+      // Avoid crash if assets fail to load in background
+    }
+  });
 }
 
 class Chess extends StatelessWidget {

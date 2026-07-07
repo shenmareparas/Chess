@@ -32,10 +32,9 @@ Move calculateAIMove(AIMoveArgs args) {
   } else {
     final int maxDepth = args.aiDifficulty;
     final Player aiPlayer = args.aiPlayer;
-    // Re-use the caller-provided TranspositionTable that survives across AI
-    // moves (soft-cleared between games). This avoids allocating and GC-ing
-    // the ~8 MB table on every turn.
-    final TranspositionTable tt = args.tt;
+    // Instantiate TranspositionTable inside the isolate.
+    // This avoids transferring a huge object/table across isolates.
+    final TranspositionTable tt = TranspositionTable();
 
     // Iterative deepening: search depth 1, 2, ..., maxDepth
     // Each iteration informs move ordering for the next

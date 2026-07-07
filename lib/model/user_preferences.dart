@@ -123,7 +123,7 @@ class UserPreferences {
   }
 
   Future<void> resetToDefaults() async {
-    themeName = 'Jargon Jade';
+    themeName = 'Forest Mint';
     pieceTheme = 'Classic';
     showMoveHistory = true;
     soundEnabled = true;
