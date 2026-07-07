@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -15,12 +16,12 @@ import 'user_preferences.dart';
 class AppModel extends ChangeNotifier {
   // ── Game Settings ──
   int playerCount = 1;
-  int aiDifficulty = 3;
+  int aiDifficulty = 1;
   Player selectedSide = Player.player1;
   Player playerSide = Player.player1;
 
   // ── Services ──
-  final UserPreferences prefs = UserPreferences();
+  final UserPreferences prefs;
   final AudioService audio = AudioService();
   final TimerService timerService = TimerService();
 
@@ -40,9 +41,11 @@ class AppModel extends ChangeNotifier {
   List<String> get pieceThemes => prefs.pieceThemes;
 
   ValueNotifier<Duration> get player1TimeLeft => timerService.player1TimeLeft;
-  set player1TimeLeft(ValueNotifier<Duration> val) => timerService.player1TimeLeft.value = val.value;
+  set player1TimeLeft(ValueNotifier<Duration> val) =>
+      timerService.player1TimeLeft.value = val.value;
   ValueNotifier<Duration> get player2TimeLeft => timerService.player2TimeLeft;
-  set player2TimeLeft(ValueNotifier<Duration> val) => timerService.player2TimeLeft.value = val.value;
+  set player2TimeLeft(ValueNotifier<Duration> val) =>
+      timerService.player2TimeLeft.value = val.value;
 
   // ── Game State ──
   GameController? gameController;
@@ -59,6 +62,32 @@ class AppModel extends ChangeNotifier {
   bool get isAIsTurn => playingWithAI && (turn == aiTurn);
   bool get playingWithAI => playerCount == 1;
 
+  // ── Save Debounce ──
+  Timer? _saveDebounceTimer;
+
+  // ── Undo Bank ──
+  /// Number of free undos remaining for the current game.
+  /// Starts at 1 for each new game. Players can earn 1 more by watching an ad.
+  int _availableUndos = 1;
+  int get availableUndos => _availableUndos;
+
+  void resetUndos() {
+    _availableUndos = 1;
+    notifyListeners();
+  }
+
+  void decrementUndo() {
+    if (_availableUndos > 0) {
+      _availableUndos--;
+      notifyListeners();
+    }
+  }
+
+  void grantUndoFromAd() {
+    _availableUndos++;
+    notifyListeners();
+  }
+
   // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
   bool animateBoardRotation = false;
 
@@ -70,13 +99,16 @@ class AppModel extends ChangeNotifier {
     }
   }
 
-  AppModel() {
+  AppModel({UserPreferences? prefs}) : prefs = prefs ?? UserPreferences() {
     // Wire up service callbacks
-    prefs.onChanged = () => notifyListeners();
+    this.prefs.onChanged = () => notifyListeners();
     timerService.onExpired = () => endGame();
-    audio.enabled = prefs.soundEnabled;
+    audio.enabled = this.prefs.soundEnabled;
+    audio.initialize();
 
-    prefs.load();
+    if (prefs == null) {
+      this.prefs.load();
+    }
   }
 
   // ── Game Lifecycle ──
@@ -92,13 +124,16 @@ class AppModel extends ChangeNotifier {
     moveMetaList = [];
     timerService.configure(timeLimit);
     audio.enabled = prefs.soundEnabled;
+    // Reset undo bank for the new game.
+    _availableUndos = 1;
     if (selectedSide == Player.random) {
-      playerSide =
-          math.Random.secure().nextInt(2) == 0 ? Player.player1 : Player.player2;
+      playerSide = math.Random.secure().nextInt(2) == 0
+          ? Player.player1
+          : Player.player2;
     } else {
       playerSide = selectedSide;
     }
-    
+
     // In a 2-player game, rotation is always relative to player1 being at the bottom.
     if (!playingWithAI) {
       playerSide = Player.player1;
@@ -110,7 +145,7 @@ class AppModel extends ChangeNotifier {
     if (isAIsTurn && !gameOver) {
       gameController!.triggerAIMove();
     }
-    
+
     // Disable animation on load, then enable it after the board is rendered.
     animateBoardRotation = false;
     Future.delayed(Duration(milliseconds: 50), () {
@@ -235,6 +270,7 @@ class AppModel extends ChangeNotifier {
     prefs.setSoundEnabled(enabled);
     audio.enabled = enabled;
   }
+
   void setShowHints(bool show) => prefs.setShowHints(show);
   void setShowNotation(bool show) => prefs.setShowNotation(show);
   void setEnableRotation(bool enable) => prefs.setEnableRotation(enable);
@@ -252,7 +288,23 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Schedules a save after a short debounce window (400 ms).
+  /// Rapid undo/redo or move bursts collapse into a single write,
+  /// preventing SharedPreferences I/O on every single event.
   void saveGameState() {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = Timer(
+      const Duration(milliseconds: 400),
+      () => GameStateStorage.saveGameState(this),
+    );
+  }
+
+  /// Immediately flushes the game state to disk, bypassing the debounce.
+  /// Use this in lifecycle events (app pause, explicit exit) to ensure
+  /// no data is lost.
+  void saveGameStateImmediate() {
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     GameStateStorage.saveGameState(this);
   }
 
@@ -277,34 +329,39 @@ class AppModel extends ChangeNotifier {
     gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
-      var meta = gameController!.board.push(move,
-          getMeta: true, promotionType: move.promotionType);
+      var meta = gameController!.board
+          .push(move, getMeta: true, promotionType: move.promotionType);
       moveMetaList.add(meta);
       turn = oppositePlayer(turn);
     }
     gameController!.snapSprites();
 
     // Restore timer durations
-    player1TimeLeft.value = Duration(milliseconds: state['player1TimeLeftMs'] as int);
-    player2TimeLeft.value = Duration(milliseconds: state['player2TimeLeftMs'] as int);
+    player1TimeLeft.value =
+        Duration(milliseconds: state['player1TimeLeftMs'] as int);
+    player2TimeLeft.value =
+        Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
+
+    // Restore undo bank (falls back to 1 for saves predating this feature).
+    _availableUndos = (state['availableUndos'] as int?) ?? 1;
 
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
       gameController!.latestMove = moveMetaList.last.move;
       var oppositeTurn = oppositePlayer(turn);
       if (gameController!.board.kingInCheck(oppositeTurn)) {
-        gameController!.checkHintTile = gameController!.board.kingForPlayer(oppositeTurn)?.tile;
+        gameController!.checkHintTile =
+            gameController!.board.kingForPlayer(oppositeTurn)?.tile;
       }
     }
 
     timerService.start(() => turn, () => gameOver);
 
-
-
+    moveListUpdated = true;
     notifyListeners();
 
     // Trigger AI move if it's AI's turn

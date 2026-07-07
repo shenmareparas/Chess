@@ -5,12 +5,11 @@ import '../model/app_model.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
+import 'move_calculation/ai_move_args.dart';
 import 'move_calculation/ai_move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'shared_functions.dart';
-
-
 
 /// Handles game logic orchestration: move execution, AI, undo/redo, promotion.
 /// Separated from ChessGame (the view/rendering layer) for clean MVVM.
@@ -64,10 +63,11 @@ class GameController {
     if (appModel.gameOver) return;
     await Future.delayed(Duration(milliseconds: 500));
     if (appModel.gameOver) return;
-    var args = Map();
-    args['aiPlayer'] = appModel.aiTurn;
-    args['aiDifficulty'] = appModel.aiDifficulty;
-    args['board'] = board;
+    final args = AIMoveArgs(
+      board: board,
+      aiPlayer: appModel.aiTurn,
+      aiDifficulty: appModel.aiDifficulty,
+    );
     aiOperation = CancelableOperation.fromFuture(
       compute(calculateAIMove, args),
     );

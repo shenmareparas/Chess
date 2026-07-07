@@ -11,7 +11,8 @@ import 'components/chess_view/game_info_and_controls.dart';
 import 'components/chess_view/game_info_and_controls/game_status.dart';
 import 'components/chess_view/promotion_dialog.dart';
 import 'components/shared/bottom_padding.dart';
-import 'components/shared/rounded_button.dart';
+import 'components/shared/glass_panel.dart';
+import 'settings_view.dart';
 
 class ChessView extends StatefulWidget {
   final AppModel appModel;
@@ -57,7 +58,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
       });
       // Defer notifying listeners if needed to let the flame engine setup
       Future.delayed(Duration(milliseconds: 50), () {
-         if (mounted) appModel.update();
+        if (mounted) appModel.update();
       });
     }
   }
@@ -74,7 +75,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       if (!appModel.gameOver) {
-        appModel.saveGameState();
+        appModel.saveGameStateImmediate();
         appModel.timerService.pause();
       }
     } else if (state == AppLifecycleState.resumed) {
@@ -91,6 +92,17 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         final theme = appModel.theme;
         // Show themed background while game initializes
         if (appModel.gameController == null || chessGame == null) {
+          return Container(
+            decoration: BoxDecoration(gradient: theme.background),
+          );
+        }
+
+        if (chessGame != null &&
+            appModel.gameController != null &&
+            chessGame!.controller != appModel.gameController) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _initFlameGame();
+          });
           return Container(
             decoration: BoxDecoration(gradient: theme.background),
           );
@@ -121,21 +133,72 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           },
           child: Stack(
             children: [
-              Container(
-                decoration: BoxDecoration(gradient: theme.background),
-                padding: EdgeInsets.all(30),
+              // ── Static background ──────────────────────────────────────
+              // Driven by Selector so it only rebuilds on theme change,
+              // NOT on every move / AI turn / timer tick.
+              Positioned.fill(
+                child: Selector<AppModel, AppTheme>(
+                  selector: (_, m) => m.theme,
+                  builder: (_, theme, __) => _ChessBackground(theme: theme),
+                ),
+              ),
+
+              // ── Game content ───────────────────────────────────────────
+              SafeArea(
                 child: Column(
                   children: [
-                    Spacer(),
-                    ChessBoardWidget(appModel, chessGame!),
-                    SizedBox(height: 30),
-                    GameStatus(),
-                    Spacer(),
-                    GameInfoAndControls(appModel),
+                    // Top App Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          GameStatus(),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: CupertinoButton(
+                              padding: EdgeInsets.zero,
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  CupertinoPageRoute(
+                                    builder: (context) => const SettingsView(),
+                                  ),
+                                );
+                              },
+                              child: Icon(
+                                Icons.settings_rounded,
+                                color: theme.lightTile,
+                                size: 24,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Center(
+                          child: ChessBoardWidget(appModel, chessGame!),
+                        ),
+                      ),
+                    ),
+
+                    // Controls and Buttons at the bottom
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 10),
+                      child: GameInfoAndControls(appModel),
+                    ),
                     BottomPadding(),
                   ],
                 ),
               ),
+
+              // ── Confetti Overlay ───────────────────────────────────────
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
@@ -167,88 +230,253 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   }
 }
 
+/// Static decorative background for [ChessView].
+///
+/// Separated from the game-content [Consumer] so it is only rebuilt when the
+/// theme changes — not on every move, AI result, or timer tick.
+class _ChessBackground extends StatelessWidget {
+  final AppTheme theme;
+
+  const _ChessBackground({required this.theme});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Gradient fill
+        Container(
+          decoration: BoxDecoration(gradient: theme.background),
+        ),
+
+        // Dot grid
+        Positioned.fill(
+          child: CustomPaint(
+            painter: DotGridPainter(
+              color: theme.lightTile.withValues(alpha: 0.04),
+            ),
+          ),
+        ),
+
+        // Glow blobs — RepaintBoundary keeps the expensive boxShadow on its
+        // own GPU layer so the Selector's infrequent rebuilds don't cause jank.
+        Positioned(
+          top: 150,
+          right: -50,
+          child: RepaintBoundary(
+            child: Container(
+              width: 280,
+              height: 280,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.lightTile.withValues(alpha: 0.05),
+                    blurRadius: 120,
+                    spreadRadius: 30,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        Positioned(
+          bottom: 100,
+          left: -50,
+          child: RepaintBoundary(
+            child: Container(
+              width: 250,
+              height: 250,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.darkTile.withValues(alpha: 0.04),
+                    blurRadius: 100,
+                    spreadRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 void showExitDialog(BuildContext context) {
   showGeneralDialog(
     context: context,
-    barrierColor: Colors.black.withValues(alpha: 0.5),
+    barrierColor: Colors.black.withValues(alpha: 0.6),
     barrierDismissible: true,
     barrierLabel: '',
-    transitionDuration: Duration(milliseconds: 250),
+    transitionDuration: const Duration(milliseconds: 250),
     pageBuilder: (dialogContext, anim1, anim2) {
       return Selector<AppModel, AppTheme>(
         selector: (_, m) => m.theme,
         builder: (dialogContext, theme, child) => Center(
           child: Material(
             color: Colors.transparent,
-            child: Container(
-              constraints: BoxConstraints(maxWidth: 340),
-              padding: EdgeInsets.all(30),
-              decoration: BoxDecoration(
-                gradient: theme.background,
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    offset: Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Leave Game?',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontFamily: 'Jura',
-                      color: Colors.white,
+            child: GlassPanel(
+              borderRadius: 32,
+              padding: const EdgeInsets.all(28),
+              color: const Color(0x80201F1F),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 340),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Icon Container with Luminous Glow
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: theme.darkTile.withValues(alpha: 0.4),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.lightTile.withValues(alpha: 0.3),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.lightTile.withValues(alpha: 0.15),
+                            blurRadius: 15,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.logout_rounded,
+                        color: theme.lightTile,
+                        size: 30,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 15),
-                  Text(
-                    'Would you like to save your progress?',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'Jura',
-                      color: Colors.white70,
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Leave Game?',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFE5E2E1),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 15),
-                  Consumer<AppModel>(
-                    builder: (context, appModel, child) => RoundedButton(
-                      'Save & Exit',
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        appModel.saveAndExitChessView();
-                        Navigator.of(context).pop();
-                      },
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Would you like to save your progress before exiting? You can resume from this exact position later.',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFFC3C8C2),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  Consumer<AppModel>(
-                    builder: (context, appModel, child) => RoundedButton(
-                      'Exit',
-                      onPressed: () {
-                        Navigator.pop(dialogContext);
-                        appModel.exitChessView();
-                        Navigator.of(context).pop();
-                      },
+                    const SizedBox(height: 28),
+                    // Actions Column
+                    Column(
+                      children: [
+                        // Save & Exit (Solid Premium Button)
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            final appModel =
+                                Provider.of<AppModel>(context, listen: false);
+                            appModel.saveAndExitChessView();
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 54,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF5F5F0),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x20000000),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.save_rounded,
+                                    color: const Color(0xFF131313), size: 20),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Save & Exit',
+                                  style: TextStyle(
+                                    color: Color(0xFF131313),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        // Exit Without Saving (Glass / Outline Button)
+                        CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            Navigator.pop(dialogContext);
+                            final appModel =
+                                Provider.of<AppModel>(context, listen: false);
+                            appModel.exitChessView();
+                            Navigator.of(context).pop();
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: 54,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: const Color(0x30F5F5F0),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.close_rounded,
+                                    color: const Color(0xFFE5E2E1), size: 20),
+                                const SizedBox(width: 8),
+                                const Text(
+                                  'Exit Without Saving',
+                                  style: TextStyle(
+                                    color: Color(0xFFE5E2E1),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Cancel (Clean Text Button)
+                        CupertinoButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Color(0xFF8D928C),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  SizedBox(height: 15),
-                  RoundedButton(
-                    'Cancel',
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -257,7 +485,7 @@ void showExitDialog(BuildContext context) {
     },
     transitionBuilder: (context, anim1, anim2, child) {
       return Transform.scale(
-        scale: 0.95 + 0.05 * anim1.value,
+        scale: 0.94 + 0.06 * anim1.value,
         child: FadeTransition(
           opacity: anim1,
           child: child,

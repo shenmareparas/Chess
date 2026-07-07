@@ -1,11 +1,14 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/app_model.dart';
 import '../../../model/app_themes.dart';
-import '../shared/text_variable.dart';
+import '../shared/glass_panel.dart';
 
 class AppThemePicker extends StatefulWidget {
+  const AppThemePicker({Key? key}) : super(key: key);
+
   @override
   _AppThemePickerState createState() => _AppThemePickerState();
 }
@@ -29,6 +32,9 @@ class _AppThemePickerState extends State<AppThemePicker> {
 
   @override
   Widget build(BuildContext context) {
+    final appModel = Provider.of<AppModel>(context);
+    final theme = appModel.theme;
+
     return Selector<AppModel, int>(
       selector: (_, m) => m.themeIndex,
       builder: (context, themeIndex, child) {
@@ -40,35 +46,55 @@ class _AppThemePickerState extends State<AppThemePicker> {
             }
           });
         }
+
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              alignment: Alignment.center,
-              child: TextRegular('App Theme'),
-              padding: EdgeInsets.symmetric(vertical: 10),
-            ),
-            Container(
-              height: 120,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(15)),
-                color: Color(0x20000000),
-              ),
-              child: CupertinoPicker(
-                scrollController: _scrollController,
-                selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-                  background: Color(0x20000000),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 12),
+              child: Text(
+                'App Theme',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: theme.lightTile,
+                  letterSpacing: 0.5,
                 ),
-                itemExtent: 50,
-                onSelectedItemChanged: Provider.of<AppModel>(context, listen: false).setTheme,
-                children: themeList
-                    .map(
-                      (theme) => Container(
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.all(10),
-                        child: TextRegular(theme.name ?? ""),
-                      ),
-                    )
-                    .toList(),
+              ),
+            ),
+            GlassPanel(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                height: 120,
+                child: CupertinoPicker(
+                  scrollController: _scrollController,
+                  selectionOverlay: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white.withValues(alpha: 0.03),
+                    ),
+                  ),
+                  itemExtent: 44,
+                  onSelectedItemChanged: (index) {
+                    Provider.of<AppModel>(context, listen: false)
+                        .setTheme(index);
+                  },
+                  children: themeList
+                      .map(
+                        (t) => Container(
+                          alignment: Alignment.center,
+                          child: Text(
+                            t.name ?? "",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFE5E2E1),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
               ),
             ),
           ],

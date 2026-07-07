@@ -49,7 +49,6 @@ class RoundedAlertButton extends StatelessWidget {
                         label,
                         style: TextStyle(
                           fontSize: 32,
-                          fontFamily: 'Jura',
                           color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
@@ -59,7 +58,6 @@ class RoundedAlertButton extends StatelessWidget {
                         'Are you sure you want to ${label.toLowerCase()}?',
                         style: TextStyle(
                           fontSize: 16,
-                          fontFamily: 'Jura',
                           color: Colors.white70,
                         ),
                         textAlign: TextAlign.center,

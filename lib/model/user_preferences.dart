@@ -9,7 +9,9 @@ const PIECE_THEMES = [
   'Letters',
   'Video Chess',
   'Lewis Chessmen',
-  'Mexico City'
+  'Mexico City',
+  'Old School',
+  'Fairy Tale'
 ];
 
 final List<String> sortedPieceThemes = () {
@@ -24,7 +26,7 @@ class UserPreferences {
   SharedPreferences? _prefs;
 
   String pieceTheme = 'Classic';
-  String themeName = 'Jargon Jade';
+  String themeName = 'Forest Mint';
   bool showMoveHistory = true;
   bool allowUndoRedo = true;
   bool soundEnabled = true;
@@ -53,7 +55,7 @@ class UserPreferences {
 
   Future<void> load() async {
     _prefs = await SharedPreferences.getInstance();
-    themeName = _prefs!.getString('themeName') ?? 'Jargon Jade';
+    themeName = _prefs!.getString('themeName') ?? 'Forest Mint';
     pieceTheme = _prefs!.getString('pieceTheme') ?? 'Classic';
     showMoveHistory = _prefs!.getBool('showMoveHistory') ?? true;
     soundEnabled = _prefs!.getBool('soundEnabled') ?? true;
@@ -121,7 +123,7 @@ class UserPreferences {
   }
 
   Future<void> resetToDefaults() async {
-    themeName = 'Jargon Jade';
+    themeName = 'Forest Mint';
     pieceTheme = 'Classic';
     showMoveHistory = true;
     soundEnabled = true;

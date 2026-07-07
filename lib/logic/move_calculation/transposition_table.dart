@@ -1,6 +1,6 @@
 import 'move_classes/move.dart';
 
-const int TT_SIZE = 1 << 20; // ~1 million entries
+const int TT_SIZE = 1 << 16; // ~65k entries
 const int TT_MASK = TT_SIZE - 1;
 
 // Flag types for transposition table entries
@@ -30,12 +30,12 @@ class TranspositionTable {
   void store(int hash, int depth, int value, int flag, Move? bestMove) {
     var index = hash & TT_MASK;
     var entry = _table[index];
-    
+
     if (entry == null) {
       entry = TTEntry();
       _table[index] = entry;
     }
-    
+
     // Always replace if new entry is deeper or same position
     if (entry.key != hash || depth >= entry.depth) {
       entry.key = hash;
@@ -46,7 +46,21 @@ class TranspositionTable {
     }
   }
 
+  /// Fully empties the table, freeing all entries (used when resizing or
+  /// needing a guaranteed clean slate).
   void clear() {
     _table.fillRange(0, TT_SIZE, null);
+  }
+
+  /// Soft-clears the table by invalidating keys without deallocating entries.
+  /// Re-using existing [TTEntry] objects avoids the GC pressure of allocating
+  /// a fresh 1 M-entry list every AI move.
+  void softClear() {
+    for (int i = 0; i < TT_SIZE; i++) {
+      final entry = _table[i];
+      if (entry != null) {
+        entry.key = 0;
+      }
+    }
   }
 }

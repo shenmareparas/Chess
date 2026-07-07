@@ -37,6 +37,15 @@ class ChessGame extends FlameGame with TapCallbacks {
   Paint _selectedPiecePaint = Paint();
   String? _cachedThemeName;
 
+  // 64 pre-built Rects for the chess board tiles (rebuilt in onGameResize).
+  // Eliminates 64 float multiplications + 64 Rect allocations per frame.
+  final List<Rect> _lightTileRects = [];
+  final List<Rect> _darkTileRects = [];
+
+  // Flattened piece list rebuilt only when pieces are captured/added.
+  // Avoids creating a new FollowedByIterable on every update/render tick.
+  List<ChessPiece> _allPieces = [];
+
   ChessGame(this.controller, this.appModel) {
     controller.onSnapSprites = () => snapSprites();
     // width and tileSize are calculated in onGameResize
@@ -44,6 +53,7 @@ class ChessGame extends FlameGame with TapCallbacks {
         in controller.board.player1Pieces + controller.board.player2Pieces) {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
+    _rebuildPieceCache();
     _updatePaints();
     forceSnapRotation();
   }
@@ -116,8 +126,30 @@ class ChessGame extends FlameGame with TapCallbacks {
     super.onGameResize(size);
     width = size.x;
     tileSize = width! / 8;
+    _buildBoardRects();
     _initSpritePositions();
     snapSprites();
+  }
+
+  /// Pre-builds all 64 tile [Rect] objects so [_drawBoard] can just iterate
+  /// the cached lists rather than computing coordinates every frame.
+  void _buildBoardRects() {
+    _lightTileRects.clear();
+    _darkTileRects.clear();
+    final ts = tileSize ?? 0;
+    for (int tileNo = 0; tileNo < 64; tileNo++) {
+      final rect = Rect.fromLTWH(
+        (tileNo % 8) * ts,
+        (tileNo ~/ 8) * ts,
+        ts,
+        ts,
+      );
+      if ((tileNo + tileNo ~/ 8) % 2 == 0) {
+        _lightTileRects.add(rect);
+      } else {
+        _darkTileRects.add(rect);
+      }
+    }
   }
 
   @override
@@ -172,8 +204,15 @@ class ChessGame extends FlameGame with TapCallbacks {
       currentRotation = targetRotation;
     }
 
-    for (var piece
-        in board.player1Pieces.followedBy(board.player2Pieces)) {
+    // Rebuild the piece list if the count changed (capture / promotion).
+    // This is cheaper than creating a FollowedByIterable every tick.
+    final currentCount =
+        board.player1Pieces.length + board.player2Pieces.length;
+    if (currentCount != _allPieces.length) {
+      _rebuildPieceCache();
+    }
+
+    for (var piece in _allPieces) {
       spriteMap[piece]?.update(tileSize ?? 0, appModel, piece, t);
     }
   }
@@ -189,14 +228,24 @@ class ChessGame extends FlameGame with TapCallbacks {
     _cachedThemeName = theme.name;
   }
 
+  /// Rebuilds the flat piece list from both players' current piece lists.
+  /// Called on construction and whenever a capture or promotion occurs.
+  void _rebuildPieceCache() {
+    _allPieces = [
+      ...board.player1Pieces,
+      ...board.player2Pieces,
+    ];
+  }
+
   void _initSpritePositions() {
-    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+    for (var piece in _allPieces) {
       spriteMap[piece]?.initSpritePosition(tileSize ?? 0, appModel);
     }
   }
 
   void snapSprites() {
-    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+    _rebuildPieceCache();
+    for (var piece in _allPieces) {
       spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
     }
   }
@@ -207,23 +256,17 @@ class ChessGame extends FlameGame with TapCallbacks {
   }
 
   void _drawBoard(Canvas canvas) {
-    for (int tileNo = 0; tileNo < 64; tileNo++) {
-      canvas.drawRect(
-        Rect.fromLTWH(
-          (tileNo % 8) * (tileSize ?? 0),
-          (tileNo / 8).floor() * (tileSize ?? 0),
-          (tileSize ?? 0),
-          (tileSize ?? 0),
-        ),
-        (tileNo + (tileNo / 8).floor()) % 2 == 0
-            ? _lightTilePaint
-            : _darkTilePaint,
-      );
+    // Draw from pre-built Rect lists — avoids 64 float mults + Rect allocs per frame.
+    for (final rect in _lightTileRects) {
+      canvas.drawRect(rect, _lightTilePaint);
+    }
+    for (final rect in _darkTileRects) {
+      canvas.drawRect(rect, _darkTilePaint);
     }
   }
 
   void _drawPieces(Canvas canvas) {
-    for (var piece in board.player1Pieces.followedBy(board.player2Pieces)) {
+    for (var piece in _allPieces) {
       double x = (spriteMap[piece]?.spriteX ?? 0) + 5;
       double y = (spriteMap[piece]?.spriteY ?? 0) + 5;
       double size = (tileSize ?? 0) - 10;

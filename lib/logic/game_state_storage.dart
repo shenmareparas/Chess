@@ -1,5 +1,3 @@
-
-
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/app_model.dart';
@@ -19,6 +17,7 @@ const String _gameOverKey = 'gameOver';
 const String _stalemateKey = 'stalemate';
 const String _movesKey = 'moves';
 const String _gameStateKey = 'chess_game_state';
+const String _availableUndosKey = 'availableUndos';
 
 class GameStateStorage {
   static SharedPreferences? _prefs;
@@ -42,8 +41,10 @@ class GameStateStorage {
     await prefs.setInt(_playerSideKey, appModel.playerSide.index);
     await prefs.setInt(_selectedSideKey, appModel.selectedSide.index);
     await prefs.setInt(_timeLimitKey, appModel.timeLimit);
-    await prefs.setInt(_player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
-    await prefs.setInt(_player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
+    await prefs.setInt(
+        _player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
+    await prefs.setInt(
+        _player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
     await prefs.setBool(_gameOverKey, appModel.gameOver);
     await prefs.setBool(_stalemateKey, appModel.stalemate);
 
@@ -55,6 +56,9 @@ class GameStateStorage {
       return '${mso.move.from}-${mso.move.to}';
     }).toList();
     await prefs.setStringList(_movesKey, moveList);
+
+    // Save undo bank
+    await prefs.setInt(_availableUndosKey, appModel.availableUndos);
   }
 
   static Future<Map<String, dynamic>?> loadGameState() async {
@@ -77,6 +81,7 @@ class GameStateStorage {
         'gameOver': prefs.getBool(_gameOverKey),
         'stalemate': prefs.getBool(_stalemateKey),
         'moves': prefs.getStringList(_movesKey),
+        'availableUndos': prefs.getInt(_availableUndosKey),
       };
       return state;
     } catch (_) {
@@ -98,6 +103,7 @@ class GameStateStorage {
     await prefs.remove(_gameOverKey);
     await prefs.remove(_stalemateKey);
     await prefs.remove(_movesKey);
+    await prefs.remove(_availableUndosKey);
   }
 
   static Future<bool> hasSavedGame() async {
@@ -116,7 +122,8 @@ class GameStateStorage {
       if (parts.length == 3) {
         promotionType = _parsePromotionChar(parts[2]);
       }
-      return Move(from, to, promotionType: promotionType ?? ChessPieceType.promotion);
+      return Move(from, to,
+          promotionType: promotionType ?? ChessPieceType.promotion);
     }).toList();
   }
 

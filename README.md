@@ -1,8 +1,8 @@
 <a href='https://play.google.com/store/apps/details?id=com.shenmareparas.chess'><img alt='Chess App Icon' src="https://github.com/shenmareparas/Chess/assets/112749923/54c38dbd-7a06-416e-8419-09f27654cbcd" width = 250/></a>
 
-# ♟️ AI Chess - Flutter Chess Game
+# ♟️ Chess - Flutter Chess Game
 
-A feature-rich chess application built with **Flutter** and **Flame** engine, offering both single-player AI modes with varying difficulty levels and offline two-player gameplay. The app features beautiful customizable themes, multiple piece styles, and a powerful chess AI powered by the minimax algorithm with alpha-beta pruning.
+A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against an AI with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, and local preference persistence.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)](https://dart.dev)
@@ -21,10 +21,10 @@ A feature-rich chess application built with **Flutter** and **Flame** engine, of
 
 ### 🎨 Customization
 
--   **8 Beautiful Themes**: Including Grey, Dark, Amoled, Lewis, Cherry Funk, Sage, Warm Tan, and Jargon Jade
+-   **9 Beautiful Themes**: Amoled, Cherry Funk, Dark, Forest Mint, Grey, Jargon Jade, Lewis, Sage, and Warm Tan
 -   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, and Mexico City
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
--   **Custom Font**: Jura font for elegant typography
+-   **Custom Font**: Inter font for clean, readable UI typography
 
 ### 🎯 Gameplay Features
 
@@ -46,6 +46,9 @@ A feature-rich chess application built with **Flutter** and **Flame** engine, of
 -   **Quiescence Search**: Avoids horizon effect for captures
 -   **Null Move Pruning & LMR**: Advanced search optimizations
 -   **Opening Book**: Pre-calculated moves for distinct openings
+-   **Transposition Table Caching**: Reuses computed position evaluation records with optimized cache soft-clearing to eliminate redundant sub-tree searches
+-   **High-Performance Attack Detection**: Fast pseudo-legal attack logic and pre-built board layout structures to reduce garbage collection overhead and frame-rate dips during computation
+
 
 ## 📸 Screenshots
 
@@ -59,6 +62,8 @@ _Add your app screenshots here_
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** - Local data persistence
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** - Sound effects
 -   **[URL Launcher](https://pub.dev/packages/url_launcher)** - External links
+-   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** - Rewarded ad integration
+-   **[Confetti](https://pub.dev/packages/confetti)** - Celebration effects
 
 ## 📦 Installation
 
@@ -119,6 +124,7 @@ lib/
 │   ├── game_state_storage.dart  # History & undo/redo
 │   ├── timer_service.dart   # Game clocks
 │   ├── audio_service.dart   # Sound manager
+│   ├── ad_service.dart      # Rewarded ad integration
 │   └── move_calculation/    # Move validation and AI logic
 └── views/
     ├── main_menu_view.dart  # Main menu screen
@@ -168,6 +174,8 @@ The app stores user preferences locally using SharedPreferences:
 -   Board Notation visibility
 -   Undo/Redo availability
 
+Defaults are defined in `lib/model/user_preferences.dart`.
+
 ## 🎯 Usage
 
 1. **Start a New Game**: From the main menu, configure your game settings
@@ -200,7 +208,7 @@ This project is licensed under the MIT License.
 ## 🙏 Acknowledgments
 
 -   Chess piece graphics from various open-source sets
--   Jura font by Daniel Johnson
+-   Inter font
 -   Flutter and Flame communities
 
 ## 📞 Support

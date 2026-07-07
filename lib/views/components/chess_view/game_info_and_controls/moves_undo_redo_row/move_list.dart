@@ -6,7 +6,7 @@ import '../../../../../logic/move_calculation/move_classes/move_meta.dart';
 import '../../../../../logic/shared_functions.dart';
 import '../../../../../model/app_model.dart';
 import '../../../../../model/player.dart';
-import '../../../shared/text_variable.dart';
+import '../../../shared/glass_panel.dart';
 
 class MoveList extends StatelessWidget {
   final AppModel appModel;
@@ -40,7 +40,6 @@ class MoveList extends StatelessWidget {
               'Moves copied to clipboard',
               style: TextStyle(
                 color: CupertinoColors.white,
-                fontFamily: 'Jura',
                 fontSize: 14,
                 decoration: TextDecoration.none,
               ),
@@ -56,19 +55,122 @@ class MoveList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+
+    final turns = <Widget>[];
+    final list = appModel.moveMetaList;
+    final theme = appModel.theme;
+
+    int totalMoves = list.length;
+    int turnCount = (totalMoves / 2).ceil();
+
+    for (int i = 0; i < turnCount; i++) {
+      final turnNum = i + 1;
+      final whiteMove = list[i * 2];
+      final blackMove = (i * 2 + 1 < totalMoves) ? list[i * 2 + 1] : null;
+      final isLastTurn = (turnNum == turnCount);
+
+      turns.add(
+        Opacity(
+          opacity: isLastTurn ? 1 : 0.4,
+          child: Container(
+            margin: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0x662A2A2A),
+              borderRadius: BorderRadius.circular(12),
+              border: Border(
+                left: BorderSide(
+                  color:
+                      isLastTurn ? theme.moveHint : CupertinoColors.transparent,
+                  width: 4,
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$turnNum.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color:
+                        isLastTurn ? theme.moveHint : const Color(0xFF8D928C),
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  _moveToString(whiteMove),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFE5E2E1),
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  blackMove != null ? _moveToString(blackMove) : '___',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: blackMove != null
+                        ? const Color(0xFFC3C8C2)
+                        : const Color(0xFF8D928C),
+                    fontStyle:
+                        blackMove != null ? FontStyle.normal : FontStyle.italic,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (turns.isEmpty) {
+      turns.add(
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0x28201F1F),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0x14F5F5F0),
+              width: 1.0,
+            ),
+          ),
+          child: Text(
+            'Waiting for first move',
+            style: TextStyle(
+              fontSize: 14,
+              color: theme.lightTile.withValues(alpha: 0.6),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    }
+
     return GestureDetector(
       onLongPress: () => _copyMovesToClipboard(context),
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-          color: Color(0x20000000),
-        ),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.vertical,
-          controller: scrollController,
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-          child: TextRegular(_allMoves()),
+      child: GlassPanel(
+        padding: EdgeInsets.zero,
+        borderRadius: 14,
+        child: Container(
+          height: 56,
+          alignment: Alignment.centerLeft,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            physics: const BouncingScrollPhysics(),
+            child: Row(
+              children: turns,
+            ),
+          ),
         ),
       ),
     );

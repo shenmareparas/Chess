@@ -1,92 +1,136 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 
-import '../../../logic/game_state_storage.dart';
 import '../../../model/app_model.dart';
+import '../../../model/app_themes.dart';
 import '../../chess_view.dart';
-import '../../settings_view.dart';
-import '../shared/rounded_button.dart';
 
-class MainMenuButtons extends StatefulWidget {
+class MainMenuButtons extends StatelessWidget {
   final AppModel appModel;
+  final bool hasSavedGame;
+  final VoidCallback onGameReturned;
+  final VoidCallback? onResetScroll;
 
-  MainMenuButtons(this.appModel);
-
-  @override
-  _MainMenuButtonsState createState() => _MainMenuButtonsState();
-}
-
-class _MainMenuButtonsState extends State<MainMenuButtons> {
-  bool _hasSavedGame = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkSavedGame();
-  }
-
-  void _checkSavedGame() async {
-    final hasSaved = await GameStateStorage.hasSavedGame();
-    if (mounted) {
-      setState(() {
-        _hasSavedGame = hasSaved;
-      });
-    }
-  }
+  const MainMenuButtons(
+    this.appModel, {
+    Key? key,
+    required this.hasSavedGame,
+    required this.onGameReturned,
+    this.onResetScroll,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final theme = appModel.theme;
+
     return Container(
       width: double.infinity,
       child: Column(
         children: [
-          if (_hasSavedGame) ...[
-            RoundedButton(
-              'Resume Game',
+          if (hasSavedGame) ...[
+            _buildButton(
+              label: 'Resume Game',
+              isPrimary: false,
+              theme: theme,
+              secondaryAlpha: 0.45,
               onPressed: () {
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
                     builder: (context) {
-                      return ChessView(widget.appModel, isResuming: true);
+                      return ChessView(appModel, isResuming: true);
                     },
                   ),
-                ).then((_) => _checkSavedGame());
+                ).then((_) {
+                  onGameReturned();
+                });
+                Future.delayed(
+                  const Duration(milliseconds: 300),
+                  () => onResetScroll?.call(),
+                );
               },
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
-          RoundedButton(
-            'Start',
+          _buildButton(
+            label: 'Start Game',
+            isPrimary: true,
+            theme: theme,
             onPressed: () {
               Navigator.push(
                 context,
                 CupertinoPageRoute(
                   builder: (context) {
-                    return ChessView(widget.appModel);
+                    return ChessView(appModel);
                   },
                 ),
-              ).then((_) => _checkSavedGame());
+              ).then((_) {
+                onGameReturned();
+              });
+              Future.delayed(
+                const Duration(milliseconds: 300),
+                () => onResetScroll?.call(),
+              );
             },
           ),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: RoundedButton(
-                  'Settings',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => SettingsView(),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildButton({
+    required String label,
+    required bool isPrimary,
+    required AppTheme theme,
+    required VoidCallback onPressed,
+    double secondaryAlpha = 0.12,
+  }) {
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+    final resolvedAlpha =
+        isAndroid ? (secondaryAlpha * 1.6).clamp(0.0, 0.9) : secondaryAlpha;
+
+    final primaryBg = theme.moveHint.withValues(alpha: 1.0);
+    final secondaryBg = theme.lightTile.withValues(alpha: resolvedAlpha);
+    final secondaryBorder = theme.lightTile;
+
+    final isDark = ThemeData.estimateBrightnessForColor(
+            isPrimary ? primaryBg : secondaryBg) ==
+        Brightness.dark;
+    final textColor = isDark ? Colors.white : const Color(0xFF241A00);
+
+    return Container(
+      width: double.infinity,
+      height: 54,
+      decoration: BoxDecoration(
+        color: isPrimary ? primaryBg : secondaryBg,
+        borderRadius: BorderRadius.circular(30),
+        border:
+            isPrimary ? null : Border.all(color: secondaryBorder, width: 1.5),
+        boxShadow: isPrimary
+            ? [
+                BoxShadow(
+                  color: primaryBg.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : null,
+      ),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        child: Center(
+          child: Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              color: textColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+            ),
+          ),
+        ),
       ),
     );
   }
