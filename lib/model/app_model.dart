@@ -7,6 +7,7 @@ import '../logic/audio_service.dart';
 import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
+import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
 import '../logic/timer_service.dart';
 import 'app_themes.dart';
@@ -146,6 +147,9 @@ class AppModel extends ChangeNotifier {
       gameController!.triggerAIMove();
     }
 
+    // Play Games: track game start and unlock milestone achievements
+    PlayGamesService.instance.onGameStarted();
+
     // Disable animation on load, then enable it after the board is rendered.
     animateBoardRotation = false;
     Future.delayed(Duration(milliseconds: 50), () {
@@ -208,6 +212,14 @@ class AppModel extends ChangeNotifier {
       player1TimeLeft: player1TimeLeft.value,
       player2TimeLeft: player2TimeLeft.value,
     );
+
+    // Play Games: unlock win achievements
+    if (userWon && playingWithAI) {
+      PlayGamesService.instance.onPlayerWon(
+        aiDifficulty: aiDifficulty,
+        timeLimit: timeLimit,
+      );
+    }
 
     GameStateStorage.clearGameState();
     if (!silent) notifyListeners();

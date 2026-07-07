@@ -60,5 +60,9 @@
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
             android:value="ca-app-pub-1620835257397609~1433142370" />
+        <!-- Play Games Services App ID — replace games_app_id in values/games_ids.xml -->
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/games_app_id" />
     </application>
 </manifest>

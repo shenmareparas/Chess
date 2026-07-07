@@ -9,6 +9,7 @@ import 'move_calculation/ai_move_args.dart';
 import 'move_calculation/ai_move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
+import 'play_games_service.dart';
 import 'shared_functions.dart';
 
 /// Handles game logic orchestration: move execution, AI, undo/redo, promotion.
@@ -146,6 +147,10 @@ class GameController {
     board.moveStack.last.promotionType = type;
     board.addPromotedPiece(board.moveStack.last);
     appModel.moveMetaList.last.promotionType = type;
+    // Play Games: pawn promotion achievement (human player only)
+    if (!appModel.isAIsTurn) {
+      PlayGamesService.instance.onPawnPromotion();
+    }
     _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
   }
 
@@ -170,6 +175,10 @@ class GameController {
     if (board.kingInCheck(oppositeTurn)) {
       meta.isCheck = true;
       checkHintTile = board.kingForPlayer(oppositeTurn)?.tile;
+      // Play Games: put opponent in check (human player's move only)
+      if (!appModel.isAIsTurn) {
+        PlayGamesService.instance.onCheckDelivered();
+      }
     }
 
     // Run synchronously to avoid expensive object graph serialization in Isolates

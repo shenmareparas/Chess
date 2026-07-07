@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'logic/ad_service.dart';
 import 'logic/deep_link_service.dart';
+import 'logic/play_games_service.dart';
 import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
 import 'model/user_preferences.dart';
@@ -45,6 +46,9 @@ void main() async {
     appModel: appModel,
     navigatorKey: navigatorKey,
   ).initialize();
+
+  // Sign in to Play Games Services (non-blocking — silently skips if unavailable)
+  PlayGamesService.instance.signIn();
 }
 
 Future<void> _loadFlameAssets(String activeTheme) async {

@@ -264,6 +264,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  games_services:
+    dependency: "direct main"
+    description:
+      name: games_services
+      sha256: "93797fca7fe1d39f3a28e6fbd0b0af0adb50ab556659923a09b187fc076d3863"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.0"
+  games_services_platform_interface:
+    dependency: transitive
+    description:
+      name: games_services_platform_interface
+      sha256: "176e1410a395159b3d72c6b18219f99145318741f6647ed9a6b9aa9a41a110a9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.1.0"
   google_mobile_ads:
     dependency: "direct main"
     description:

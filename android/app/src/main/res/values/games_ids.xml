@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Replace this with the numeric App ID from:
+        Play Console → Play Games Services → Setup → Configuration → Get resources
+        It looks like: 1234567890
+    -->
+    <string name="games_app_id" translatable="false">546281313330</string>
+</resources>
