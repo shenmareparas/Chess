@@ -26,15 +26,14 @@ dependencies:
     provider: ^6.0.5
     flame: ^1.7.3
     flame_audio:
-    url_launcher: ^6.0.2
     shared_preferences:
     async:
     confetti: ^0.8.0
     google_mobile_ads: ^9.0.0
-    app_links: ^7.2.0
     games_services: ^5.1.0
 
     cupertino_icons: ^1.0.0
+    fluttertoast: ^9.1.0
 
 dev_dependencies:
     flutter_test:

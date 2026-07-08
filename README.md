@@ -21,8 +21,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🎨 Customization
 
--   **9 Beautiful Themes**: Amoled, Cherry Funk, Dark, Forest Mint, Grey, Jargon Jade, Lewis, Sage, and Warm Tan
--   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, and Mexico City
+-   **8 Beautiful Themes**: Amoled Carbon, Forest Mint, Jargon Jade, Midnight Slate, Oceanic Breeze, Royal Velvet, Warm Walnut, and Winter Glacier
+-   **9 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, Mexico City, Old School, and Fairy Tale
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Inter font for clean, readable UI typography
 
@@ -34,7 +34,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Board Notation**: Algebraic notation (a-h, 1-8) coordinates on the board borders
 -   **Sound Effects**: Audio feedback for piece movements
 -   **Board Rotation**: Automatic board rotation based on turn
--   **Promotion Handling**: Full support for pawn promotion
+-   **Promotion Handling**: Full support for glassmorphic pawn promotion (styled with `GlassPanel` consistent with other dialogs, and non-dismissible via `PopScope` to require an explicit choice)
 -   **Check Detection**: Visual indicators for check and checkmate
 -   **Stalemate Detection**: Proper game-end condition handling
 
@@ -67,9 +67,11 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Provider](https://pub.dev/packages/provider)** - State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** - Local data persistence
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** - Sound effects
--   **[URL Launcher](https://pub.dev/packages/url_launcher)** - External links
 -   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** - Rewarded ad integration
+-   **[Games Services](https://pub.dev/packages/games_services)** - Google Play Games / Game Center achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** - Celebration effects
+-   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** - Native platform toast notifications (used for the developer Easter egg)
+-   **[async](https://pub.dev/packages/async)** - `CancelableOperation` for cancellable AI compute tasks
 
 ## 📦 Installation
 

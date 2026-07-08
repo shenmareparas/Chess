@@ -156,7 +156,7 @@ class _MainMenuViewState extends State<MainMenuView> {
                   right: 0,
                   child: Container(
                     color: Colors.transparent,
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [

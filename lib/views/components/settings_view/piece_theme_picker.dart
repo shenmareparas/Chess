@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/app_model.dart';
+import '../chess_view/promotion_dialog.dart';
 import '../shared/glass_panel.dart';
 import 'piece_preview.dart';
 
@@ -18,9 +21,15 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
   PiecePreview? _piecePreview;
   String? _lastPieceTheme;
 
+  int _easterEggTapCount = 0;
+  Timer? _easterEggResetTimer;
+  late FToast _fToast;
+
   @override
   void initState() {
     super.initState();
+    _fToast = FToast();
+    _fToast.init(context);
     final appModel = Provider.of<AppModel>(context, listen: false);
     _scrollController =
         FixedExtentScrollController(initialItem: appModel.pieceThemeIndex);
@@ -29,7 +38,62 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _easterEggResetTimer?.cancel();
+    _fToast.removeCustomToast();
     super.dispose();
+  }
+
+  void _onPiecePreviewTap(AppModel appModel) {
+    _easterEggResetTimer?.cancel();
+    _easterEggTapCount++;
+    if (_easterEggTapCount >= 7) {
+      _easterEggTapCount = 0;
+      _fToast.removeCustomToast();
+      showCupertinoDialog(
+        context: context,
+        barrierDismissible: true,
+        builder: (context) => PromotionDialog(appModel),
+      );
+    } else {
+      _easterEggResetTimer = Timer(const Duration(seconds: 2), () {
+        _easterEggTapCount = 0;
+      });
+      // Start showing the countdown toast on the 4th tap (3 steps remaining)
+      if (_easterEggTapCount >= 4) {
+        final stepsRemaining = 7 - _easterEggTapCount;
+        _fToast.removeCustomToast();
+        _fToast.showToast(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xCC201F1F),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: CupertinoColors.white.withValues(alpha: 0.12),
+                width: 1,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x40000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              'You are $stepsRemaining step${stepsRemaining == 1 ? "" : "s"} away from promotion preview',
+              style: const TextStyle(
+                color: Color(0xFFE5E2E1),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          gravity: ToastGravity.BOTTOM,
+          toastDuration: const Duration(milliseconds: 1200),
+        );
+      }
+    }
   }
 
   @override
@@ -105,13 +169,17 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  SizedBox(
-                    height: 120,
-                    width: 80,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: GameWidget(
-                        game: _piecePreview!,
+                  GestureDetector(
+                    onTap: () => _onPiecePreviewTap(appModel),
+                    behavior: HitTestBehavior.opaque,
+                    child: SizedBox(
+                      height: 120,
+                      width: 80,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: GameWidget(
+                          game: _piecePreview!,
+                        ),
                       ),
                     ),
                   ),

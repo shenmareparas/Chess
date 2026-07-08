@@ -13,37 +13,89 @@ class PromotionOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = appModel.theme;
+    final pieceName = _getPieceName(promotionType);
+
     return InkWell(
       onTap: () {
-        appModel.gameController!.promote(promotionType);
+        if (appModel.gameController != null) {
+          appModel.gameController!.promote(promotionType);
+        } else {
+          debugPrint('Promotion selected: $promotionType (No active game)');
+        }
         appModel.update();
         Navigator.pop(context);
       },
-      borderRadius: BorderRadius.circular(15),
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Center(
-          child: Image(
-            height: 40,
-            image: AssetImage(
-              'assets/images/pieces/${formatPieceTheme(appModel.pieceTheme)}' +
-                  '/${pieceTypeToString(promotionType)}_${_playerColor()}.png',
+      borderRadius: BorderRadius.circular(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 66,
+            height: 66,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: 0.08),
+                  Colors.white.withValues(alpha: 0.02),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.lightTile.withValues(alpha: 0.15),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Image(
+                height: 44,
+                width: 44,
+                image: AssetImage(
+                  'assets/images/pieces/${formatPieceTheme(appModel.pieceTheme)}' +
+                      '/${pieceTypeToString(promotionType)}_${_playerColor()}.png',
+                ),
+              ),
             ),
           ),
-        ),
+          const SizedBox(height: 8),
+          Text(
+            pieceName,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   String _playerColor() {
     return appModel.turn == Player.player1 ? 'white' : 'black';
+  }
+
+  String _getPieceName(ChessPieceType type) {
+    switch (type) {
+      case ChessPieceType.queen:
+        return 'Queen';
+      case ChessPieceType.rook:
+        return 'Rook';
+      case ChessPieceType.bishop:
+        return 'Bishop';
+      case ChessPieceType.knight:
+        return 'Knight';
+      default:
+        return '';
+    }
   }
 }

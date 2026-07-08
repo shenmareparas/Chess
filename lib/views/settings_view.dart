@@ -10,8 +10,27 @@ import 'components/settings_view/toggles.dart';
 import 'components/shared/bottom_padding.dart';
 import 'components/shared/glass_panel.dart';
 
-class SettingsView extends StatelessWidget {
+class SettingsView extends StatefulWidget {
   const SettingsView({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsView> createState() => _SettingsViewState();
+}
+
+class _SettingsViewState extends State<SettingsView> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void _showResetConfirmation(BuildContext context, AppModel appModel) {
     showGeneralDialog(
@@ -99,40 +118,46 @@ class SettingsView extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: const [
                                   BoxShadow(
-                                    color: Color(0x20000000),
-                                    blurRadius: 10,
+                                    color: Color(0x33000000),
+                                    blurRadius: 8,
                                     offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.refresh_rounded,
-                                      color: const Color(0xFF131313), size: 20),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    'Reset Defaults',
-                                    style: TextStyle(
-                                      color: Color(0xFF131313),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ],
+                              child: const Text(
+                                'Reset Defaults',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E211F),
+                                ),
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           // Cancel Button
                           CupertinoButton(
+                            padding: EdgeInsets.zero,
                             onPressed: () => Navigator.pop(dialogContext),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Color(0xFF8D928C),
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                            child: Container(
+                              width: double.infinity,
+                              height: 54,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFC3C8C2),
+                                ),
                               ),
                             ),
                           ),
@@ -172,7 +197,7 @@ class SettingsView extends StatelessWidget {
                 Positioned.fill(
                   child: CustomPaint(
                     painter: DotGridPainter(
-                      color: theme.lightTile.withValues(alpha: 0.04),
+                      color: theme.lightTile.withValues(alpha: 0.05),
                     ),
                   ),
                 ),
@@ -219,13 +244,26 @@ class SettingsView extends StatelessWidget {
                                   size: 22,
                                 ),
                               ),
-                              const Text(
-                                'Settings',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFE5E2E1),
-                                  letterSpacing: 0.5,
+                              GestureDetector(
+                                onTap: () {
+                                  if (_scrollController.hasClients) {
+                                    _scrollController.animateTo(
+                                      0,
+                                      duration:
+                                          const Duration(milliseconds: 300),
+                                      curve: Curves.easeOut,
+                                    );
+                                  }
+                                },
+                                behavior: HitTestBehavior.opaque,
+                                child: const Text(
+                                  'Settings',
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFE5E2E1),
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ),
                               Consumer<AppModel>(
@@ -245,49 +283,48 @@ class SettingsView extends StatelessWidget {
                           ),
                         ),
                         Expanded(
-                          child: CupertinoScrollbar(
-                            child: ListView(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 20, vertical: 16),
-                              physics: const BouncingScrollPhysics(),
-                              children: [
-                                const AppThemePicker(),
-                                const SizedBox(height: 24),
-                                const PieceThemePicker(),
-                                const SizedBox(height: 24),
-                                Consumer<AppModel>(
-                                  builder: (context, appModel, child) =>
-                                      Toggles(appModel),
-                                ),
-                                const SizedBox(height: 32),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Text(
-                                      'Made with ',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFFC3C8C2),
-                                      ),
+                          child: ListView(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 16),
+                            physics: const BouncingScrollPhysics(),
+                            children: [
+                              const AppThemePicker(),
+                              const SizedBox(height: 24),
+                              const PieceThemePicker(),
+                              const SizedBox(height: 24),
+                              Consumer<AppModel>(
+                                builder: (context, appModel, child) =>
+                                    Toggles(appModel),
+                              ),
+                              const SizedBox(height: 32),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    'Made with ',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFC3C8C2),
                                     ),
-                                    Icon(
-                                      Icons.favorite_rounded,
-                                      color: theme.lightTile,
-                                      size: 13,
+                                  ),
+                                  Icon(
+                                    Icons.favorite_rounded,
+                                    color: theme.lightTile,
+                                    size: 13,
+                                  ),
+                                  const Text(
+                                    ' by Paras Shenmare',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFC3C8C2),
                                     ),
-                                    const Text(
-                                      ' by Paras Shenmare',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFFC3C8C2),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                BottomPadding(),
-                              ],
-                            ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              BottomPadding(),
+                            ],
                           ),
                         ),
                       ],
