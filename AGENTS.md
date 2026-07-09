@@ -1,6 +1,6 @@
-# AI Coding Guidelines for Chess Flutter App
+# AI Coding Guidelines for AI Chess Flutter App
 
-You are an AI coding assistant working on the "Chess" Flutter application.
+You are an AI coding assistant working on the "AI Chess" Flutter application.
 Please adhere to the following guidelines:
 
 ## Technologies & Architecture
@@ -39,5 +39,5 @@ Please adhere to the following guidelines:
 12. **Ad Reward & Fallback Handling**: Rewarded ads (e.g., for granting undos) must degrade gracefully. If an ad fails to display (`onAdFailedToShowFullScreenContent`) or is unavailable/offline, the reward is granted anyway so the player is never blocked/stuck. Additionally, rewards like undos should be granted to the model allowing the player to manually execute them, rather than auto-executing.
 13. **Marketing Screenshot Customizations**: If layout changes, custom branding, or styling are requested for app store screenshots, use the Next.js app in `screenshots_editor/`. Maintain diverse slide layouts, keep device bezels thinned and concentric (without camera dots by default, but toggleable in global settings), and ensure changes auto-save back to `screenshots_editor/app-store-screenshots.json`. Support custom text and headline horizontal/vertical alignment parameters and stage snap-centering actions.
 14. **Promotion Dialog & Easter Egg**: Inside games, the `PromotionDialog` is non-dismissible via back gestures/system buttons using `PopScope(canPop: false)`. A developer Easter egg is implemented in `PieceThemePicker` which displays the dialog when the piece preview is tapped 7 times. It shows an instantly-responsive, glassmorphic countdown toast using `FToast` starting from the 4th tap.
-15. **Play Games Services (Achievements)**: `PlayGamesService` (singleton in `lib/logic/play_games_service.dart`) wraps Google Play Games Services (Android) and Game Center (iOS). Sign-in is called once in `main()` after `runApp` (non-blocking). Hook into the correct lifecycle call-sites: `onGameStarted` from `AppModel.newGame`, `onPlayerWon` from `AppModel.endGame`, `onPawnPromotion` from `GameController.promote` (human player only), and `onCheckDelivered` from `GameController._moveCompletion` (human player only). All calls are fire-and-forget — errors are swallowed silently so GPGS outages never block gameplay.
+15. **Play Games Services (Achievements)**: `PlayGamesService` (singleton in `lib/logic/play_games_service.dart`) wraps Google Play Games Services (Android) and Game Center (iOS). Silent sign-in (`signInSilently`) is called once in `main()` after `runApp` (non-blocking) to log in returning users silently. On-demand interactive sign-in and Native UI display is handled by tapping the Achievements setting tile (`showAchievements()`). Hook into the correct lifecycle call-sites: `onGameStarted` from `AppModel.newGame`, `onPlayerWon` from `AppModel.endGame`, `onPawnPromotion` from `GameController.promote` (human player only), and `onCheckDelivered` from `GameController._moveCompletion` (human player only). All calls are fire-and-forget — errors are swallowed silently so GPGS outages never block gameplay.
 

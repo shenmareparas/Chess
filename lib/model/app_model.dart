@@ -91,8 +91,12 @@ class AppModel extends ChangeNotifier {
 
   // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
   bool animateBoardRotation = false;
+  bool? _gameOverInvertedState;
 
   bool get isBoardInverted {
+    if (_gameOverInvertedState != null && gameOver) {
+      return _gameOverInvertedState!;
+    }
     if (playingWithAI) {
       return playerSide == Player.player2;
     } else {
@@ -118,6 +122,7 @@ class AppModel extends ChangeNotifier {
     gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
+    _gameOverInvertedState = null;
     gameOver = false;
     stalemate = false;
     userWon = false;
@@ -194,6 +199,7 @@ class AppModel extends ChangeNotifier {
 
   void endGame({bool silent = false}) {
     if (gameOver) return;
+    _gameOverInvertedState = isBoardInverted;
     gameOver = true;
 
     userWon = audio.didUserWin(
@@ -227,6 +233,7 @@ class AppModel extends ChangeNotifier {
 
   void undoEndGame({bool silent = false}) {
     gameOver = false;
+    _gameOverInvertedState = null;
     if (!silent) notifyListeners();
   }
 
@@ -287,6 +294,7 @@ class AppModel extends ChangeNotifier {
   void setShowNotation(bool show) => prefs.setShowNotation(show);
   void setEnableRotation(bool enable) => prefs.setEnableRotation(enable);
   void setAllowUndoRedo(bool allow) => prefs.setAllowUndoRedo(allow);
+  void showAchievements() => PlayGamesService.instance.showAchievements();
 
   Future<void> resetSettingsToDefaults() async {
     await prefs.resetToDefaults();

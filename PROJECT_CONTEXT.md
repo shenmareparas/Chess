@@ -1,4 +1,4 @@
-# Chess App - Project Context
+# AI Chess App - Project Context
 
 ## Overview
 
@@ -32,7 +32,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 - **`timer_service.dart`** & **`audio_service.dart`**: Independent services for game timers and sound effects.
 - **`ad_service.dart`**: Integrates `google_mobile_ads` for rewarded ads (such as for granting undos), implementing fallback mechanisms that grant rewards even when offline or upon ad display failures.
 - **`game_state_storage.dart`**: Logic for managing game history, states, undo and redo functionality.
-- **`play_games_service.dart`**: Wraps `games_services` to integrate Google Play Games Services (Android) and Game Center (iOS) achievements. Hooked into `AppModel.newGame` (`onGameStarted`), `AppModel.endGame` (`onPlayerWon`), and `GameController.promote`/`_moveCompletion` (`onPawnPromotion`, `onCheckDelivered`). All calls are fire-and-forget and degrade silently when the service is unavailable.
+- **`play_games_service.dart`**: Wraps `games_services` to integrate Google Play Games Services (Android) and Game Center (iOS) achievements. Handles startup silent sign-in and on-demand interactive achievements UI launcher. Hooked into `AppModel.newGame` (`onGameStarted`), `AppModel.endGame` (`onPlayerWon`), and `GameController.promote`/`_moveCompletion` (`onPawnPromotion`, `onCheckDelivered`). All calls are fire-and-forget and degrade silently when the service is unavailable.
 
 ### 4. Marketing & Screenshots (`screenshots_editor/`)
 

@@ -4,6 +4,7 @@ import '../../../model/app_model.dart';
 
 class Toggle extends StatelessWidget {
   final String label;
+  final String? subtitle;
   final bool? toggle;
   final Function(bool)? setFunc;
   final IconData icon;
@@ -12,6 +13,7 @@ class Toggle extends StatelessWidget {
     this.label, {
     Key? key,
     required this.icon,
+    this.subtitle,
     this.toggle,
     this.setFunc,
   }) : super(key: key);
@@ -35,13 +37,29 @@ class Toggle extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFFE5E2E1),
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFFE5E2E1),
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: const Color(0xFFC3C8C2).withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           Switch.adaptive(

@@ -21,25 +21,21 @@ class ChessBoardWidget extends StatelessWidget {
               : Duration.zero,
           curve: Curves.easeInOut,
           child: Container(
-            decoration: appModel.theme.name != 'Video Chess'
-                ? BoxDecoration(
-                    border: Border.all(
-                      color: appModel.theme.border,
-                      width: 4,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 10,
-                        color: Color(0x88000000),
-                      ),
-                    ],
-                  )
-                : BoxDecoration(),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: appModel.theme.border,
+                width: 4,
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 10,
+                  color: Color(0x88000000),
+                ),
+              ],
+            ),
             child: ClipRRect(
-              borderRadius: appModel.theme.name != 'Video Chess'
-                  ? BorderRadius.circular(4)
-                  : BorderRadius.zero,
+              borderRadius: BorderRadius.circular(4),
               child: Container(
                 width: MediaQuery.of(context).size.width - 68,
                 height: MediaQuery.of(context).size.width - 68,

@@ -44,6 +44,32 @@ class PlayGamesService {
     }
   }
 
+  /// Attempts sign-in without prompting the user if they are not already signed in.
+  Future<void> signInSilently() async {
+    try {
+      if (await GamesServices.isSignedIn) {
+        await signIn();
+      }
+    } catch (_) {
+      // Ignore
+    }
+  }
+
+  /// Opens the native achievements UI screen. Prompts the user to sign in
+  /// interactively if not currently signed in.
+  Future<void> showAchievements() async {
+    try {
+      if (!_signedIn) {
+        await signIn();
+      }
+      if (_signedIn) {
+        await GamesServices.showAchievements();
+      }
+    } catch (_) {
+      // Swallowed
+    }
+  }
+
   // ── Achievement helpers ─────────────────────────────────────────────────────
 
   /// Unlocks a single achievement by Android ID. Silent no-op if not signed in

@@ -7,9 +7,7 @@ const PIECE_THEMES = [
   'Angular',
   '8-Bit',
   'Letters',
-  'Video Chess',
   'Lewis Chessmen',
-  'Mexico City',
   'Old School',
   'Fairy Tale'
 ];

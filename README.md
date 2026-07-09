@@ -1,6 +1,6 @@
 <a href='https://play.google.com/store/apps/details?id=com.shenmareparas.chess'><img alt='Chess App Icon' src="https://github.com/shenmareparas/Chess/assets/112749923/54c38dbd-7a06-416e-8419-09f27654cbcd" width = 250/></a>
 
-# ♟️ Chess - Flutter Chess Game
+# ♟️ AI Chess - Flutter Chess Game
 
 A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against an AI with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, and local preference persistence.
 
@@ -22,7 +22,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ### 🎨 Customization
 
 -   **8 Beautiful Themes**: Amoled Carbon, Forest Mint, Jargon Jade, Midnight Slate, Oceanic Breeze, Royal Velvet, Warm Walnut, and Winter Glacier
--   **9 Piece Themes**: Classic, Angular, 8-Bit, Letters, Video Chess, Lewis Chessmen, Mexico City, Old School, and Fairy Tale
+-   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Lewis Chessmen, Old School, and Fairy Tale
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Inter font for clean, readable UI typography
 

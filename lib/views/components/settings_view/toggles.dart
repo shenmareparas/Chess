@@ -13,6 +13,18 @@ class Toggles extends StatelessWidget {
     final themeColor =
         const Color(0x1A424843); // outline-variant/10 (0x1A is ~10% opacity)
 
+    final platform = Theme.of(context).platform;
+    final String achievementsSubtitle;
+    if (platform == TargetPlatform.android) {
+      achievementsSubtitle = 'Enables Google Play Games integration';
+    } else if (platform == TargetPlatform.iOS) {
+      achievementsSubtitle = 'Enables Game Center integration';
+    } else {
+      achievementsSubtitle = 'Enables Achievements integration';
+    }
+
+    final theme = appModel.theme;
+
     return GlassPanel(
       padding: EdgeInsets.zero,
       child: Column(
@@ -58,7 +70,84 @@ class Toggles extends StatelessWidget {
             toggle: appModel.soundEnabled,
             setFunc: appModel.setSoundEnabled,
           ),
+          Divider(height: 1, color: themeColor, thickness: 1),
+          _SettingsTile(
+            label: 'Achievements',
+            icon: Icons.sports_esports_outlined,
+            subtitle: achievementsSubtitle,
+            theme: theme,
+            onTap: appModel.showAchievements,
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final String label;
+  final String? subtitle;
+  final IconData icon;
+  final VoidCallback onTap;
+  final dynamic
+      theme; // Using dynamic to avoid explicit AppTheme import type casting issues if any, or just import/use it directly since it is in scope.
+
+  const _SettingsTile({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    required this.theme,
+    this.subtitle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: theme.lightTile,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFE5E2E1),
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: const Color(0xFFC3C8C2).withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: const Color(0xFFC3C8C2).withValues(alpha: 0.5),
+              size: 16,
+            ),
+          ],
+        ),
       ),
     );
   }

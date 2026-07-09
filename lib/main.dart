@@ -36,8 +36,8 @@ void main() async {
     ),
   );
 
-  // Sign in to Play Games Services (non-blocking — silently skips if unavailable)
-  PlayGamesService.instance.signIn();
+  // Sign in to Play Games Services silently on startup (non-blocking — silently skips if user is not already logged in at OS level)
+  PlayGamesService.instance.signInSilently();
 }
 
 Future<void> _loadFlameAssets(String activeTheme) async {
@@ -113,7 +113,7 @@ class Chess extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoApp(
       debugShowCheckedModeBanner: false,
-      title: 'Chess',
+      title: 'AI Chess',
       theme: CupertinoThemeData(
         brightness: Brightness.dark,
         textTheme: CupertinoTextThemeData(
