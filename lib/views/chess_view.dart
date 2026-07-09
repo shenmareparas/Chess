@@ -319,60 +319,34 @@ void showExitDialog(BuildContext context) {
           child: Material(
             color: Colors.transparent,
             child: GlassPanel(
-              borderRadius: 32,
-              padding: const EdgeInsets.all(28),
+              borderRadius: 24,
+              padding: const EdgeInsets.all(20),
               color: const Color(0x80201F1F),
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 340),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Icon Container with Luminous Glow
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: theme.darkTile.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.lightTile.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.lightTile.withValues(alpha: 0.15),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.logout_rounded,
-                        color: theme.lightTile,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     const Text(
                       'Leave Game?',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE5E2E1),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     const Text(
                       'Would you like to save your progress before exiting? You can resume from this exact position later.',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         color: Color(0xFFC3C8C2),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
                     // Actions Column
                     Column(
                       children: [
@@ -388,16 +362,16 @@ void showExitDialog(BuildContext context) {
                           },
                           child: Container(
                             width: double.infinity,
-                            height: 54,
+                            height: 46,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: const Color(0xFFF5F5F0),
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                               boxShadow: const [
                                 BoxShadow(
                                   color: Color(0x20000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
                                 ),
                               ],
                             ),
@@ -405,21 +379,21 @@ void showExitDialog(BuildContext context) {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.save_rounded,
-                                    color: const Color(0xFF131313), size: 20),
+                                    color: const Color(0xFF131313), size: 18),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Save & Exit',
                                   style: TextStyle(
                                     color: Color(0xFF131313),
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 10),
                         // Exit Without Saving (Glass / Outline Button)
                         CupertinoButton(
                           padding: EdgeInsets.zero,
@@ -432,11 +406,11 @@ void showExitDialog(BuildContext context) {
                           },
                           child: Container(
                             width: double.infinity,
-                            height: 54,
+                            height: 46,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: const Color(0x30F5F5F0),
                                 width: 1.0,
@@ -446,21 +420,21 @@ void showExitDialog(BuildContext context) {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.close_rounded,
-                                    color: const Color(0xFFE5E2E1), size: 20),
+                                    color: const Color(0xFFE5E2E1), size: 18),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Exit Without Saving',
                                   style: TextStyle(
                                     color: Color(0xFFE5E2E1),
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 16,
+                                    fontSize: 15,
                                   ),
                                 ),
                               ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         // Cancel (Clean Text Button)
                         CupertinoButton(
                           onPressed: () => Navigator.pop(dialogContext),
@@ -469,7 +443,7 @@ void showExitDialog(BuildContext context) {
                             style: TextStyle(
                               color: Color(0xFF8D928C),
                               fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                              fontSize: 15,
                             ),
                           ),
                         ),
