@@ -2,11 +2,12 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
-class GlassPanel extends StatelessWidget {
+class GlassPanel extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double borderRadius;
   final Color? color;
+  final Animation<double>? animation;
 
   const GlassPanel({
     Key? key,
@@ -14,7 +15,51 @@ class GlassPanel extends StatelessWidget {
     this.padding = const EdgeInsets.all(20),
     this.borderRadius = 16.0,
     this.color,
+    this.animation,
   }) : super(key: key);
+
+  @override
+  State<GlassPanel> createState() => _GlassPanelState();
+}
+
+class _GlassPanelState extends State<GlassPanel> {
+  bool _blurReady = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.animation != null) {
+      // Listen for animation completion — only then enable the expensive blur.
+      widget.animation!.addStatusListener(_onAnimationStatus);
+    }
+  }
+
+  @override
+  void didUpdateWidget(GlassPanel oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.animation != widget.animation) {
+      oldWidget.animation?.removeStatusListener(_onAnimationStatus);
+      if (widget.animation != null) {
+        widget.animation!.addStatusListener(_onAnimationStatus);
+        // If the new animation is already done, show blur immediately.
+        if (widget.animation!.isCompleted) {
+          _blurReady = true;
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.animation?.removeStatusListener(_onAnimationStatus);
+    super.dispose();
+  }
+
+  void _onAnimationStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed && mounted && !_blurReady) {
+      setState(() => _blurReady = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,16 +68,17 @@ class GlassPanel extends StatelessWidget {
     // Resolve background color: if Android (no blur), use a much higher opacity
     // to maintain readability and contrast against background elements.
     final resolvedColor = isAndroid
-        ? (color != null
-            ? color!.withValues(alpha: (color!.a * 1.8).clamp(0.0, 0.95))
+        ? (widget.color != null
+            ? widget.color!
+                .withValues(alpha: (widget.color!.a * 1.8).clamp(0.0, 0.95))
             : const Color(0xB0201F1F))
-        : (color ?? const Color(0x28201F1F));
+        : (widget.color ?? const Color(0x28201F1F));
 
     final panelContent = Container(
-      padding: padding,
+      padding: widget.padding,
       decoration: BoxDecoration(
         color: resolvedColor,
-        borderRadius: BorderRadius.circular(borderRadius),
+        borderRadius: BorderRadius.circular(widget.borderRadius),
         border: Border.all(
           color: const Color(
               0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
@@ -47,22 +93,28 @@ class GlassPanel extends StatelessWidget {
           ),
         ],
       ),
-      child: child,
+      child: widget.child,
     );
 
-    if (isAndroid) {
+    // Android: never use BackdropFilter (performance).
+    // iOS with animation: skip blur while animating, apply once complete.
+    // iOS without animation: always apply blur.
+    final bool applyBlur =
+        !isAndroid && (widget.animation == null || _blurReady);
+
+    if (applyBlur) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: panelContent,
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
+          child: panelContent,
+        ),
       );
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12.0, sigmaY: 12.0),
-        child: panelContent,
-      ),
+      borderRadius: BorderRadius.circular(widget.borderRadius),
+      child: panelContent,
     );
   }
 }

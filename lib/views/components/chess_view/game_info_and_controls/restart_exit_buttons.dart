@@ -11,6 +11,7 @@ class RestartExitButtons extends StatelessWidget {
   const RestartExitButtons(this.appModel);
 
   void _showRestartConfirmation(BuildContext context) {
+    appModel.timerService.pause();
     showGeneralDialog(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.6),
@@ -25,13 +26,14 @@ class RestartExitButtons extends StatelessWidget {
               borderRadius: 24,
               padding: const EdgeInsets.all(20),
               color: const Color(0x80201F1F),
+              animation: anim1,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Restart Game?',
+                      'Restart Game',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -41,7 +43,7 @@ class RestartExitButtons extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Are you sure you want to restart? Your current game progress will be lost.',
+                      'Are you sure you want to restart? Your current game progress will be lost',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFFC3C8C2),
@@ -123,23 +125,18 @@ class RestartExitButtons extends StatelessWidget {
         );
       },
       transitionBuilder: (context, anim1, anim2, child) {
-        return ScaleTransition(
-          scale: anim1.drive(
-            Tween<double>(begin: 0.94, end: 1.0).chain(
-              CurveTween(curve: Curves.easeOutCubic),
-            ),
+        return FadeTransition(
+          opacity: anim1.drive(
+            CurveTween(curve: Curves.easeOut),
           ),
-          child: FadeTransition(
-            opacity: anim1.drive(
-              Tween<double>(begin: 0.0, end: 1.0).chain(
-                CurveTween(curve: Curves.easeOut),
-              ),
-            ),
-            child: RepaintBoundary(child: child),
-          ),
+          child: child,
         );
       },
-    );
+    ).then((_) {
+      if (!appModel.gameOver) {
+        appModel.timerService.resume();
+      }
+    });
   }
 
   @override

@@ -308,6 +308,8 @@ class _ChessBackground extends StatelessWidget {
 }
 
 void showExitDialog(BuildContext context) {
+  final appModel = Provider.of<AppModel>(context, listen: false);
+  appModel.timerService.pause();
   showGeneralDialog(
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.6),
@@ -324,13 +326,14 @@ void showExitDialog(BuildContext context) {
               borderRadius: 24,
               padding: const EdgeInsets.all(20),
               color: const Color(0x80201F1F),
+              animation: anim1,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
-                      'Leave Game?',
+                      'Leave Game',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -340,7 +343,7 @@ void showExitDialog(BuildContext context) {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Would you like to save your progress before exiting? You can resume from this exact position later.',
+                      'Would you like to save your progress\nbefore exiting? You can resume\nfrom this exact position later',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFFC3C8C2),
@@ -367,16 +370,15 @@ void showExitDialog(BuildContext context) {
                             height: 46,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F0),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x20000000),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
+                                color: const Color(0xFFF5F5F0),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x20000000),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ]),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -460,21 +462,16 @@ void showExitDialog(BuildContext context) {
       );
     },
     transitionBuilder: (context, anim1, anim2, child) {
-      return ScaleTransition(
-        scale: anim1.drive(
-          Tween<double>(begin: 0.94, end: 1.0).chain(
-            CurveTween(curve: Curves.easeOutCubic),
-          ),
+      return FadeTransition(
+        opacity: anim1.drive(
+          CurveTween(curve: Curves.easeOut),
         ),
-        child: FadeTransition(
-          opacity: anim1.drive(
-            Tween<double>(begin: 0.0, end: 1.0).chain(
-              CurveTween(curve: Curves.easeOut),
-            ),
-          ),
-          child: RepaintBoundary(child: child),
-        ),
+        child: child,
       );
     },
-  );
+  ).then((_) {
+    if (!appModel.gameOver) {
+      appModel.timerService.resume();
+    }
+  });
 }

@@ -49,13 +49,14 @@ class _SettingsViewState extends State<SettingsView> {
                 borderRadius: 24,
                 padding: const EdgeInsets.all(20),
                 color: const Color(0x80201F1F),
+                animation: anim1,
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 300),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Reset Settings?',
+                        'Reset Settings',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -148,20 +149,11 @@ class _SettingsViewState extends State<SettingsView> {
         );
       },
       transitionBuilder: (context, anim1, anim2, child) {
-        return ScaleTransition(
-          scale: anim1.drive(
-            Tween<double>(begin: 0.94, end: 1.0).chain(
-              CurveTween(curve: Curves.easeOutCubic),
-            ),
+        return FadeTransition(
+          opacity: anim1.drive(
+            CurveTween(curve: Curves.easeOut),
           ),
-          child: FadeTransition(
-            opacity: anim1.drive(
-              Tween<double>(begin: 0.0, end: 1.0).chain(
-                CurveTween(curve: Curves.easeOut),
-              ),
-            ),
-            child: RepaintBoundary(child: child),
-          ),
+          child: child,
         );
       },
     );
