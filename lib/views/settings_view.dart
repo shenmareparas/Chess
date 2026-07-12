@@ -42,104 +42,107 @@ class _SettingsViewState extends State<SettingsView> {
       pageBuilder: (dialogContext, anim1, anim2) {
         return Selector<AppModel, AppTheme>(
           selector: (_, m) => m.theme,
-          builder: (dialogContext, theme, child) => Center(
-            child: Material(
-              color: Colors.transparent,
-              child: GlassPanel(
-                borderRadius: 24,
-                padding: const EdgeInsets.all(20),
-                color: const Color(0x80201F1F),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 300),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Reset Settings?',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFE5E2E1),
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Are you sure you want to reset all settings to their defaults?',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFFC3C8C2),
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          // Cancel Button
-                          Expanded(
-                            child: CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () => Navigator.pop(dialogContext),
-                              child: Container(
-                                height: 46,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFC3C8C2),
-                                  ),
-                                ),
-                              ),
-                            ),
+          builder: (dialogContext, theme, child) => RepaintBoundary(
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: GlassPanel(
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(20),
+                  color: const Color(0x80201F1F),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 300),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Reset Settings?',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFE5E2E1),
                           ),
-                          const SizedBox(width: 12),
-                          // Reset Button
-                          Expanded(
-                            child: CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                Navigator.pop(dialogContext);
-                                appModel.resetSettingsToDefaults();
-                              },
-                              child: Container(
-                                height: 46,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF5F5F0),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Color(0x33000000),
-                                      blurRadius: 6,
-                                      offset: Offset(0, 2),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Are you sure you want to reset all settings to their defaults?',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFFC3C8C2),
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            // Cancel Button
+                            Expanded(
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: Container(
+                                  height: 46,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.1),
+                                      width: 1,
                                     ),
-                                  ],
-                                ),
-                                child: const Text(
-                                  'Reset',
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E211F),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFC3C8C2),
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 12),
+                            // Reset Button
+                            Expanded(
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  Navigator.pop(dialogContext);
+                                  appModel.resetSettingsToDefaults();
+                                },
+                                child: Container(
+                                  height: 46,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F0),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x33000000),
+                                        blurRadius: 6,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    'Reset',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E211F),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

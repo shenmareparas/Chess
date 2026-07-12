@@ -315,141 +315,143 @@ void showExitDialog(BuildContext context) {
     pageBuilder: (dialogContext, anim1, anim2) {
       return Selector<AppModel, AppTheme>(
         selector: (_, m) => m.theme,
-        builder: (dialogContext, theme, child) => Center(
-          child: Material(
-            color: Colors.transparent,
-            child: GlassPanel(
-              borderRadius: 24,
-              padding: const EdgeInsets.all(20),
-              color: const Color(0x80201F1F),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 300),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Leave Game?',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFE5E2E1),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Would you like to save your progress before exiting? You can resume from this exact position later.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFFC3C8C2),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 20),
-                    // Actions Column
-                    Column(
-                      children: [
-                        // Save & Exit (Solid Premium Button)
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            Navigator.pop(dialogContext);
-                            final appModel =
-                                Provider.of<AppModel>(context, listen: false);
-                            appModel.saveAndExitChessView();
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            height: 46,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F0),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x20000000),
-                                  blurRadius: 6,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.save_rounded,
-                                    color: const Color(0xFF131313), size: 18),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Save & Exit',
-                                  style: TextStyle(
-                                    color: Color(0xFF131313),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+        builder: (dialogContext, theme, child) => RepaintBoundary(
+          child: Center(
+            child: Material(
+              color: Colors.transparent,
+              child: GlassPanel(
+                borderRadius: 24,
+                padding: const EdgeInsets.all(20),
+                color: const Color(0x80201F1F),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 300),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Leave Game?',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFE5E2E1),
                         ),
-                        const SizedBox(height: 10),
-                        // Exit Without Saving (Glass / Outline Button)
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            Navigator.pop(dialogContext);
-                            final appModel =
-                                Provider.of<AppModel>(context, listen: false);
-                            appModel.exitChessView();
-                            Navigator.of(context).pop();
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            height: 46,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0x30F5F5F0),
-                                width: 1.0,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Would you like to save your progress before exiting? You can resume from this exact position later.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFFC3C8C2),
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      // Actions Column
+                      Column(
+                        children: [
+                          // Save & Exit (Solid Premium Button)
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                              final appModel =
+                                  Provider.of<AppModel>(context, listen: false);
+                              appModel.saveAndExitChessView();
+                              Navigator.of(context).pop();
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F0),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x20000000),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.save_rounded,
+                                      color: const Color(0xFF131313), size: 18),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Save & Exit',
+                                    style: TextStyle(
+                                      color: Color(0xFF131313),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.close_rounded,
-                                    color: const Color(0xFFE5E2E1), size: 18),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Exit Without Saving',
-                                  style: TextStyle(
-                                    color: Color(0xFFE5E2E1),
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15,
-                                  ),
+                          ),
+                          const SizedBox(height: 10),
+                          // Exit Without Saving (Glass / Outline Button)
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              Navigator.pop(dialogContext);
+                              final appModel =
+                                  Provider.of<AppModel>(context, listen: false);
+                              appModel.exitChessView();
+                              Navigator.of(context).pop();
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0x30F5F5F0),
+                                  width: 1.0,
                                 ),
-                              ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.close_rounded,
+                                      color: const Color(0xFFE5E2E1), size: 18),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    'Exit Without Saving',
+                                    style: TextStyle(
+                                      color: Color(0xFFE5E2E1),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        // Cancel (Clean Text Button)
-                        CupertinoButton(
-                          onPressed: () => Navigator.pop(dialogContext),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xFF8D928C),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
+                          const SizedBox(height: 6),
+                          // Cancel (Clean Text Button)
+                          CupertinoButton(
+                            onPressed: () => Navigator.pop(dialogContext),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Color(0xFF8D928C),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
