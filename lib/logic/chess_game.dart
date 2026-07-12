@@ -100,6 +100,7 @@ class ChessGame extends FlameGame with TapCallbacks {
       if (touchedPiece == selectedPiece) {
         validMoves = [];
         selectedPiece = null;
+        appModel.haptic.selection();
       } else {
         if (selectedPiece != null &&
             touchedPiece != null &&

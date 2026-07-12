@@ -119,6 +119,7 @@ class _MainMenuViewState extends State<MainMenuView> {
                   child: CupertinoButton(
                     padding: EdgeInsets.zero,
                     onPressed: () {
+                      appModel.haptic.light();
                       Navigator.push(
                         context,
                         CupertinoPageRoute(

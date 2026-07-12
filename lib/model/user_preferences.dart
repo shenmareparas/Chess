@@ -30,6 +30,7 @@ class UserPreferences {
   bool showHints = true;
   bool showNotation = false;
   bool enableRotation = true;
+  bool hapticEnabled = false;
 
   List<String> get pieceThemes => sortedPieceThemes;
 
@@ -60,6 +61,7 @@ class UserPreferences {
     showNotation = _prefs!.getBool('showNotation') ?? false;
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
+    hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
     onChanged?.call();
   }
 
@@ -119,6 +121,13 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setHapticEnabled(bool enabled) async {
+    hapticEnabled = enabled;
+    _prefs ??= await SharedPreferences.getInstance();
+    _prefs!.setBool('hapticEnabled', enabled);
+    onChanged?.call();
+  }
+
   Future<void> resetToDefaults() async {
     themeName = 'Forest Mint';
     pieceTheme = 'Classic';
@@ -128,6 +137,7 @@ class UserPreferences {
     showNotation = false;
     enableRotation = true;
     allowUndoRedo = true;
+    hapticEnabled = false;
 
     _prefs ??= await SharedPreferences.getInstance();
     await _prefs!.setString('themeName', themeName);
@@ -138,6 +148,7 @@ class UserPreferences {
     await _prefs!.setBool('showNotation', showNotation);
     await _prefs!.setBool('enableRotation', enableRotation);
     await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
+    await _prefs!.setBool('hapticEnabled', hapticEnabled);
     onChanged?.call();
   }
 }

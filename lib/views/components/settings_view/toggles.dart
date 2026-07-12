@@ -71,6 +71,13 @@ class Toggles extends StatelessWidget {
             setFunc: appModel.setSoundEnabled,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
+          Toggle(
+            'Haptic Feedback',
+            icon: Icons.vibration_rounded,
+            toggle: appModel.hapticEnabled,
+            setFunc: appModel.setHapticEnabled,
+          ),
+          Divider(height: 1, color: themeColor, thickness: 1),
           _SettingsTile(
             label: 'Achievements',
             icon: Icons.sports_esports_outlined,

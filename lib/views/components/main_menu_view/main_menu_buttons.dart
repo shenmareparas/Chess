@@ -35,6 +35,7 @@ class MainMenuButtons extends StatelessWidget {
               theme: theme,
               secondaryAlpha: 0.45,
               onPressed: () {
+                appModel.haptic.light();
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
@@ -58,6 +59,7 @@ class MainMenuButtons extends StatelessWidget {
             isPrimary: true,
             theme: theme,
             onPressed: () {
+              appModel.haptic.light();
               Navigator.push(
                 context,
                 CupertinoPageRoute(

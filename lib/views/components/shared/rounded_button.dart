@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../model/app_model.dart';
 
 class RoundedButton extends StatelessWidget {
   final String label;
@@ -21,7 +23,12 @@ class RoundedButton extends StatelessWidget {
           ),
         ),
         borderRadius: BorderRadius.all(Radius.circular(15)),
-        onPressed: onPressed,
+        onPressed: () {
+          try {
+            Provider.of<AppModel>(context, listen: false).haptic.light();
+          } catch (_) {}
+          onPressed();
+        },
       ),
       width: double.infinity,
       height: 60,

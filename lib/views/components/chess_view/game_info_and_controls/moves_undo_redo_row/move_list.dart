@@ -18,7 +18,7 @@ class MoveList extends StatelessWidget {
     final moves = _allMoves();
     if (moves.isEmpty) return;
     Clipboard.setData(ClipboardData(text: moves));
-    HapticFeedback.mediumImpact();
+    appModel.haptic.medium();
     _showCopiedOverlay(context);
   }
 

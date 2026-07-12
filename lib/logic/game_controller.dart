@@ -40,6 +40,8 @@ class GameController {
         }
         if (validMoves.isEmpty) {
           selectedPiece = null;
+        } else {
+          appModel.haptic.selection();
         }
       }
     }
@@ -98,6 +100,7 @@ class GameController {
   // ── Undo / Redo ──
 
   void undoMove() {
+    appModel.haptic.light();
     board.redoStack.add(board.pop());
     if (appModel.moveMetaList.length > 1) {
       var meta = appModel.moveMetaList[appModel.moveMetaList.length - 2];
@@ -109,6 +112,7 @@ class GameController {
   }
 
   void undoTwoMoves() {
+    appModel.haptic.light();
     board.redoStack.add(board.pop());
     board.redoStack.add(board.pop());
     appModel.popMoveMeta();
@@ -129,11 +133,13 @@ class GameController {
   }
 
   void redoMove() {
+    appModel.haptic.light();
     _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
         clearRedo: false);
   }
 
   void redoTwoMoves() {
+    appModel.haptic.light();
     _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
         clearRedo: false, updateMetaList: true);
     _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
@@ -204,6 +210,20 @@ class GameController {
     selectedPiece = null;
     // Single rebuild for all the state changes above
     appModel.update();
+
+    // Trigger haptic feedback based on move outcome
+    if (meta.isCheckmate) {
+      appModel.haptic.vibrate();
+    } else if (meta.isStalemate) {
+      appModel.haptic.heavy();
+    } else if (meta.isCheck) {
+      appModel.haptic.medium();
+    } else if (meta.took) {
+      appModel.haptic.medium();
+    } else {
+      appModel.haptic.light();
+    }
+
     if (appModel.isAIsTurn && clearRedo && changeTurn) {
       _aiMove();
     }

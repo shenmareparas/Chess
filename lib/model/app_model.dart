@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../logic/audio_service.dart';
 import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
+import '../logic/haptic_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
@@ -28,6 +29,7 @@ class AppModel extends ChangeNotifier {
   final UserPreferences prefs;
   final AudioService audio = AudioService();
   final TimerService timerService = TimerService();
+  final HapticService haptic = HapticService();
 
   // ── Delegated Accessors (backward compatibility) ──
   int get timeLimit => timerService.timeLimit;
@@ -39,6 +41,7 @@ class AppModel extends ChangeNotifier {
   bool get showHints => prefs.showHints;
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
+  bool get hapticEnabled => prefs.hapticEnabled;
   AppTheme get theme => prefs.theme;
   int get themeIndex => prefs.themeIndex;
   int get pieceThemeIndex => prefs.pieceThemeIndex;
@@ -113,6 +116,7 @@ class AppModel extends ChangeNotifier {
     timerService.onExpired = () => endGame();
     audio.enabled = this.prefs.soundEnabled;
     audio.initialize();
+    haptic.enabled = this.prefs.hapticEnabled;
 
     if (prefs == null) {
       this.prefs.load();
@@ -260,6 +264,7 @@ class AppModel extends ChangeNotifier {
 
   void setPlayerCount(int? count) {
     if (count != null) {
+      haptic.light();
       playerCount = count;
       notifyListeners();
     }
@@ -267,6 +272,7 @@ class AppModel extends ChangeNotifier {
 
   void setAIDifficulty(int? difficulty) {
     if (difficulty != null) {
+      haptic.light();
       aiDifficulty = difficulty;
       notifyListeners();
     }
@@ -274,6 +280,7 @@ class AppModel extends ChangeNotifier {
 
   void setPlayerSide(Player? side) {
     if (side != null) {
+      haptic.light();
       selectedSide = side;
       if (side != Player.random) {
         playerSide = side;
@@ -284,6 +291,7 @@ class AppModel extends ChangeNotifier {
 
   void setPlayerSideP1(Player? side) {
     if (side != null) {
+      haptic.light();
       selectedSideP1 = side;
       notifyListeners();
     }
@@ -291,6 +299,7 @@ class AppModel extends ChangeNotifier {
 
   void setTimeLimit(int? duration) {
     if (duration != null) {
+      haptic.light();
       timerService.configure(duration);
       notifyListeners();
     }
@@ -298,23 +307,59 @@ class AppModel extends ChangeNotifier {
 
   // ── Preference Delegation ──
 
-  void setTheme(int index) => prefs.setTheme(index);
-  void setPieceTheme(int index) => prefs.setPieceTheme(index);
-  void setShowMoveHistory(bool show) => prefs.setShowMoveHistory(show);
+  void setTheme(int index) {
+    haptic.light();
+    prefs.setTheme(index);
+  }
+
+  void setPieceTheme(int index) {
+    haptic.light();
+    prefs.setPieceTheme(index);
+  }
+
+  void setShowMoveHistory(bool show) {
+    haptic.light();
+    prefs.setShowMoveHistory(show);
+  }
+
   void setSoundEnabled(bool enabled) {
+    haptic.light();
     prefs.setSoundEnabled(enabled);
     audio.enabled = enabled;
   }
 
-  void setShowHints(bool show) => prefs.setShowHints(show);
-  void setShowNotation(bool show) => prefs.setShowNotation(show);
-  void setEnableRotation(bool enable) => prefs.setEnableRotation(enable);
-  void setAllowUndoRedo(bool allow) => prefs.setAllowUndoRedo(allow);
+  void setShowHints(bool show) {
+    haptic.light();
+    prefs.setShowHints(show);
+  }
+
+  void setShowNotation(bool show) {
+    haptic.light();
+    prefs.setShowNotation(show);
+  }
+
+  void setEnableRotation(bool enable) {
+    haptic.light();
+    prefs.setEnableRotation(enable);
+  }
+
+  void setAllowUndoRedo(bool allow) {
+    haptic.light();
+    prefs.setAllowUndoRedo(allow);
+  }
+
+  void setHapticEnabled(bool enabled) {
+    prefs.setHapticEnabled(enabled);
+    haptic.enabled = enabled;
+    haptic.light();
+  }
+
   void showAchievements() => PlayGamesService.instance.showAchievements();
 
   Future<void> resetSettingsToDefaults() async {
     await prefs.resetToDefaults();
     audio.enabled = prefs.soundEnabled;
+    haptic.enabled = prefs.hapticEnabled;
     notifyListeners();
   }
 
