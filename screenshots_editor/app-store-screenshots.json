@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
-  "appName": "Chess",
+  "appName": "AI Chess",
   "themeId": "forest-mint",
   "connectedCanvas": true,
   "locales": [
     "en"
   ],
   "locale": "en",
-  "device": "android",
+  "device": "feature-graphic",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
   "slidesByDevice": {
@@ -206,13 +206,15 @@
     "feature-graphic": [
       {
         "id": "s_chess_fg",
-        "layout": "feature-graphic",
+        "layout": "feature-graphic-cards",
         "themeId": "forest-mint",
         "label": {},
         "headline": {
-          "en": "Play Chess, master the board."
+          "en": "Smart AI\nStunning Themes\nZero Interruptions"
         },
-        "screenshot": ""
+        "screenshot": "/screenshots/android/phone/en/ai_chess.png",
+        "screenshotSecondary": "/screenshots/android/phone/en/custom_themes_primary.png",
+        "screenshotTertiary": "/screenshots/android/phone/en/custom_gameplay.png"
       }
     ]
   },

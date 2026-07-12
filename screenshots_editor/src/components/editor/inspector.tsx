@@ -78,11 +78,11 @@ export function Inspector({
   noiseOpacity = 0.045,
   onUpdateGlobalSettings,
 }: Props) {
-  const isFeatureGraphic = device === "feature-graphic" || slide.layout === "feature-graphic";
+  const isFeatureGraphic = device === "feature-graphic" || slide.layout.startsWith("feature-graphic");
   const isNoDevice = slide.layout === "no-device";
-  const layoutValue = device === "feature-graphic" ? "feature-graphic" : slide.layout;
+  const layoutValue = device === "feature-graphic" && !slide.layout.startsWith("feature-graphic") ? "feature-graphic" : slide.layout;
   const layoutOptions = Object.entries(LAYOUT_LABEL).filter(([layout]) =>
-    device === "feature-graphic" ? layout === "feature-graphic" : layout !== "feature-graphic",
+    device === "feature-graphic" ? layout.startsWith("feature-graphic") : !layout.startsWith("feature-graphic"),
   );
   const localeLabel = slide.label?.[locale] ?? "";
   const localeHeadline = slide.headline?.[locale] ?? "";
@@ -99,7 +99,7 @@ export function Inspector({
   }
 
   React.useEffect(() => {
-    if (device === "feature-graphic" && slide.layout !== "feature-graphic") {
+    if (device === "feature-graphic" && !slide.layout.startsWith("feature-graphic")) {
       onChange({ layout: "feature-graphic", transforms: undefined, screenshotSecondary: undefined });
     }
   }, [device, onChange, slide.layout]);
@@ -127,7 +127,7 @@ export function Inspector({
                 layout: next,
                 transforms: undefined,
                 screenshotSecondary:
-                  next === "two-devices" || next === "three-devices" ? slide.screenshotSecondary || slide.screenshot : undefined,
+                  next === "two-devices" || next === "three-devices" || next === "feature-graphic-dual" ? slide.screenshotSecondary || slide.screenshot : undefined,
                 screenshotTertiary:
                   next === "three-devices" ? slide.screenshotTertiary || slide.screenshot : undefined,
               });
@@ -148,7 +148,7 @@ export function Inspector({
 
         {!isFeatureGraphic && (
           <div className="space-y-1.5">
-            <Label className="text-xs">Label</Label>
+            <Label className="text-xs">Label (Optional)</Label>
             <Input
               value={localeLabel}
               onChange={(e) => setLocaleField("label", e.target.value)}
@@ -158,10 +158,7 @@ export function Inspector({
         )}
 
         <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between">
-            <Label className="text-xs">{isFeatureGraphic ? "Tagline" : "Headline"}</Label>
-            <span className="text-[10px] text-muted-foreground">newline = break</span>
-          </div>
+          <Label className="text-xs">Headline</Label>
           <Textarea
             value={localeHeadline}
             onChange={(e) => setLocaleField("headline", e.target.value)}
@@ -170,10 +167,18 @@ export function Inspector({
           />
         </div>
 
-        {!isFeatureGraphic && !isNoDevice && (
+        {((!isFeatureGraphic && !isNoDevice) || 
+          slide.layout === "feature-graphic-split" || 
+          slide.layout === "feature-graphic-mockup" || 
+          slide.layout === "feature-graphic-dual" || 
+          slide.layout === "feature-graphic-cards" || 
+          slide.layout === "feature-graphic-phone-left") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "two-devices" || slide.layout === "three-devices"
+              {slide.layout === "two-devices" || 
+               slide.layout === "three-devices" || 
+               slide.layout === "feature-graphic-dual" || 
+               slide.layout === "feature-graphic-cards"
                 ? "Main/Front device screenshot"
                 : "Screenshot"}
             </Label>
@@ -186,9 +191,14 @@ export function Inspector({
           </div>
         )}
 
-        {(slide.layout === "two-devices" || slide.layout === "three-devices") && (
+        {(slide.layout === "two-devices" || 
+          slide.layout === "three-devices" || 
+          slide.layout === "feature-graphic-dual" || 
+          slide.layout === "feature-graphic-cards") && (
           <div className="space-y-1.5">
-            <Label className="text-xs">Left device screenshot (Back layer)</Label>
+            <Label className="text-xs">
+              {slide.layout === "feature-graphic-cards" ? "Second screenshot (Middle card)" : "Left device screenshot (Back layer)"}
+            </Label>
             <ScreenshotPicker
               label="Secondary"
               value={slide.screenshotSecondary || ""}
@@ -198,9 +208,11 @@ export function Inspector({
           </div>
         )}
 
-        {slide.layout === "three-devices" && (
+        {(slide.layout === "three-devices" || slide.layout === "feature-graphic-cards") && (
           <div className="space-y-1.5">
-            <Label className="text-xs">Right device screenshot (Back layer)</Label>
+            <Label className="text-xs">
+              {slide.layout === "feature-graphic-cards" ? "Third screenshot (Bottom card)" : "Right device screenshot (Back layer)"}
+            </Label>
             <ScreenshotPicker
               label="Tertiary"
               value={slide.screenshotTertiary || ""}

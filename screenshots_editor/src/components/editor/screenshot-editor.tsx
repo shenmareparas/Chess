@@ -517,9 +517,12 @@ export function ScreenshotEditor() {
         if (!el) {
           throw new Error("Render target missing");
         }
+        const filename = state.device === "feature-graphic" 
+          ? "feature_graphic.png" 
+          : `slide${i + 1}.png`;
         const dataUrl = await captureSlide(el, cW, cH, cW, cH);
         images.push({
-          name: `slide${i + 1}.png`,
+          name: filename,
           dataUrl,
         });
         okCount += 1;

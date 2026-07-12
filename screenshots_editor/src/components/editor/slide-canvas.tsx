@@ -600,7 +600,7 @@ export function SlideCanvas({
   const { cW, cH } = getCanvas(device, orientation);
   const resolvedTheme = slide.themeId ? themeById(slide.themeId) : theme;
 
-  if (slide.layout === "feature-graphic" || device === "feature-graphic") {
+  if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") {
     return (
       <FeatureGraphicCanvas
         slide={slide}
@@ -690,7 +690,7 @@ export function DeckCanvas({
         const screenX = index * cW;
         const active = activeSlideId === slide.id;
         const resolvedTheme = slide.themeId ? themeById(slide.themeId) : theme;
-        if (slide.layout === "feature-graphic" || device === "feature-graphic") {
+        if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") {
           return (
             <div
               key={`${slide.id}-feature`}
@@ -748,7 +748,7 @@ export function DeckCanvas({
       })}
 
       {slides.map((slide, index) => {
-        if (slide.layout === "feature-graphic" || device === "feature-graphic") return null;
+        if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") return null;
         const selectedElementId =
           selectedElement?.slideId === slide.id ? selectedElement.elementId : null;
         const perSlideEdit: EditHandlers | undefined = editable
@@ -957,6 +957,106 @@ function FeatureGraphicCanvas({
   editable?: boolean;
   edit?: EditHandlers;
 }) {
+  const cH = cW * 0.48828; // 1024x500 ratio
+  const screenshot = resolveScreenshot(slide.screenshot, locale);
+  const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary || slide.screenshot, locale);
+  const screenshotTertiary = resolveScreenshot(slide.screenshotTertiary || slide.screenshot, locale);
+
+  const layout = slide.layout;
+
+  // Background gradient strictly using theme.bg and theme.bgGrad (forest green to near-black)
+  const bgGradient = `linear-gradient(135deg, ${theme.bg} 0%, ${theme.bgGrad} 100%)`;
+
+  // Left Content rendering
+  const renderTextContent = (alignLeft = false) => {
+    const textThemeColor = theme.bgAlt || theme.accent; // Soft mint color from theme
+    return (
+      <div 
+        style={{ 
+          display: "flex", 
+          flexDirection: "column",
+          alignItems: alignLeft ? "flex-start" : "center",
+          textAlign: alignLeft ? "left" : "center",
+          gap: cH * 0.04, 
+          zIndex: 10,
+          maxWidth: alignLeft ? cW * 0.45 : "100%",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: cW * 0.02 }}>
+          {appIcon && img(appIcon) ? (
+            <img
+              src={img(appIcon)}
+              alt=""
+              style={{
+                width: cW * 0.08,
+                height: cW * 0.08,
+                borderRadius: cW * 0.016,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+              }}
+              draggable={false}
+            />
+          ) : (
+            <div
+              aria-hidden
+              style={{
+                width: cW * 0.08,
+                height: cW * 0.08,
+                borderRadius: cW * 0.016,
+                background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent})`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: theme.bg || "#0F1B15",
+                fontWeight: 800,
+                fontSize: cW * 0.045,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+              }}
+            >
+              {(appName || "A").slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <div style={{ fontSize: cW * 0.045, fontWeight: 900, letterSpacing: "-0.02em", color: theme.bgAlt || theme.accent }}>
+            {appName || "Chess"}
+          </div>
+        </div>
+
+        <EditableText
+          value={pickText(slide.headline, locale)}
+          editable={editable}
+          multiline
+          onChange={edit?.onHeadlineChange}
+          style={{
+            fontSize: cW * 0.038,
+            fontWeight: 850,
+            color: textThemeColor,
+            lineHeight: 1.15,
+            letterSpacing: "-0.01em",
+            textShadow: "0 2px 10px rgba(0,0,0,0.25)",
+          }}
+        />
+      </div>
+    );
+  };
+
+  const renderBareScreenshot = (src: string, style?: React.CSSProperties) => {
+    const resolved = img(src);
+    if (!resolved) return null;
+    return (
+      <div
+        style={{
+          borderRadius: cW * 0.015,
+          overflow: "hidden",
+          border: `${cW * 0.003}px solid ${(theme.bgAlt || theme.accent)}40`,
+          boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
+          background: theme.bgGrad || "#000",
+          ...style,
+        }}
+      >
+        <img src={resolved} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -964,63 +1064,148 @@ function FeatureGraphicCanvas({
         height: "100%",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(135deg, ${theme.bgAlt} 0%, ${shade(theme.bgAlt, -10)} 50%, ${theme.accent} 200%)`,
+        background: bgGradient,
         display: "flex",
         alignItems: "center",
-        padding: `0 ${cW * 0.06}px`,
-        color: theme.fgAlt,
+        justifyContent: layout === "feature-graphic" ? "center" : "flex-start",
+        padding: `0 ${cW * 0.08}px`,
+        color: theme.bgAlt || theme.accent,
       }}
     >
-      <Blob cW={cW} color={theme.accent} x={70} y={20} size={50} opacity={0.45} />
-      <div style={{ display: "flex", alignItems: "center", gap: cW * 0.03, zIndex: 2 }}>
-        {appIcon && img(appIcon) ? (
-          <img
-            src={img(appIcon)}
-            alt=""
-            style={{
-              width: cW * 0.13,
-              height: cW * 0.13,
-              borderRadius: cW * 0.022,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            }}
-            draggable={false}
-          />
-        ) : (
-          <div
-            aria-hidden
-            style={{
-              width: cW * 0.13,
-              height: cW * 0.13,
-              borderRadius: cW * 0.022,
-              background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent})`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: theme.fgAlt,
-              fontWeight: 800,
-              fontSize: cW * 0.07,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            }}
-          >
-            {(appName || "A").slice(0, 1).toUpperCase()}
-          </div>
-        )}
-        <div>
-          <div style={{ fontSize: cW * 0.06, fontWeight: 800, lineHeight: 1.05 }}>{appName || "App"}</div>
-          <EditableText
-            value={pickText(slide.headline, locale)}
-            editable={editable}
-            multiline
-            onChange={edit?.onHeadlineChange}
-            style={{
-              fontSize: cW * 0.028,
-              color: "rgba(255,255,255,0.85)",
-              marginTop: cW * 0.012,
-              lineHeight: 1.25,
-            }}
-          />
-        </div>
-      </div>
+      {layout === "feature-graphic" ? (
+        renderTextContent(false)
+      ) : (
+        <>
+          {layout !== "feature-graphic-phone-left" && renderTextContent(true)}
+
+          {/* Right side Mockups */}
+          {layout === "feature-graphic-split" && (
+            <div
+              style={{
+                position: "absolute",
+                right: cW * 0.12,
+                bottom: -cH * 0.12,
+                height: cH * 0.95,
+                aspectRatio: "9 / 19.5",
+                zIndex: 5,
+              }}
+            >
+              <AndroidPhone src={screenshot} showCameraDot={false} />
+            </div>
+          )}
+
+          {layout === "feature-graphic-mockup" && (
+            <div
+              style={{
+                position: "absolute",
+                right: cW * 0.1,
+                bottom: -cH * 0.16,
+                height: cH * 1.05,
+                aspectRatio: "9 / 19.5",
+                zIndex: 5,
+                transform: "rotate(-12deg)",
+                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.4))",
+              }}
+            >
+              <AndroidPhone src={screenshot} showCameraDot={false} />
+            </div>
+          )}
+
+          {layout === "feature-graphic-dual" && (
+            <div style={{ position: "absolute", right: cW * 0.05, bottom: -cH * 0.14, width: cW * 0.45, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: -cH * 0.05,
+                  height: cH * 0.9,
+                  aspectRatio: "9 / 19.5",
+                  transform: "rotate(-16deg)",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.9,
+                }}
+              >
+                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
+              </div>
+              {/* Front Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: cW * 0.02,
+                  bottom: 0,
+                  height: cH * 0.95,
+                  aspectRatio: "9 / 19.5",
+                  transform: "rotate(8deg)",
+                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.45))",
+                  zIndex: 6,
+                }}
+              >
+                <AndroidPhone src={screenshot} showCameraDot={false} />
+              </div>
+            </div>
+          )}
+
+          {layout === "feature-graphic-cards" && (
+            <div style={{ position: "absolute", right: cW * 0.04, bottom: -cH * 0.1, width: cW * 0.46, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back Card */}
+              {renderBareScreenshot(screenshotTertiary, {
+                position: "absolute",
+                right: cW * 0.02,
+                top: cH * 0.08,
+                height: cH * 0.78,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(14deg)",
+              })}
+              {/* Middle Card */}
+              {renderBareScreenshot(screenshotSecondary, {
+                position: "absolute",
+                right: cW * 0.12,
+                top: cH * 0.12,
+                height: cH * 0.84,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-6deg)",
+              })}
+              {/* Front Card */}
+              {renderBareScreenshot(screenshot, {
+                position: "absolute",
+                right: cW * 0.22,
+                top: cH * 0.16,
+                height: cH * 0.9,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-18deg)",
+                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.55))",
+                zIndex: 6,
+              })}
+            </div>
+          )}
+
+          {layout === "feature-graphic-phone-left" && (
+            <>
+              {/* Phone Mockup on Left */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: cW * 0.1,
+                  bottom: -cH * 0.16,
+                  height: cH * 1.05,
+                  aspectRatio: "9 / 19.5",
+                  zIndex: 5,
+                  transform: "rotate(12deg)",
+                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.4))",
+                }}
+              >
+                <AndroidPhone src={screenshot} showCameraDot={false} />
+              </div>
+              
+              {/* Content on the Right */}
+              <div style={{ marginLeft: cW * 0.46, zIndex: 10 }}>
+                {renderTextContent(true)}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }

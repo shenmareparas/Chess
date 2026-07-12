@@ -222,7 +222,12 @@ export const LAYOUT_LABEL: Record<SlideLayout, string> = {
   "device-left": "Device left",
   "device-right": "Device right",
   "three-devices": "Three devices",
-  "feature-graphic": "Feature graphic",
+  "feature-graphic": "Feature graphic (Classic)",
+  "feature-graphic-split": "Feature graphic (Promo Split)",
+  "feature-graphic-mockup": "Feature graphic (Tilted Phone)",
+  "feature-graphic-dual": "Feature graphic (Double Tilted)",
+  "feature-graphic-cards": "Feature graphic (Stacked Cards)",
+  "feature-graphic-phone-left": "Feature graphic (Phone Left)",
 };
 
 // Short description shown under each layout name
@@ -236,5 +241,10 @@ export const LAYOUT_HINT: Record<SlideLayout, string> = {
   "device-left": "Phone left, caption right",
   "device-right": "Phone right, caption left",
   "three-devices": "Three layered phones side-by-side",
-  "feature-graphic": "1024×500 Play Store banner",
+  "feature-graphic": "App icon, name, and tagline centered",
+  "feature-graphic-split": "Icon and tagline on left, phone mockup on right",
+  "feature-graphic-mockup": "Icon and tagline on left, tilted phone mockup on right",
+  "feature-graphic-dual": "Icon and tagline on left, two tilted phones on right",
+  "feature-graphic-cards": "Icon and tagline on left, three overlapping screenshot cards on right",
+  "feature-graphic-phone-left": "Phone mockup on left, icon and tagline on right",
 };
