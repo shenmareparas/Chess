@@ -267,23 +267,31 @@ class ChessGame extends FlameGame with TapCallbacks {
   }
 
   void _drawPieces(Canvas canvas) {
+    final ts = tileSize ?? 0;
+    final boardCenter = ts * 4; // board is always square: 8 * tileSize / 2
+
+    // Apply a single board-level counter-rotation so all pieces are drawn
+    // upright relative to the viewer, regardless of board flip state.
+    // This replaces the former per-piece save/translate/rotate/restore cycle
+    // (5 canvas ops × N pieces) with a single pair (5 ops total).
+    canvas.save();
+    canvas.translate(boardCenter, boardCenter);
+    canvas.rotate(-currentRotation);
+    canvas.translate(-boardCenter, -boardCenter);
+
     for (var piece in _allPieces) {
       double x = (spriteMap[piece]?.spriteX ?? 0) + 5;
       double y = (spriteMap[piece]?.spriteY ?? 0) + 5;
-      double size = (tileSize ?? 0) - 10;
-
-      canvas.save();
-      canvas.translate(x + size / 2, y + size / 2);
-      canvas.rotate(-currentRotation);
-      canvas.translate(-(x + size / 2), -(y + size / 2));
+      double size = ts - 10;
 
       spriteMap[piece]?.sprite?.render(
             canvas,
             size: Vector2(size, size),
             position: Vector2(x, y),
           );
-      canvas.restore();
     }
+
+    canvas.restore();
   }
 
   void _drawMoveHints(Canvas canvas) {
