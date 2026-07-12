@@ -1,7 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Wraps Google Play Games Services (Android) / Game Center (iOS).
+/// Wraps Google Play Games Services (Android).
 ///
 /// All public methods are fire-and-forget — errors are swallowed silently so
 /// a GPGS outage or unavailable service never crashes or blocks the game.
@@ -15,6 +17,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class PlayGamesService {
   PlayGamesService._();
   static final PlayGamesService instance = PlayGamesService._();
+
+  bool get _isEnabled => !kIsWeb && Platform.isAndroid;
 
   // ── Achievement IDs ─────────────────────────────────────────────────────────
   // Replace each value with the Android achievement ID from Play Console.
@@ -36,6 +40,7 @@ class PlayGamesService {
 
   /// Call once after [runApp]. Non-blocking; silently skips if unavailable.
   Future<void> signIn() async {
+    if (!_isEnabled) return;
     try {
       await GamesServices.signIn();
       _signedIn = true;
@@ -46,6 +51,7 @@ class PlayGamesService {
 
   /// Attempts sign-in without prompting the user if they are not already signed in.
   Future<void> signInSilently() async {
+    if (!_isEnabled) return;
     try {
       if (await GamesServices.isSignedIn) {
         await signIn();
@@ -58,6 +64,7 @@ class PlayGamesService {
   /// Opens the native achievements UI screen. Prompts the user to sign in
   /// interactively if not currently signed in.
   Future<void> showAchievements() async {
+    if (!_isEnabled) return;
     try {
       if (!_signedIn) {
         await signIn();
@@ -75,7 +82,7 @@ class PlayGamesService {
   /// Unlocks a single achievement by Android ID. Silent no-op if not signed in
   /// or if the ID is still a placeholder.
   void unlock(String androidId) {
-    if (!_signedIn || androidId.startsWith('REPLACE_')) return;
+    if (!_isEnabled || !_signedIn || androidId.startsWith('REPLACE_')) return;
     GamesServices.unlock(
       achievement: Achievement(androidID: androidId),
     ).catchError((_) => null);
@@ -109,6 +116,7 @@ class PlayGamesService {
   // unlock() — Play Games tracks the step count and auto-unlocks at 10 / 50.
 
   Future<void> _incrementGamesPlayed() async {
+    if (!_isEnabled) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final count = (prefs.getInt(_prefKeyGamesPlayed) ?? 0) + 1;

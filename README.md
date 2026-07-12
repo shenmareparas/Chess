@@ -61,9 +61,9 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🏆 Achievements
 
--   **Google Play Games Services** (Android) and **Game Center** (iOS) integration via `games_services`
+-   **Google Play Games Services** (Android) integration via `games_services` (disabled/hidden on iOS)
 -   8 achievements: First Game, First Win, Beat Level 5, Timed Win, Pawn Promotion, Put in Check, Play 10 Games (incremental), Play 50 Games (incremental)
--   Silent sign-in on startup; interactive sign-in and native achievements UI on demand
+-   Silent sign-in on startup; interactive sign-in and native achievements UI on demand (Android only)
 
 
 ## 📸 Screenshots
@@ -84,7 +84,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** — Sound effects with pooled `AudioPool` for rapid move sounds
 -   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic)
--   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games / Game Center achievements
+-   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks

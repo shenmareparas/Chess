@@ -14,14 +14,7 @@ class Toggles extends StatelessWidget {
         const Color(0x1A424843); // outline-variant/10 (0x1A is ~10% opacity)
 
     final platform = Theme.of(context).platform;
-    final String achievementsSubtitle;
-    if (platform == TargetPlatform.android) {
-      achievementsSubtitle = 'Enables Google Play Games integration';
-    } else if (platform == TargetPlatform.iOS) {
-      achievementsSubtitle = 'Enables Game Center integration';
-    } else {
-      achievementsSubtitle = 'Enables Achievements integration';
-    }
+    final String achievementsSubtitle = 'Enables Google Play Games integration';
 
     final theme = appModel.theme;
 
@@ -77,14 +70,16 @@ class Toggles extends StatelessWidget {
             toggle: appModel.hapticEnabled,
             setFunc: appModel.setHapticEnabled,
           ),
-          Divider(height: 1, color: themeColor, thickness: 1),
-          _SettingsTile(
-            label: 'Achievements',
-            icon: Icons.sports_esports_outlined,
-            subtitle: achievementsSubtitle,
-            theme: theme,
-            onTap: appModel.showAchievements,
-          ),
+          if (platform != TargetPlatform.iOS) ...[
+            Divider(height: 1, color: themeColor, thickness: 1),
+            _SettingsTile(
+              label: 'Achievements',
+              icon: Icons.sports_esports_outlined,
+              subtitle: achievementsSubtitle,
+              theme: theme,
+              onTap: appModel.showAchievements,
+            ),
+          ],
         ],
       ),
     );
