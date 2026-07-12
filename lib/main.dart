@@ -82,10 +82,10 @@ Future<void> _loadFlameAssets(String activeTheme) async {
 }
 
 void _preloadRemainingThemesInBackground(String activeTheme) {
-  Future(() async {
-    List<String> remainingImages = [];
+  Future.delayed(const Duration(seconds: 3), () async {
     for (var theme in PIECE_THEMES) {
       if (theme == activeTheme || theme == 'Classic') continue;
+      List<String> themeImages = [];
       for (var color in ['black', 'white']) {
         for (var piece in [
           'king',
@@ -95,15 +95,17 @@ void _preloadRemainingThemesInBackground(String activeTheme) {
           'knight',
           'pawn'
         ]) {
-          remainingImages
+          themeImages
               .add('pieces/${formatPieceTheme(theme)}/${piece}_$color.png');
         }
       }
-    }
-    try {
-      await Flame.images.loadAll(remainingImages);
-    } catch (e) {
-      // Avoid crash if assets fail to load in background
+      try {
+        await Flame.images.loadAll(themeImages);
+        // Small pause between themes to let the main thread process UI events
+        await Future.delayed(const Duration(milliseconds: 100));
+      } catch (e) {
+        // Avoid crash if assets fail to load in background
+      }
     }
   });
 }

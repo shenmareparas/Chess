@@ -66,16 +66,16 @@ class UserPreferences {
 
   Future<void> setTheme(int index) async {
     themeName = themeList[index].name ?? "";
+    onChanged?.call();
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setString('themeName', themeName);
-    onChanged?.call();
   }
 
   Future<void> setPieceTheme(int index) async {
     pieceTheme = pieceThemes[index];
+    onChanged?.call();
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setString('pieceTheme', pieceTheme);
-    onChanged?.call();
   }
 
   Future<void> setShowMoveHistory(bool show) async {

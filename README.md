@@ -25,6 +25,11 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Lewis Chessmen, Old School, and Fairy Tale
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Inter font for clean, readable UI typography
+-   **⚡ Performance Optimizations**:
+    -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
+    -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
+    -   **Sequential Asset Preloading**: Preloading remaining asset images runs sequentially (one theme at a time) after a 3-second startup delay, preventing frame drops during app start.
+    -   **Isolated Background Repaints**: Heavy background paint layers (such as dot grids and radial blurs) are wrapped in `RepaintBoundary` objects to prevent unnecessary redraws during list scrolling.
 
 ### 🎯 Gameplay Features
 

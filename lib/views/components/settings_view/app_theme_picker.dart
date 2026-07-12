@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -15,6 +16,7 @@ class AppThemePicker extends StatefulWidget {
 
 class _AppThemePickerState extends State<AppThemePicker> {
   late FixedExtentScrollController _scrollController;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -26,18 +28,59 @@ class _AppThemePickerState extends State<AppThemePicker> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final appModel = Provider.of<AppModel>(context);
-    final theme = appModel.theme;
+    final appModel = Provider.of<AppModel>(context, listen: false);
+
+    final picker = GlassPanel(
+      padding: const EdgeInsets.all(16),
+      child: SizedBox(
+        height: 120,
+        child: CupertinoPicker(
+          scrollController: _scrollController,
+          selectionOverlay: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white.withValues(alpha: 0.03),
+            ),
+          ),
+          itemExtent: 44,
+          onSelectedItemChanged: (index) {
+            _debounceTimer?.cancel();
+            _debounceTimer = Timer(const Duration(milliseconds: 150), () {
+              if (mounted) {
+                Provider.of<AppModel>(context, listen: false).setTheme(index);
+              }
+            });
+          },
+          children: themeList
+              .map(
+                (t) => Container(
+                  alignment: Alignment.center,
+                  child: Text(
+                    t.name ?? "",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFE5E2E1),
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
 
     return Selector<AppModel, int>(
       selector: (_, m) => m.themeIndex,
       builder: (context, themeIndex, child) {
+        final theme = appModel.theme;
         if (_scrollController.hasClients &&
             _scrollController.selectedItem != themeIndex) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -62,41 +105,7 @@ class _AppThemePickerState extends State<AppThemePicker> {
                 ),
               ),
             ),
-            GlassPanel(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 120,
-                child: CupertinoPicker(
-                  scrollController: _scrollController,
-                  selectionOverlay: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.white.withValues(alpha: 0.03),
-                    ),
-                  ),
-                  itemExtent: 44,
-                  onSelectedItemChanged: (index) {
-                    Provider.of<AppModel>(context, listen: false)
-                        .setTheme(index);
-                  },
-                  children: themeList
-                      .map(
-                        (t) => Container(
-                          alignment: Alignment.center,
-                          child: Text(
-                            t.name ?? "",
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFE5E2E1),
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-            ),
+            picker,
           ],
         );
       },

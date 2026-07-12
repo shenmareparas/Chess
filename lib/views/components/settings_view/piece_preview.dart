@@ -1,61 +1,60 @@
-import 'dart:ui';
-
-import 'package:flame/flame.dart';
-import 'package:flame/game.dart';
-import 'package:flame/sprite.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import '../../../logic/shared_functions.dart';
 import '../../../model/app_model.dart';
 
-class PiecePreview extends Game {
-  AppModel appModel;
+class PiecePreview extends StatelessWidget {
+  final AppModel appModel;
+
+  const PiecePreview(this.appModel, {Key? key}) : super(key: key);
 
   Map<int, String> get imageMap {
+    final themeFormatted = formatPieceTheme(appModel.pieceTheme);
     return {
-      0: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/king_black.png',
-      1: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/queen_white.png',
-      2: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/rook_white.png',
-      3: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/bishop_black.png',
-      4: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/knight_black.png',
-      5: 'pieces/${formatPieceTheme(appModel.pieceTheme)}/pawn_white.png',
+      0: 'assets/images/pieces/$themeFormatted/king_black.png',
+      1: 'assets/images/pieces/$themeFormatted/queen_white.png',
+      2: 'assets/images/pieces/$themeFormatted/rook_white.png',
+      3: 'assets/images/pieces/$themeFormatted/bishop_black.png',
+      4: 'assets/images/pieces/$themeFormatted/knight_black.png',
+      5: 'assets/images/pieces/$themeFormatted/pawn_white.png',
     };
   }
 
-  Map<int, Sprite> spriteMap = Map();
-  bool rendered = false;
-
-  PiecePreview(this.appModel) {
-    loadSpriteImages();
-  }
-
-  loadSpriteImages() async {
-    for (var index = 0; index < 6; index++) {
-      spriteMap[index] = Sprite(await Flame.images.load(imageMap[index] ?? ""));
-    }
-  }
-
   @override
-  void render(Canvas canvas) {
-    for (var index = 0; index < 6; index++) {
-      canvas.drawRect(
-        Rect.fromLTWH((index % 2) * 40.0, (index / 2).floor() * 40.0, 40, 40),
-        Paint()
-          ..color = (index + (index / 2).floor()) % 2 == 0
-              ? appModel.theme.lightTile
-              : appModel.theme.darkTile,
-      );
-      spriteMap[index]?.render(
-        canvas,
-        size: Vector2(30, 30),
-        position: Vector2(
-          (index % 2) * 40.0 + 5,
-          (index / 2).floor() * 40.0 + 5,
-        ),
-      );
-    }
-  }
+  Widget build(BuildContext context) {
+    final theme = appModel.theme;
+    return SizedBox(
+      width: 80,
+      height: 120,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(3, (row) {
+          return Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(2, (col) {
+              final index = row * 2 + col;
+              final isLight = (row + col) % 2 == 0;
+              final tileColor = isLight ? theme.lightTile : theme.darkTile;
+              final imagePath = imageMap[index];
 
-  @override
-  void update(double t) {}
+              return Container(
+                width: 40,
+                height: 40,
+                color: tileColor,
+                padding: const EdgeInsets.all(5),
+                child: imagePath != null
+                    ? Image.asset(
+                        imagePath,
+                        width: 30,
+                        height: 30,
+                        fit: BoxFit.contain,
+                      )
+                    : null,
+              );
+            }),
+          );
+        }),
+      ),
+    );
+  }
 }

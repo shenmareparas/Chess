@@ -9,7 +9,7 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 
 ### 1. App Entry & State
 
-- **`lib/main.dart`**: Initializes settings (loading preferences first), preloads essential assets (the active piece theme, Classic theme, and the home screen logo) synchronously to speed up startup, launches remaining theme preloading and AdService initialization asynchronously, and wraps the `CupertinoApp` with a `ChangeNotifierProvider` for `AppModel`.
+- **`lib/main.dart`**: Initializes settings (loading preferences first), preloads essential assets (the active piece theme, Classic theme, and the home screen logo) synchronously to speed up startup, launches remaining theme preloading asynchronously (sequentially throttled with a 100ms delay between themes, starting 3 seconds after boot) to protect main-thread frame metrics, and wraps the `CupertinoApp` with a `ChangeNotifierProvider` for `AppModel`.
 - **`lib/model/app_model.dart`**: The central brain for state management, notifying the UI of game state changes, theme changes, and settings.
 - **`lib/model/user_preferences.dart`**: Handles saving and loading settings to local storage.
 - **`lib/model/app_themes.dart`**: Specifies board and UI colors.
@@ -19,8 +19,8 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 
 - **`main_menu_view.dart`**: The starting screen to configure the game (1P/2P, difficulty, time control, side selection).
 - **`chess_view.dart`**: The primary game interface displaying the Flame-rendered board, move history, captured pieces, and timers. Reacts dynamically to `GameController` swaps (e.g., on game restart) to re-initialize the Flame layer.
-- **`settings_view.dart`**: For customizing themes, sounds, and other UI preferences. Integrates a custom developer Easter egg in its child `PieceThemePicker` that opens a non-dismissible `PromotionDialog` preview when tapping the piece preview 7 times (showing snappy countdown toasts using `FToast` starting from the 4th tap).
-- **`components/`**: Directory containing view-specific subcomponents and shared widgets, including a glassmorphic `PromotionDialog` (wrapped in `PopScope(canPop: false)` to prevent accidental dismissals during games) and `GlassPanel` shared UI containers.
+- **`settings_view.dart`**: For customizing themes, sounds, and other UI preferences. Integrates a custom developer Easter egg in its child `PieceThemePicker` that opens a non-dismissible `PromotionDialog` preview when tapping the piece preview 7 times (showing snappy countdown toasts using `FToast` starting from the 4th tap). Employs `RepaintBoundary` wrappers on heavy background layers (dot grid, radial blurs), and isolates CupertinoPickers from rebuild loops with a 150ms scroll-debounce to keep the settings menu completely lag-free.
+- **`components/`**: Directory containing view-specific subcomponents and shared widgets, including a glassmorphic `PromotionDialog` (wrapped in `PopScope(canPop: false)` to prevent accidental dismissals during games) and `GlassPanel` shared UI containers. The piece preview uses a lightweight standard `PiecePreview` StatelessWidget with standard image caching rather than heavy Flame loops.
 
 ### 3. Game Logic & Flame Integration (`lib/logic/`)
 

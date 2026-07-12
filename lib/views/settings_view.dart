@@ -171,9 +171,11 @@ class _SettingsViewState extends State<SettingsView> {
               children: [
                 // 1. Dot Grid Background
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: DotGridPainter(
-                      color: theme.lightTile.withValues(alpha: 0.05),
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: DotGridPainter(
+                        color: theme.lightTile.withValues(alpha: 0.05),
+                      ),
                     ),
                   ),
                 ),
@@ -182,18 +184,20 @@ class _SettingsViewState extends State<SettingsView> {
                 Positioned(
                   top: 150,
                   right: -50,
-                  child: Container(
-                    width: 280,
-                    height: 280,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.lightTile.withValues(alpha: 0.05),
-                          blurRadius: 120,
-                          spreadRadius: 30,
-                        ),
-                      ],
+                  child: RepaintBoundary(
+                    child: Container(
+                      width: 280,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: theme.lightTile.withValues(alpha: 0.05),
+                            blurRadius: 120,
+                            spreadRadius: 30,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

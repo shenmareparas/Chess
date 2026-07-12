@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -18,8 +17,7 @@ class PieceThemePicker extends StatefulWidget {
 
 class _PieceThemePickerState extends State<PieceThemePicker> {
   late FixedExtentScrollController _scrollController;
-  PiecePreview? _piecePreview;
-  String? _lastPieceTheme;
+  Timer? _debounceTimer;
 
   int _easterEggTapCount = 0;
   Timer? _easterEggResetTimer;
@@ -37,6 +35,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _scrollController.dispose();
     _easterEggResetTimer?.cancel();
     _fToast.removeCustomToast();
@@ -98,6 +97,46 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
 
   @override
   Widget build(BuildContext context) {
+    final appModel = Provider.of<AppModel>(context, listen: false);
+
+    final picker = SizedBox(
+      height: 120,
+      child: CupertinoPicker(
+        scrollController: _scrollController,
+        selectionOverlay: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: CupertinoColors.white.withValues(alpha: 0.03),
+          ),
+        ),
+        itemExtent: 44,
+        onSelectedItemChanged: (index) {
+          _debounceTimer?.cancel();
+          _debounceTimer = Timer(const Duration(milliseconds: 150), () {
+            if (mounted) {
+              Provider.of<AppModel>(context, listen: false)
+                  .setPieceTheme(index);
+            }
+          });
+        },
+        children: appModel.pieceThemes
+            .map(
+              (t) => Container(
+                alignment: Alignment.center,
+                child: Text(
+                  t,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFE5E2E1),
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+
     return Consumer<AppModel>(
       builder: (context, appModel, child) {
         final theme = appModel.theme;
@@ -109,12 +148,6 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
               _scrollController.jumpToItem(appModel.pieceThemeIndex);
             }
           });
-        }
-
-        final currentPieceTheme = appModel.pieceTheme;
-        if (_piecePreview == null || _lastPieceTheme != currentPieceTheme) {
-          _piecePreview = PiecePreview(appModel);
-          _lastPieceTheme = currentPieceTheme;
         }
 
         return Column(
@@ -137,36 +170,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
               child: Row(
                 children: [
                   Expanded(
-                    child: SizedBox(
-                      height: 120,
-                      child: CupertinoPicker(
-                        scrollController: _scrollController,
-                        selectionOverlay: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            color:
-                                CupertinoColors.white.withValues(alpha: 0.03),
-                          ),
-                        ),
-                        itemExtent: 44,
-                        onSelectedItemChanged: appModel.setPieceTheme,
-                        children: appModel.pieceThemes
-                            .map(
-                              (t) => Container(
-                                alignment: Alignment.center,
-                                child: Text(
-                                  t,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFE5E2E1),
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                    child: picker,
                   ),
                   const SizedBox(width: 16),
                   GestureDetector(
@@ -177,9 +181,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
                       width: 80,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: GameWidget(
-                          game: _piecePreview!,
-                        ),
+                        child: PiecePreview(appModel),
                       ),
                     ),
                   ),
