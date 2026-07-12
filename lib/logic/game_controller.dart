@@ -22,6 +22,7 @@ class GameController {
   List<int> validMoves = [];
   ChessPiece? selectedPiece;
   int? checkHintTile;
+  int? warningTile;
   Move? latestMove;
 
   /// Called when the view needs to refresh sprites (e.g. after game restore).
@@ -40,6 +41,15 @@ class GameController {
         }
         if (validMoves.isEmpty) {
           selectedPiece = null;
+          warningTile = piece.tile;
+          appModel.haptic.warning();
+          appModel.update();
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (warningTile == piece.tile) {
+              warningTile = null;
+              appModel.update();
+            }
+          });
         } else {
           appModel.haptic.selection();
         }
@@ -57,6 +67,8 @@ class GameController {
         appModel.requestPromotion();
       }
       _moveCompletion(meta, changeTurn: !meta.promotion);
+    } else if (selectedPiece != null) {
+      appModel.haptic.warning();
     }
   }
 
@@ -129,6 +141,7 @@ class GameController {
     validMoves = [];
     latestMove = null;
     checkHintTile = null;
+    warningTile = null;
     appModel.popMoveMeta();
   }
 
@@ -175,6 +188,7 @@ class GameController {
     validMoves = [];
     latestMove = meta.move;
     checkHintTile = null;
+    warningTile = null;
     var oppositeTurn = oppositePlayer(appModel.turn);
 
     // kingInCheck is lightweight (no push/pop), keep synchronous
@@ -212,16 +226,30 @@ class GameController {
     appModel.update();
 
     // Trigger haptic feedback based on move outcome
+    final isOpponentMove =
+        appModel.playingWithAI && (meta.player != appModel.playerSide);
+
     if (meta.isCheckmate) {
       appModel.haptic.vibrate();
     } else if (meta.isStalemate) {
       appModel.haptic.heavy();
-    } else if (meta.isCheck) {
-      appModel.haptic.medium();
-    } else if (meta.took) {
-      appModel.haptic.medium();
+    } else if (isOpponentMove) {
+      if (meta.isCheck) {
+        appModel.haptic.medium();
+      } else {
+        appModel.haptic.light();
+      }
     } else {
-      appModel.haptic.light();
+      // Human move
+      if (meta.isCheck) {
+        appModel.haptic.heavy();
+      } else if (meta.took) {
+        appModel.haptic.medium();
+      } else if (meta.kingCastle || meta.queenCastle) {
+        appModel.haptic.doubleLight();
+      } else {
+        appModel.haptic.light();
+      }
     }
 
     if (appModel.isAIsTurn && clearRedo && changeTurn) {

@@ -35,6 +35,7 @@ class ChessGame extends FlameGame with TapCallbacks {
   Paint _checkHintPaint = Paint();
   Paint _latestMovePaint = Paint();
   Paint _selectedPiecePaint = Paint();
+  Paint _warningHintPaint = Paint();
   String? _cachedThemeName;
 
   // 64 pre-built Rects for the chess board tiles (rebuilt in onGameResize).
@@ -80,6 +81,8 @@ class ChessGame extends FlameGame with TapCallbacks {
   set selectedPiece(ChessPiece? v) => controller.selectedPiece = v;
   int? get checkHintTile => controller.checkHintTile;
   set checkHintTile(int? v) => controller.checkHintTile = v;
+  int? get warningTile => controller.warningTile;
+  set warningTile(int? v) => controller.warningTile = v;
   Move? get latestMove => controller.latestMove;
   set latestMove(Move? v) => controller.latestMove = v;
 
@@ -162,6 +165,7 @@ class ChessGame extends FlameGame with TapCallbacks {
       _drawCheckHint(canvas);
       _drawLatestMove(canvas);
     }
+    _drawWarningHint(canvas);
     _drawSelectedPieceHint(canvas);
     _drawPieces(canvas);
     if (appModel.showHints) {
@@ -226,6 +230,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     _checkHintPaint = Paint()..color = theme.checkHint;
     _latestMovePaint = Paint()..color = theme.latestMove;
     _selectedPiecePaint = Paint()..color = theme.moveHint;
+    _warningHintPaint = Paint()..color = const Color(0xAAFF3B30);
     _cachedThemeName = theme.name;
   }
 
@@ -332,6 +337,20 @@ class ChessGame extends FlameGame with TapCallbacks {
           tileSize ?? 0,
         ),
         _checkHintPaint,
+      );
+    }
+  }
+
+  void _drawWarningHint(Canvas canvas) {
+    if (warningTile != null) {
+      canvas.drawRect(
+        Rect.fromLTWH(
+          getXFromTile(warningTile!, tileSize ?? 0),
+          getYFromTile(warningTile!, tileSize ?? 0),
+          tileSize ?? 0,
+          tileSize ?? 0,
+        ),
+        _warningHintPaint,
       );
     }
   }

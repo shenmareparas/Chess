@@ -34,4 +34,20 @@ class HapticService {
     if (!_enabled) return;
     HapticFeedback.vibrate();
   }
+
+  void warning() {
+    if (!_enabled) return;
+    HapticFeedback.lightImpact();
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (_enabled) HapticFeedback.lightImpact();
+    });
+  }
+
+  void doubleLight() {
+    if (!_enabled) return;
+    HapticFeedback.lightImpact();
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (_enabled) HapticFeedback.lightImpact();
+    });
+  }
 }
