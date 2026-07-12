@@ -33,11 +33,6 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Sequential Asset Preloading**: Remaining piece theme images are preloaded sequentially (one theme at a time, 100ms apart) after a 3-second startup delay, protecting main-thread frame metrics.
     -   **Isolated Background Repaints**: Heavy background paint layers (dot grids and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
-    -   **Single-Pass Piece Counter-Rotation**: Piece rendering in `ChessGame` applies a single, board-level rotation transformation to draw all pieces upright, replacing the costly per-piece `save`/`translate`/`rotate`/`restore` cycle (5 canvas operations per piece) with a single board-level wrapper.
-    -   **Zero-Allocation Attack/Check Evaluation**: Fast, direct piece attacks check (`_pieceAttacksTile`) is used to verify check conditions instead of generating complete candidate move lists, reducing garbage collection pressure.
-    -   **Parallel Move Sorting & Inlining**: Replaces `MoveAndValue` wrapper allocations during move prioritization in `allMoves` with parallel lists sorted in-place, and inlines pawn diagonal attack checks to avoid sub-list allocations.
-    -   **Openings Snapshot Optimization**: Only snapshots opening state when on the human-move validation path, skipping list copying entirely during the AI search.
-    -   **Expanded Transposition Table**: Increased the Transposition Table size to 256k entries (`1 << 18`) to dramatically improve AI search hit rates at higher difficulty levels (Depth 4-5) without introducing allocation overhead.
 
 ### 🎯 Gameplay Features
 

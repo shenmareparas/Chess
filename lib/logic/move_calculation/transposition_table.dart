@@ -1,6 +1,6 @@
 import 'move_classes/move.dart';
 
-const int TT_SIZE = 1 << 18; // ~256k entries — better hit rate at Depth 4-5
+const int TT_SIZE = 1 << 16; // ~65k entries
 const int TT_MASK = TT_SIZE - 1;
 
 // Flag types for transposition table entries

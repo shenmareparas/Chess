@@ -5,7 +5,7 @@ import 'chess_constants.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/direction.dart';
 import 'move_calculation/move_classes/move.dart';
-
+import 'move_calculation/move_classes/move_and_value.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'move_calculation/move_classes/move_stack_object.dart';
 import 'move_calculation/openings.dart';
@@ -181,13 +181,9 @@ class ChessBoard {
         tiles[move.from],
         tiles[move.to],
         enPassantPiece,
-        // Only snapshot the openings list when on the human-move path (getMeta
-        // is true). The AI search path (getMeta == false) never calls pop()
-        // expecting opening state to be restored, so the expensive List.from
-        // copy is unnecessary and eliminated here to reduce GC pressure.
-        (getMeta && possibleOpenings.isNotEmpty)
-            ? List.from(possibleOpenings)
-            : []);
+        // Only copy the openings list while it is still relevant.
+        // After the opening book is exhausted the copy is a pure waste.
+        possibleOpenings.isNotEmpty ? List.from(possibleOpenings) : []);
     mso.previousHash = zobristHash;
     mso.previousBoardValue = incrementalValue;
     mso.previousInEndGame = inEndGameCached;
@@ -262,11 +258,10 @@ class ChessBoard {
 
   List<Move> allMoves(Player player, int aiDifficulty,
       {bool capturesOnly = false}) {
-    // Use parallel Move + int priority lists to avoid MoveAndValue wrapper
-    // allocations and the secondary List.generate projection.
-    // A chess position has at most ~218 legal moves; 48 covers most positions.
-    final List<Move> moves = [];
-    final List<int> priorities = [];
+    // Pre-allocate with a typical upper bound to avoid repeated internal resizing.
+    // A chess position has at most ~218 legal moves; 48 is a reasonable starting
+    // capacity that covers most quiet positions without over-allocating.
+    final List<MoveAndValue> moves = List<MoveAndValue>.empty(growable: true);
     for (var piece in piecesForPlayer(player)) {
       var tiles = movesForPiece(piece);
       for (var tile in tiles) {
@@ -281,27 +276,23 @@ class ChessBoard {
         int priority = 0;
         // MVV-LVA: prioritize captures by victim value - attacker value
         if (isCapture) {
-          priority = 10000 + victim.materialValue - piece.materialValue;
+          priority =
+              (10000 + victim.materialValue - piece.materialValue).toInt();
         }
         if (isPromotion) {
           for (var promotion in PROMOTIONS) {
-            moves.add(Move(piece.tile, tile, promotionType: promotion));
-            priorities.add(priority + 9000);
+            moves.add(MoveAndValue(
+                Move(piece.tile, tile, promotionType: promotion),
+                priority + 9000));
           }
         } else {
-          moves.add(Move(piece.tile, tile));
-          priorities.add(priority);
+          moves.add(MoveAndValue(Move(piece.tile, tile), priority));
         }
       }
     }
-    // Sort moves by priority descending (captures and promotions first).
-    // Build a sorted index list, then reorder both lists in-place.
-    final indices = List<int>.generate(moves.length, (i) => i);
-    indices.sort((a, b) => priorities[b].compareTo(priorities[a]));
-    final sortedMoves = List<Move>.generate(
-        moves.length, (i) => moves[indices[i]],
-        growable: false);
-    return sortedMoves;
+    // Sort by priority descending: captures and promotions first
+    moves.sort((a, b) => b.value.compareTo(a.value));
+    return List<Move>.generate(moves.length, (i) => moves[i].move);
   }
 
   List<int> movesForPiece(ChessPiece piece, {bool legal = true}) {
@@ -570,7 +561,6 @@ class ChessBoard {
   // ──────────────────────────────────────────────
 
   List<int> _pawnMoves(ChessPiece pawn) {
-    // Inlined diagonal attacks to avoid allocating a second list per call.
     List<int> moves = [];
     var offset = pawn.player == Player.player1 ? -8 : 8;
     var firstTile = pawn.tile + offset;
@@ -583,19 +573,23 @@ class ChessBoard {
         }
       }
     }
-    // Diagonal captures + en passant (inlined from former _pawnDiagonalAttacks)
-    final diagonals =
+    moves.addAll(_pawnDiagonalAttacks(pawn));
+    return moves;
+  }
+
+  List<int> _pawnDiagonalAttacks(ChessPiece pawn) {
+    List<int> moves = [];
+    var diagonals =
         pawn.player == Player.player1 ? _PAWN_DIAGONALS_1 : _PAWN_DIAGONALS_2;
     for (var diagonal in diagonals) {
       var row = tileToRow(pawn.tile) + diagonal.up;
       var col = tileToCol(pawn.tile) + diagonal.right;
       if (_inBounds(row, col)) {
-        var t = _rowColToTile(row, col);
-        var takenPiece = tiles[t];
+        var takenPiece = tiles[_rowColToTile(row, col)];
         if ((takenPiece != null &&
                 takenPiece.player == oppositePlayer(pawn.player)) ||
-            _canTakeEnPassantAt(pawn.player, t)) {
-          moves.add(t);
+            _canTakeEnPassantAt(pawn.player, _rowColToTile(row, col))) {
+          moves.add(_rowColToTile(row, col));
         }
       }
     }
@@ -708,12 +702,11 @@ class ChessBoard {
     return check;
   }
 
-  /// Returns true if [player]'s king would be in check at [tile].
-  /// Uses [_pieceAttacksTile] (zero-allocation pseudo-legal check) instead of
-  /// [movesForPiece] to avoid building a list per opponent piece.
   bool _kingInCheckAtTile(int tile, Player player) {
     for (var piece in piecesForPlayer(oppositePlayer(player))) {
-      if (_pieceAttacksTile(piece, tile)) return true;
+      if (movesForPiece(piece, legal: false).contains(tile)) {
+        return true;
+      }
     }
     return false;
   }
@@ -738,9 +731,10 @@ class ChessBoard {
   }
 
   void _filterPossibleOpenings(Move move) {
-    // removeWhere mutates in-place — avoids allocating a new list every move.
-    possibleOpenings.removeWhere((opening) =>
-        opening[moveCount] != move || opening.length <= moveCount + 1);
+    possibleOpenings = possibleOpenings
+        .where((opening) =>
+            opening[moveCount] == move && opening.length > moveCount + 1)
+        .toList();
   }
 
   void _setTile(int? tile, ChessPiece? piece) {
