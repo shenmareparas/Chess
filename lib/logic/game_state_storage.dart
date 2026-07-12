@@ -10,6 +10,7 @@ const String _playerCountKey = 'playerCount';
 const String _aiDifficultyKey = 'aiDifficulty';
 const String _playerSideKey = 'playerSide';
 const String _selectedSideKey = 'selectedSide';
+const String _selectedSideP1Key = 'selectedSideP1';
 const String _timeLimitKey = 'timeLimit';
 const String _player1TimeLeftMsKey = 'player1TimeLeftMs';
 const String _player2TimeLeftMsKey = 'player2TimeLeftMs';
@@ -40,6 +41,7 @@ class GameStateStorage {
     await prefs.setInt(_aiDifficultyKey, appModel.aiDifficulty);
     await prefs.setInt(_playerSideKey, appModel.playerSide.index);
     await prefs.setInt(_selectedSideKey, appModel.selectedSide.index);
+    await prefs.setInt(_selectedSideP1Key, appModel.selectedSideP1.index);
     await prefs.setInt(_timeLimitKey, appModel.timeLimit);
     await prefs.setInt(
         _player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
@@ -75,6 +77,7 @@ class GameStateStorage {
         'aiDifficulty': prefs.getInt(_aiDifficultyKey),
         'playerSide': prefs.getInt(_playerSideKey),
         'selectedSide': prefs.getInt(_selectedSideKey),
+        'selectedSideP1': prefs.getInt(_selectedSideP1Key),
         'timeLimit': prefs.getInt(_timeLimitKey),
         'player1TimeLeftMs': prefs.getInt(_player1TimeLeftMsKey),
         'player2TimeLeftMs': prefs.getInt(_player2TimeLeftMsKey),
@@ -97,6 +100,7 @@ class GameStateStorage {
     await prefs.remove(_aiDifficultyKey);
     await prefs.remove(_playerSideKey);
     await prefs.remove(_selectedSideKey);
+    await prefs.remove(_selectedSideP1Key);
     await prefs.remove(_timeLimitKey);
     await prefs.remove(_player1TimeLeftMsKey);
     await prefs.remove(_player2TimeLeftMsKey);

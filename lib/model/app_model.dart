@@ -21,6 +21,9 @@ class AppModel extends ChangeNotifier {
   Player selectedSide = Player.player1;
   Player playerSide = Player.player1;
 
+  /// The side Player 1 chooses to start on in a 2-player game.
+  Player selectedSideP1 = Player.player1;
+
   // ── Services ──
   final UserPreferences prefs;
   final AudioService audio = AudioService();
@@ -140,9 +143,15 @@ class AppModel extends ChangeNotifier {
       playerSide = selectedSide;
     }
 
-    // In a 2-player game, rotation is always relative to player1 being at the bottom.
+    // In a 2-player game, let Player 1 start on their chosen side.
     if (!playingWithAI) {
-      playerSide = Player.player1;
+      if (selectedSideP1 == Player.random) {
+        playerSide = math.Random.secure().nextInt(2) == 0
+            ? Player.player1
+            : Player.player2;
+      } else {
+        playerSide = selectedSideP1;
+      }
     }
     gameController = GameController(this);
     timerService.start(() => turn, () => gameOver);
@@ -273,6 +282,13 @@ class AppModel extends ChangeNotifier {
     }
   }
 
+  void setPlayerSideP1(Player? side) {
+    if (side != null) {
+      selectedSideP1 = side;
+      notifyListeners();
+    }
+  }
+
   void setTimeLimit(int? duration) {
     if (duration != null) {
       timerService.configure(duration);
@@ -339,6 +355,8 @@ class AppModel extends ChangeNotifier {
     aiDifficulty = state['aiDifficulty'] as int;
     playerSide = Player.values[state['playerSide'] as int];
     selectedSide = Player.values[state['selectedSide'] as int];
+    selectedSideP1 = Player
+        .values[(state['selectedSideP1'] as int?) ?? Player.player1.index];
     timerService.configure(state['timeLimit'] as int);
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;

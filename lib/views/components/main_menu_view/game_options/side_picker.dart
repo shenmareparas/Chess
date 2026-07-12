@@ -6,8 +6,16 @@ import '../../../../model/player.dart';
 class SidePicker extends StatelessWidget {
   final Player playerSide;
   final Function(Player?) setFunc;
+  final bool showRandom;
+  final String label;
 
-  const SidePicker(this.playerSide, this.setFunc, {Key? key}) : super(key: key);
+  const SidePicker(
+    this.playerSide,
+    this.setFunc, {
+    Key? key,
+    this.showRandom = true,
+    this.label = 'CHOOSE SIDE',
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +38,7 @@ class SidePicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'CHOOSE SIDE',
+          label,
           style: TextStyle(
             color: primaryColor,
             fontSize: 12,
@@ -68,16 +76,17 @@ class SidePicker extends StatelessWidget {
                   onTap: () => setFunc(Player.player2),
                 ),
               ),
-              Expanded(
-                child: _buildSideSegment(
-                  label: 'Random',
-                  isSelected: playerSide == Player.random,
-                  primaryColor: primaryColor,
-                  activeBgColor: activeBgColor,
-                  inactiveTextColor: inactiveTextColor,
-                  onTap: () => setFunc(Player.random),
+              if (showRandom)
+                Expanded(
+                  child: _buildSideSegment(
+                    label: 'Random',
+                    isSelected: playerSide == Player.random,
+                    primaryColor: primaryColor,
+                    activeBgColor: activeBgColor,
+                    inactiveTextColor: inactiveTextColor,
+                    onTap: () => setFunc(Player.random),
+                  ),
                 ),
-              ),
             ],
           ),
         ),

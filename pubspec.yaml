@@ -99,7 +99,6 @@ flutter:
         - assets/images/pieces/letters/
         - assets/images/pieces/angular/
         - assets/images/pieces/8-bit/
-        - assets/images/pieces/lewischessmen/
         - assets/images/pieces/oldschool/
         - assets/images/pieces/fairytale/
         - assets/audio/piece_moved.mp3

@@ -22,7 +22,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ### 🎨 Customization
 
 -   **8 Beautiful Themes**: Amoled Carbon, Forest Mint, Jargon Jade, Midnight Slate, Oceanic Breeze, Royal Velvet, Warm Walnut, and Winter Glacier
--   **7 Piece Themes**: Classic, Angular, 8-Bit, Letters, Lewis Chessmen, Old School, and Fairy Tale
+-   **6 Piece Themes**: Classic, Angular, 8-Bit, Letters, Old School, and Fairy Tale
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **⚡ Performance Optimizations**:

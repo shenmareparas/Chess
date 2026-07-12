@@ -91,6 +91,16 @@ class GameOptions extends StatelessWidget {
           ),
           const SizedBox(height: 16),
         ],
+        if (appModel.playerCount == 2) ...[
+          GlassPanel(
+            child: SidePicker(
+              appModel.selectedSideP1,
+              appModel.setPlayerSideP1,
+              label: 'PLAYER 1 SIDE',
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
         GlassPanel(
           child: TimeLimitPicker(
             selectedTime: appModel.timeLimit,
