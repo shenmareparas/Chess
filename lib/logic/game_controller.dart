@@ -27,7 +27,7 @@ class GameController {
   Move? latestMove;
 
   /// Called when the view needs to refresh sprites (e.g. after game restore).
-  VoidCallback? onSnapSprites;
+  void Function({bool snap})? onSnapSprites;
 
   GameController(this.appModel) {}
 
@@ -286,7 +286,7 @@ class GameController {
     }
   }
 
-  void snapSprites() {
-    onSnapSprites?.call();
+  void snapSprites({bool snap = true}) {
+    onSnapSprites?.call(snap: snap);
   }
 }

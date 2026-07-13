@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -8,11 +9,27 @@ import '../../../../../model/app_model.dart';
 import '../../../../../model/player.dart';
 import '../../../shared/glass_panel.dart';
 
-class MoveList extends StatelessWidget {
+class MoveList extends StatefulWidget {
   final AppModel appModel;
-  final ScrollController scrollController = ScrollController();
 
   MoveList(this.appModel);
+
+  @override
+  _MoveListState createState() => _MoveListState();
+}
+
+class _MoveListState extends State<MoveList> {
+  final ScrollController scrollController = ScrollController();
+  Timer? _holdTimer;
+
+  AppModel get appModel => widget.appModel;
+
+  @override
+  void dispose() {
+    _holdTimer?.cancel();
+    scrollController.dispose();
+    super.dispose();
+  }
 
   void _copyMovesToClipboard(BuildContext context) {
     final moves = _allMoves();
@@ -49,12 +66,14 @@ class MoveList extends StatelessWidget {
       ),
     );
     overlay.insert(overlayEntry);
-    Future.delayed(Duration(seconds: 2), () => overlayEntry.remove());
+    Future.delayed(const Duration(seconds: 4), () => overlayEntry.remove());
   }
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToSelected();
+    });
 
     final turns = <Widget>[];
     final list = appModel.moveMetaList;
@@ -67,63 +86,96 @@ class MoveList extends StatelessWidget {
       final turnNum = i + 1;
       final whiteMove = list[i * 2];
       final blackMove = (i * 2 + 1 < totalMoves) ? list[i * 2 + 1] : null;
-      final isLastTurn = (turnNum == turnCount);
+
+      final whiteMoveIndex = i * 2;
+      final blackMoveIndex = i * 2 + 1;
+
+      final isWhiteSelected = (appModel.historyViewIndex == whiteMoveIndex) ||
+          (appModel.historyViewIndex == null &&
+              whiteMoveIndex == totalMoves - 1);
+      final isBlackSelected = (blackMove != null) &&
+          ((appModel.historyViewIndex == blackMoveIndex) ||
+              (appModel.historyViewIndex == null &&
+                  blackMoveIndex == totalMoves - 1));
+
+      final isBlockActive = isWhiteSelected || isBlackSelected;
 
       turns.add(
         Opacity(
-          opacity: isLastTurn ? 1 : 0.4,
-          child: Container(
-            margin: const EdgeInsets.only(right: 12),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0x662A2A2A),
-              borderRadius: BorderRadius.circular(12),
-              border: Border(
-                left: BorderSide(
-                  color:
-                      isLastTurn ? theme.moveHint : CupertinoColors.transparent,
-                  width: 4,
+          opacity: isBlockActive ? 1.0 : 0.5,
+          child: GestureDetector(
+            onTap: () {
+              appModel.haptic.light();
+              appModel.selectHistoryTurn(i);
+            },
+            child: Container(
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0x662A2A2A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border(
+                  left: BorderSide(
+                    color: isBlockActive
+                        ? theme.moveHint
+                        : CupertinoColors.transparent,
+                    width: 4,
+                  ),
                 ),
               ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '$turnNum.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color:
-                        isLastTurn ? theme.moveHint : const Color(0xFF8D928C),
-                    fontFamily: 'monospace',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '$turnNum.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isBlockActive
+                          ? theme.moveHint
+                          : const Color(0xFF8D928C),
+                      fontFamily: 'monospace',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  _moveToString(whiteMove),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFE5E2E1),
-                    fontFamily: 'monospace',
+                  const SizedBox(width: 12),
+                  Text(
+                    _moveToString(whiteMove),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight:
+                          isWhiteSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isWhiteSelected
+                          ? theme.moveHint
+                          : const Color(0xFFE5E2E1),
+                      fontFamily: 'monospace',
+                      decoration: isWhiteSelected
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  blackMove != null ? _moveToString(blackMove) : '___',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: blackMove != null
-                        ? const Color(0xFFC3C8C2)
-                        : const Color(0xFF8D928C),
-                    fontStyle:
-                        blackMove != null ? FontStyle.normal : FontStyle.italic,
-                    fontFamily: 'monospace',
+                  const SizedBox(width: 12),
+                  Text(
+                    blackMove != null ? _moveToString(blackMove) : '___',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight:
+                          isBlackSelected ? FontWeight.bold : FontWeight.w500,
+                      color: blackMove != null
+                          ? (isBlackSelected
+                              ? theme.moveHint
+                              : const Color(0xFFC3C8C2))
+                          : const Color(0xFF8D928C),
+                      fontStyle: blackMove != null
+                          ? FontStyle.normal
+                          : FontStyle.italic,
+                      fontFamily: 'monospace',
+                      decoration: isBlackSelected
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -155,7 +207,18 @@ class MoveList extends StatelessWidget {
     }
 
     return GestureDetector(
-      onLongPress: () => _copyMovesToClipboard(context),
+      onTapDown: (_) {
+        _holdTimer?.cancel();
+        _holdTimer = Timer(const Duration(seconds: 2), () {
+          _copyMovesToClipboard(context);
+        });
+      },
+      onTapUp: (_) {
+        _holdTimer?.cancel();
+      },
+      onTapCancel: () {
+        _holdTimer?.cancel();
+      },
       child: GlassPanel(
         padding: EdgeInsets.zero,
         borderRadius: 14,
@@ -176,10 +239,28 @@ class MoveList extends StatelessWidget {
     );
   }
 
-  void _scrollToBottom() {
-    if (appModel.moveListUpdated && scrollController.hasClients) {
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
-      appModel.moveListUpdated = false;
+  void _scrollToSelected() {
+    if (scrollController.hasClients && appModel.moveMetaList.isNotEmpty) {
+      final int selectedTurnIndex = appModel.historyViewIndex == null
+          ? ((appModel.moveMetaList.length - 1) / 2).floor()
+          : (appModel.historyViewIndex! < 0
+              ? 0
+              : (appModel.historyViewIndex! / 2).floor());
+
+      final double tileWidth = 132.0;
+      final double viewportWidth = scrollController.position.viewportDimension;
+      final double targetOffset = (selectedTurnIndex * tileWidth) -
+          (viewportWidth / 2) +
+          (tileWidth / 2);
+
+      final double clampedOffset =
+          targetOffset.clamp(0.0, scrollController.position.maxScrollExtent);
+
+      scrollController.animateTo(
+        clampedOffset,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 

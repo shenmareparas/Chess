@@ -8,6 +8,7 @@ import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/haptic_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
+import '../logic/move_calculation/move_classes/move_stack_object.dart';
 import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
 import '../logic/stockfish_service.dart';
@@ -67,10 +68,14 @@ class AppModel extends ChangeNotifier {
   bool userWon = false;
   Player turn = Player.player1;
   List<MoveMeta> moveMetaList = [];
+  int? historyViewIndex;
+  final List<MoveStackObject> historyRedoStack = [];
+  Timer? _historyAnimationTimer;
 
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
-  bool get isAIsTurn => playingWithAI && (turn == aiTurn);
+  bool get isAIsTurn =>
+      playingWithAI && (turn == aiTurn) && (historyViewIndex == null);
   bool get playingWithAI => playerCount == 1;
 
   // ── Save Debounce ──
@@ -139,6 +144,9 @@ class AppModel extends ChangeNotifier {
     userWon = false;
     turn = Player.player1;
     moveMetaList = [];
+    historyViewIndex = null;
+    historyRedoStack.clear();
+    _historyAnimationTimer?.cancel();
     timerService.configure(timeLimit,
         incrementSeconds: timerIncrement, mode: timerMode);
     audio.enabled = prefs.soundEnabled;
@@ -213,6 +221,102 @@ class AppModel extends ChangeNotifier {
     moveListUpdated = true;
     if (!silent) notifyListeners();
     saveGameState();
+  }
+
+  void setHistoryViewIndex(int? index,
+      {int? visualIndex,
+      bool snap = true,
+      bool playAudio = false,
+      bool showLatestMoveHighlight = true}) {
+    if (gameController == null) return;
+    _historyAnimationTimer?.cancel();
+
+    // If returning to current live state (latest move or null)
+    if (index == null || index == moveMetaList.length - 1) {
+      while (historyRedoStack.isNotEmpty) {
+        gameController!.board.pushMSO(historyRedoStack.removeLast());
+      }
+      historyViewIndex = null;
+      moveListUpdated = true;
+      if (moveMetaList.isNotEmpty) {
+        gameController!.latestMove = moveMetaList.last.move;
+      } else {
+        gameController!.latestMove = null;
+      }
+      if (!gameOver) {
+        timerService.resume();
+        if (isAIsTurn) {
+          gameController!.triggerAIMove();
+        }
+      }
+      if (playAudio) {
+        audio.playMovedSound();
+      }
+      gameController!.snapSprites(snap: snap);
+      notifyListeners();
+      return;
+    }
+
+    // Do not pause game during review
+    gameController?.cancelAIMove();
+
+    int targetLength = index + 1;
+    if (gameController!.board.moveStack.length > targetLength) {
+      while (gameController!.board.moveStack.length > targetLength) {
+        historyRedoStack.add(gameController!.board.pop());
+      }
+    } else if (gameController!.board.moveStack.length < targetLength) {
+      while (gameController!.board.moveStack.length < targetLength &&
+          historyRedoStack.isNotEmpty) {
+        gameController!.board.pushMSO(historyRedoStack.removeLast());
+      }
+    }
+
+    historyViewIndex = visualIndex ?? index;
+    if (index >= 0 && index < moveMetaList.length) {
+      if (showLatestMoveHighlight) {
+        gameController!.latestMove = moveMetaList[index].move;
+      } else {
+        gameController!.latestMove = null;
+      }
+    }
+    if (playAudio) {
+      audio.playMovedSound();
+    }
+    gameController!.snapSprites(snap: snap);
+    notifyListeners();
+  }
+
+  void selectHistoryTurn(int turnIndex) {
+    _historyAnimationTimer?.cancel();
+
+    final int whiteMoveIndex = turnIndex * 2;
+    final int? blackMoveIndex =
+        (turnIndex * 2 + 1 < moveMetaList.length) ? (turnIndex * 2 + 1) : null;
+
+    // 1. Instantly snap to the position before White's move (index - 1, or -1 for the very start)
+    // Pass visualIndex: whiteMoveIndex so that the UI immediately highlights the selected turn tile.
+    // Set showLatestMoveHighlight: false so the board does not show the previous turn's highlight squares.
+    final int beforeWhiteIndex = whiteMoveIndex > 0 ? (whiteMoveIndex - 1) : -1;
+    setHistoryViewIndex(beforeWhiteIndex,
+        visualIndex: whiteMoveIndex,
+        snap: true,
+        playAudio: false,
+        showLatestMoveHighlight: false);
+
+    // 2. Schedule White's move to play with animation (snap = false) after a brief frame delay
+    _historyAnimationTimer = Timer(const Duration(milliseconds: 250), () {
+      setHistoryViewIndex(whiteMoveIndex,
+          visualIndex: whiteMoveIndex, snap: false, playAudio: true);
+
+      // 3. Schedule Black's move to play after the White move finishes sliding
+      if (blackMoveIndex != null) {
+        _historyAnimationTimer = Timer(const Duration(milliseconds: 600), () {
+          setHistoryViewIndex(blackMoveIndex,
+              visualIndex: blackMoveIndex, snap: false, playAudio: true);
+        });
+      }
+    });
   }
 
   void endGame({bool silent = false}) {
@@ -427,6 +531,9 @@ class AppModel extends ChangeNotifier {
     stalemate = state['stalemate'] as bool;
     turn = Player.player1;
     moveMetaList = [];
+    historyViewIndex = null;
+    historyRedoStack.clear();
+    _historyAnimationTimer?.cancel();
 
     // Create a fresh game and replay all moves
     gameController = GameController(this);

@@ -10,14 +10,16 @@ class UndoRedoButtons extends StatelessWidget {
   final AppModel appModel;
 
   bool get _undoEnabled {
-    return appModel.gameController != null &&
+    return appModel.historyViewIndex == null &&
+        appModel.gameController != null &&
         appModel.gameController!.board.moveStack.isNotEmpty &&
         (!appModel.playingWithAI ||
             appModel.gameController!.board.moveStack.length > 1);
   }
 
   bool get _redoEnabled {
-    return appModel.gameController != null &&
+    return appModel.historyViewIndex == null &&
+        appModel.gameController != null &&
         appModel.gameController!.board.redoStack.isNotEmpty &&
         (!appModel.playingWithAI ||
             appModel.gameController!.board.redoStack.length > 1);

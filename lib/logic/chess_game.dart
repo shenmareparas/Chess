@@ -48,10 +48,38 @@ class ChessGame extends FlameGame with TapCallbacks {
   List<ChessPiece> _allPieces = [];
 
   ChessGame(this.controller, this.appModel) {
-    controller.onSnapSprites = () => snapSprites();
-    // width and tileSize are calculated in onGameResize
-    for (var piece
-        in controller.board.player1Pieces + controller.board.player2Pieces) {
+    controller.onSnapSprites = ({bool snap = true}) => snapSprites(snap: snap);
+    // Gather all pieces that exist in the active lists as well as captured pieces in move stacks.
+    // This ensures that when review mode restores captured pieces, they have initialized sprites.
+    final Set<ChessPiece> allUniquePieces = {};
+    allUniquePieces.addAll(controller.board.player1Pieces);
+    allUniquePieces.addAll(controller.board.player2Pieces);
+    for (var mso in controller.board.moveStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+    for (var mso in controller.board.redoStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+    for (var mso in appModel.historyRedoStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+
+    for (var piece in allUniquePieces) {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
     _rebuildPieceCache();
@@ -97,6 +125,7 @@ class ChessGame extends FlameGame with TapCallbacks {
   // ── Input Handling ──
 
   void onTapDown(TapDownEvent event) {
+    if (appModel.historyViewIndex != null) return;
     if (appModel.gameOver || !(appModel.isAIsTurn)) {
       var tile = _vector2ToTile(event.localPosition);
       var touchedPiece = board.tiles[tile];
@@ -249,10 +278,12 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
   }
 
-  void snapSprites() {
+  void snapSprites({bool snap = true}) {
     _rebuildPieceCache();
-    for (var piece in _allPieces) {
-      spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
+    if (snap) {
+      for (var piece in _allPieces) {
+        spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
+      }
     }
   }
 
