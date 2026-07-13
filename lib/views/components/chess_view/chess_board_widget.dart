@@ -12,6 +12,7 @@ class ChessBoardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double boardSize = MediaQuery.of(context).size.width - 8;
     return Stack(
       children: [
         AnimatedRotation(
@@ -26,31 +27,25 @@ class ChessBoardWidget extends StatelessWidget {
                 color: appModel.theme.border,
                 width: 4,
               ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  blurRadius: 10,
-                  color: Color(0x88000000),
-                ),
-              ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                width: MediaQuery.of(context).size.width - 68,
-                height: MediaQuery.of(context).size.width - 68,
-                child: GameWidget(game: chessGame),
-              ),
+            child: Container(
+              width: boardSize,
+              height: boardSize,
+              child: GameWidget(game: chessGame),
             ),
           ),
         ),
         if (appModel.showNotation)
-          Container(
-            width: MediaQuery.of(context).size.width - 68,
-            height: MediaQuery.of(context).size.width - 68,
+          Positioned(
+            left: 4,
+            top: 4,
+            width: boardSize,
+            height: boardSize,
             child: _NotationOverlay(
-              appModel.theme.notation,
+              lightTileColor: appModel.theme.lightTile,
+              darkTileColor: appModel.theme.darkTile,
               isRotated: appModel.isBoardInverted,
+              size: boardSize,
             ),
           ),
       ],
@@ -59,10 +54,17 @@ class ChessBoardWidget extends StatelessWidget {
 }
 
 class _NotationOverlay extends StatefulWidget {
-  final Color color;
+  final Color lightTileColor;
+  final Color darkTileColor;
   final bool isRotated;
+  final double size;
 
-  const _NotationOverlay(this.color, {required this.isRotated});
+  const _NotationOverlay({
+    required this.lightTileColor,
+    required this.darkTileColor,
+    required this.isRotated,
+    required this.size,
+  });
 
   @override
   _NotationOverlayState createState() => _NotationOverlayState();
@@ -93,27 +95,11 @@ class _NotationOverlayState extends State<_NotationOverlay> {
           });
         }
       });
-    } else {
-      // If color changed but flip didn't (e.g. theme change), update state immediately if needed
-      if (oldWidget.color != widget.color) {
-        setState(() {});
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isColorDark =
-        ThemeData.estimateBrightnessForColor(widget.color) == Brightness.dark;
-    final shadowColor =
-        isColorDark ? const Color(0xB8FFFFFF) : const Color(0xB8000000);
-    final textShadows = [
-      Shadow(color: shadowColor, offset: const Offset(1, 1), blurRadius: 1.5),
-      Shadow(color: shadowColor, offset: const Offset(-1, 1), blurRadius: 1.5),
-      Shadow(color: shadowColor, offset: const Offset(1, -1), blurRadius: 1.5),
-      Shadow(color: shadowColor, offset: const Offset(-1, -1), blurRadius: 1.5),
-    ];
-
     return IgnorePointer(
       child: AnimatedOpacity(
         duration: Duration(milliseconds: _opacity == 0.0 ? 100 : 300),
@@ -121,41 +107,70 @@ class _NotationOverlayState extends State<_NotationOverlay> {
         child: Stack(
           children: [
             // Files (Letters)
-            for (int i = 0; i < 8; i++)
-              Positioned(
-                left: (i * (MediaQuery.of(context).size.width - 68) / 8),
-                bottom: 1,
-                width: (MediaQuery.of(context).size.width - 68) / 8,
-                child: Text(
-                  String.fromCharCode(
-                      (_visibleRotated ? 'h' : 'a').codeUnitAt(0) +
-                          (_visibleRotated ? -i : i)),
-                  style: TextStyle(
-                    color: widget.color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    shadows: textShadows,
-                  ),
-                  textAlign: TextAlign.right,
-                ),
-              ),
+            for (int i = 0; i < 8; i++) _buildFileLetter(i),
             // Ranks (Numbers)
-            for (int i = 0; i < 8; i++)
-              Positioned(
-                top: (i * (MediaQuery.of(context).size.width - 68) / 8) + 2,
-                left: 6,
-                height: (MediaQuery.of(context).size.width - 68) / 8,
-                child: Text(
-                  (_visibleRotated ? i + 1 : 8 - i).toString(),
-                  style: TextStyle(
-                    color: widget.color,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    shadows: textShadows,
-                  ),
-                ),
-              ),
+            for (int i = 0; i < 8; i++) _buildRankNumber(i),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFileLetter(int i) {
+    final sitsOnDarkTile = i % 2 == 0;
+    final textColor =
+        sitsOnDarkTile ? widget.lightTileColor : widget.darkTileColor;
+    final shadowColor =
+        sitsOnDarkTile ? widget.darkTileColor : widget.lightTileColor;
+    final textShadows = [
+      Shadow(color: shadowColor, offset: const Offset(1, 1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(-1, 1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(1, -1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(-1, -1), blurRadius: 1.0),
+    ];
+
+    return Positioned(
+      left: (i * widget.size / 8),
+      bottom: 2,
+      width: widget.size / 8 - 2,
+      child: Text(
+        String.fromCharCode((_visibleRotated ? 'h' : 'a').codeUnitAt(0) +
+            (_visibleRotated ? -i : i)),
+        style: TextStyle(
+          color: textColor,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          shadows: textShadows,
+        ),
+        textAlign: TextAlign.right,
+      ),
+    );
+  }
+
+  Widget _buildRankNumber(int i) {
+    final sitsOnLightTile = i % 2 == 0;
+    final textColor =
+        sitsOnLightTile ? widget.darkTileColor : widget.lightTileColor;
+    final shadowColor =
+        sitsOnLightTile ? widget.lightTileColor : widget.darkTileColor;
+    final textShadows = [
+      Shadow(color: shadowColor, offset: const Offset(1, 1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(-1, 1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(1, -1), blurRadius: 1.0),
+      Shadow(color: shadowColor, offset: const Offset(-1, -1), blurRadius: 1.0),
+    ];
+
+    return Positioned(
+      top: (i * widget.size / 8) + 2,
+      left: 4,
+      height: widget.size / 8,
+      child: Text(
+        (_visibleRotated ? i + 1 : 8 - i).toString(),
+        style: TextStyle(
+          color: textColor,
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          shadows: textShadows,
         ),
       ),
     );

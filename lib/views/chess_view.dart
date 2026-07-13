@@ -193,7 +193,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
 
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
                         child: Center(
                           child: ChessBoardWidget(appModel, chessGame!),
                         ),

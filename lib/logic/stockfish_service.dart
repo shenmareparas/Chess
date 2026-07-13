@@ -144,6 +144,17 @@ class StockfishService {
   }
 
   Move _uciToMove(String uci) {
+    // Map standard UCI castling moves to the custom board's king-on-rook castling representation
+    if (uci == 'e1g1') {
+      return Move(60, 63);
+    } else if (uci == 'e1c1') {
+      return Move(60, 56);
+    } else if (uci == 'e8g8') {
+      return Move(4, 7);
+    } else if (uci == 'e8c8') {
+      return Move(4, 0);
+    }
+
     int fromFile = uci.codeUnitAt(0) - 97;
     int fromRank = 8 - int.parse(uci[1]);
     int toFile = uci.codeUnitAt(2) - 97;
@@ -174,6 +185,22 @@ class StockfishService {
   }
 
   static String msoToUCI(dynamic mso) {
+    if (mso.castled == true) {
+      int kingTile = mso.move.from;
+      int otherTile = mso.move.to;
+      if (mso.movedPiece?.type == ChessPieceType.rook) {
+        kingTile = mso.move.to;
+        otherTile = mso.move.from;
+      }
+      if (kingTile == 60) {
+        if (otherTile == 63) return 'e1g1';
+        if (otherTile == 56) return 'e1c1';
+      } else if (kingTile == 4) {
+        if (otherTile == 7) return 'e8g8';
+        if (otherTile == 0) return 'e8c8';
+      }
+    }
+
     Move move = mso.move;
     int from = move.from;
     int to = move.to;

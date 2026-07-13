@@ -28,6 +28,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
+    -   **R8 Minification & Size Reductions**: Uses Proguard rules and R8 optimization to strip unused assets and code in release configurations.
+    -   **Native Library Compression**: Bundles compressed `.so` binaries (using `useLegacyPackaging = true`), saving over 140MB on the final APK size.
     -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
     -   **Sequential Asset Preloading**: Remaining piece theme images are preloaded sequentially (one theme at a time, 100ms apart) after a 3-second startup delay, protecting main-thread frame metrics.
@@ -39,7 +41,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Move History**: Track all moves throughout the game using Standard Algebraic Notation (SAN)
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
 -   **Move Hints**: Visual indicators for valid moves
--   **Board Notation**: Algebraic notation (a-h, 1-8) coordinates on the board borders
+-   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
+-   **Alternating Board Notation**: Algebraic coordinates on the board borders dynamically use the alternating background tile color (e.g. dark text on light tiles, light text on dark tiles) for crisp legibility.
 -   **Sound Effects**: Audio feedback for piece movements using a pooled `AudioPool` for rapid playback
 -   **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates
 -   **Board Rotation**: Automatic board rotation based on turn (configurable)
@@ -50,6 +53,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ### 🤖 AI Features
 
 -   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
+-   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Mapped to customizable engine skill levels (0-20), search depths (3-16), and response time thresholds.
 -   **Configurable Engine Selector**: Choose between the built-in local engine (Minimax) or the powerhouse Stockfish AI.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
