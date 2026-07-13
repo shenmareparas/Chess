@@ -296,6 +296,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.9.1"
+  in_app_update:
+    dependency: "direct main"
+    description:
+      name: in_app_update
+      sha256: c55b4da41baf34b440ba627843932aa6f1689b5c499cfac98aec156b3113d89e
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.0"
   jni:
     dependency: transitive
     description:
@@ -597,6 +605,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  stockfish:
+    dependency: "direct main"
+    description:
+      name: stockfish
+      sha256: b27956fa6c21f8637db62411c564d1ba1d0b0e9e27ee928f42a85367da891fa0
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.8.1"
   stream_channel:
     dependency: transitive
     description:

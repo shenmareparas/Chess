@@ -19,6 +19,7 @@ const String _stalemateKey = 'stalemate';
 const String _movesKey = 'moves';
 const String _gameStateKey = 'chess_game_state';
 const String _availableUndosKey = 'availableUndos';
+const String _timerIncrementKey = 'timerIncrement';
 
 class GameStateStorage {
   static SharedPreferences? _prefs;
@@ -49,6 +50,7 @@ class GameStateStorage {
         _player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
     await prefs.setBool(_gameOverKey, appModel.gameOver);
     await prefs.setBool(_stalemateKey, appModel.stalemate);
+    await prefs.setInt(_timerIncrementKey, appModel.timerIncrement);
 
     // Save move history
     var moveList = gameController.board.moveStack.map((mso) {
@@ -85,6 +87,7 @@ class GameStateStorage {
         'stalemate': prefs.getBool(_stalemateKey),
         'moves': prefs.getStringList(_movesKey),
         'availableUndos': prefs.getInt(_availableUndosKey),
+        'timerIncrement': prefs.getInt(_timerIncrementKey),
       };
       return state;
     } catch (_) {
@@ -108,6 +111,7 @@ class GameStateStorage {
     await prefs.remove(_stalemateKey);
     await prefs.remove(_movesKey);
     await prefs.remove(_availableUndosKey);
+    await prefs.remove(_timerIncrementKey);
   }
 
   static Future<bool> hasSavedGame() async {

@@ -3,7 +3,7 @@
 ## Overview
 
 This is a feature-rich chess application built with **Flutter** and **Flame**.
-It offers both single-player (vs AI) and two-player offline modes. The AI utilizes the **Minimax algorithm with alpha-beta pruning** with varying difficulty levels (Depth 1 to 5).
+It offers both single-player (vs AI) and two-player offline modes. The AI utilizes the world-class **Stockfish Chess Engine** (integrated via FFI) with 5 difficulty levels mapped to engine Skill Levels (3-20), search depths (3-16), and response time limits (150ms-2s). A custom Minimax algorithm serves as the fallback engine option.
 
 ## Key Components
 
@@ -28,7 +28,8 @@ It offers both single-player (vs AI) and two-player offline modes. The AI utiliz
 - **`chess_board.dart`**: Handles the board representation and rendering logic via Flame engine components.
 - **`chess_piece.dart`** & **`chess_constants.dart`**: Define the piece type enum, piece model, and shared constants (e.g. the `PROMOTIONS` list used by both board logic and the promotion dialog).
 - **`shared_functions.dart`**: Utility helpers shared across logic and views — tile-to-coordinate conversions, `oppositePlayer`, `formatPieceTheme`, and `pieceTypeToString`.
-- **`move_calculation/`**: Contains the critical logic for move generation, validation (checks, stalemates), and the AI's Minimax algorithm with optimizations like Quiescence Search, Null Move Pruning, and Iterative Deepening. The AI runs in an isolate via `CancelableOperation` so it can be cleanly cancelled on restart.
+- **`move_calculation/`**: Contains the critical logic for move generation, validation (checks, stalemates), and the fallback Minimax algorithm with alpha-beta pruning, quiescence search, and iterative deepening.
+- **`stockfish_service.dart`**: A singleton service wrapping the native Stockfish binary. Communicates using the UCI protocol via standard input/output channels and synchronizes ready states. Mapped to the selected game difficulty.
 - **`timer_service.dart`** & **`audio_service.dart`**: Independent services for game timers (with `pause()`/`resume()` support) and pooled sound effects (`AudioPool` for move sounds, `FlameAudio.play` for game-end sounds).
 - **`haptic_service.dart`**: Centralized haptic feedback service. Wraps Flutter's `HapticFeedback` APIs and honours the user's `hapticEnabled` setting. Methods: `selection()`, `light()`, `medium()`, `heavy()`, `vibrate()`. Exposed on `AppModel` as `appModel.haptic`. Never call `HapticFeedback.*` directly — always use this service.
 - **`ad_service.dart`**: Integrates `google_mobile_ads` for rewarded interstitial ads ("1 Ad = 1 Undo"). Implements fallback mechanisms that grant the undo reward even when offline or upon ad display failures (`onAdFailedToShowFullScreenContent`). Each new game gives 1 free undo; `grantUndoFromAd()` on `AppModel` adds 1 more.

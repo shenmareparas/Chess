@@ -98,6 +98,15 @@ class TimerService {
               player2TimeLeft.value.inMilliseconds - TIMER_ACCURACY_MS);
     }
   }
+
+  void addIncrement(Player player, int incrementSeconds) {
+    if (incrementSeconds <= 0 || _timeLimit == 0) return;
+    if (player == Player.player1) {
+      player1TimeLeft.value += Duration(seconds: incrementSeconds);
+    } else {
+      player2TimeLeft.value += Duration(seconds: incrementSeconds);
+    }
+  }
 }
 
 typedef VoidCallback = void Function();

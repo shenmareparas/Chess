@@ -2,7 +2,7 @@
 
 # ♟️ AI Chess - Flutter Chess Game
 
-A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against an AI with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, haptic feedback, and local preference persistence with game-state save/resume.
+A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against the world-class **Stockfish Chess Engine** with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, haptic feedback, and local preference persistence with game-state save/resume.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)](https://dart.dev)
@@ -49,15 +49,11 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🤖 AI Features
 
--   **5 Difficulty Levels**: From beginner to expert (depth 1-5)
--   **Minimax Algorithm**: With alpha-beta pruning optimization
--   **Iterative Deepening**: Ensures best move ordering
--   **Quiescence Search**: Avoids horizon effect for captures
--   **Null Move Pruning & LMR**: Advanced search optimizations
--   **Opening Book**: Pre-calculated moves for distinct openings
--   **Transposition Table Caching**: Reuses computed position evaluation records with optimized `softClear()` to eliminate redundant sub-tree searches without GC pressure
--   **High-Performance Attack Detection**: Fast pseudo-legal attack logic and pre-built board layout structures to reduce garbage collection overhead
--   **Cancellable AI Tasks**: AI compute runs in an isolate via `CancelableOperation` so it can be cleanly cancelled on game restart or exit
+-   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
+-   **5 Difficulty Levels**: Mapped to customizable engine skill levels (0-20), search depths (3-16), and response time thresholds.
+-   **Configurable Engine Selector**: Choose between the built-in local engine (Minimax) or the powerhouse Stockfish AI.
+-   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
+-   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
 
 ### 🏆 Achievements
 
@@ -223,33 +219,22 @@ lib/
             └── bottom_padding.dart            # Safe-area bottom padding
 ```
 
-## 🧠 AI Algorithm
+## 🧠 AI Engine & Algorithm
 
-The chess AI uses the **Minimax algorithm with alpha-beta pruning** to determine optimal moves:
+The chess application interfaces with the **Stockfish Chess Engine** using the **UCI (Universal Chess Interface)** protocol via Dart FFI.
 
 ### How It Works
 
-1. **Minimax Algorithm**: Evaluates the game tree by simulating moves and counter-moves
-2. **Alpha-Beta Pruning**: Optimizes search by eliminating branches that won't affect the final decision
-3. **Advanced Optimizations**: Utilizes Quiescence Search, Null Move Pruning, and Late Move Reductions (LMR)
-4. **Depth-Based Difficulty**:
-    - Level 1: Depth 1 (1 half-move lookahead)
-    - Level 2: Depth 2 (1 full move)
-    - Level 3: Depth 3 (1.5 full moves)
-    - Level 4: Depth 4 (2 full moves)
-    - Level 5: Depth 5 (2.5 full moves)
+1. **UCI Protocol Integration**: The app sends standard chess commands (`position startpos moves ...`, `go depth X movetime Y`) to the engine's standard input and listens to its standard output for search information and the computed `bestmove`.
+2. **Readiness Synchronization**: To prevent race conditions, the engine uses event-driven synchronization (`readyok` response completers) before executing position evaluations.
+3. **Engine Settings mapping**:
+    - **Level 1 (Novice)**: Skill level 3, depth 3, thinking time limit 150ms.
+    - **Level 2 (Easy)**: Skill level 7, depth 5, thinking time limit 300ms.
+    - **Level 3 (Medium)**: Skill level 12, depth 8, thinking time limit 600ms.
+    - **Level 4 (Hard)**: Skill level 16, depth 12, thinking time limit 1200ms.
+    - **Level 5 (Master)**: Skill level 20, depth 16, thinking time limit 2000ms.
 
-### Position Evaluation
-
-The AI evaluates positions based on:
-
--   Material advantage (piece values)
--   Piece positioning and mobility
--   King safety
--   Pawn structure
--   Control of center squares
-
-**Learn more**: [Alpha-Beta Pruning on Wikipedia](https://en.wikipedia.org/wiki/Alpha–beta_pruning)
+**Learn more**: [Stockfish Chess Engine Official Website](https://stockfishchess.org/)
 
 ## ⚙️ Configuration
 

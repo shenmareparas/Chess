@@ -31,9 +31,11 @@ dependencies:
     confetti: ^0.8.0
     google_mobile_ads: ^9.0.0
     games_services: ^5.1.0
+    in_app_update: ^5.0.0
 
     cupertino_icons: ^1.0.0
     fluttertoast: ^9.1.0
+    stockfish: ^1.8.1
 
 dev_dependencies:
     flutter_test:

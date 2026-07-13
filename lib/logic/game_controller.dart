@@ -11,6 +11,7 @@ import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'play_games_service.dart';
 import 'shared_functions.dart';
+import 'stockfish_service.dart';
 
 /// Handles game logic orchestration: move execution, AI, undo/redo, promotion.
 /// Separated from ChessGame (the view/rendering layer) for clean MVVM.
@@ -78,27 +79,51 @@ class GameController {
     if (appModel.gameOver) return;
     await Future.delayed(Duration(milliseconds: 500));
     if (appModel.gameOver) return;
-    final args = AIMoveArgs(
-      board: board,
-      aiPlayer: appModel.aiTurn,
-      aiDifficulty: appModel.aiDifficulty,
-    );
-    aiOperation = CancelableOperation.fromFuture(
-      compute(calculateAIMove, args),
-    );
-    aiOperation?.value.then((move) {
-      if (move == null || appModel.gameOver) {
-        appModel.endGame();
-      } else {
-        validMoves = [];
-        var meta = board.push(move, getMeta: true);
-        appModel.audio.playMovedSound();
-        _moveCompletion(meta, changeTurn: !meta.promotion);
-        if (meta.promotion) {
-          promote(move.promotionType);
+    if (appModel.aiEngine == 'stockfish') {
+      final movesStr = board.moveStack
+          .map((mso) => StockfishService.msoToUCI(mso))
+          .join(' ');
+      aiOperation = CancelableOperation.fromFuture(
+        StockfishService.instance.getBestMove(movesStr, appModel.aiDifficulty),
+      );
+      aiOperation?.value.then((move) {
+        if (move == null ||
+            (move.from == 0 && move.to == 0) ||
+            appModel.gameOver) {
+          appModel.endGame();
+        } else {
+          validMoves = [];
+          var meta = board.push(move, getMeta: true);
+          appModel.audio.playMovedSound();
+          _moveCompletion(meta, changeTurn: !meta.promotion);
+          if (meta.promotion) {
+            promote(move.promotionType);
+          }
         }
-      }
-    });
+      });
+    } else {
+      final args = AIMoveArgs(
+        board: board,
+        aiPlayer: appModel.aiTurn,
+        aiDifficulty: appModel.aiDifficulty,
+      );
+      aiOperation = CancelableOperation.fromFuture(
+        compute(calculateAIMove, args),
+      );
+      aiOperation?.value.then((move) {
+        if (move == null || appModel.gameOver) {
+          appModel.endGame();
+        } else {
+          validMoves = [];
+          var meta = board.push(move, getMeta: true);
+          appModel.audio.playMovedSound();
+          _moveCompletion(meta, changeTurn: !meta.promotion);
+          if (meta.promotion) {
+            promote(move.promotionType);
+          }
+        }
+      });
+    }
   }
 
   void cancelAIMove() {
@@ -219,6 +244,10 @@ class GameController {
       appModel.pushMoveMeta(meta, silent: true);
     }
     if (changeTurn) {
+      if (!undoing) {
+        appModel.timerService
+            .addIncrement(appModel.turn, appModel.timerIncrement);
+      }
       appModel.changeTurn(silent: true);
     }
     selectedPiece = null;

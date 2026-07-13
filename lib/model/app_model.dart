@@ -10,6 +10,7 @@ import '../logic/haptic_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
+import '../logic/stockfish_service.dart';
 import '../logic/timer_service.dart';
 import 'app_themes.dart';
 import 'player.dart';
@@ -42,6 +43,8 @@ class AppModel extends ChangeNotifier {
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
+  String get aiEngine => prefs.aiEngine;
+  int get timerIncrement => prefs.timerIncrement;
   AppTheme get theme => prefs.theme;
   int get themeIndex => prefs.themeIndex;
   int get pieceThemeIndex => prefs.pieceThemeIndex;
@@ -354,6 +357,16 @@ class AppModel extends ChangeNotifier {
     haptic.light();
   }
 
+  void setAIEngine(String engine) {
+    haptic.light();
+    prefs.setAIEngine(engine);
+  }
+
+  void setTimerIncrement(int increment) {
+    haptic.light();
+    prefs.setTimerIncrement(increment);
+  }
+
   void showAchievements() => PlayGamesService.instance.showAchievements();
 
   Future<void> resetSettingsToDefaults() async {
@@ -425,6 +438,10 @@ class AppModel extends ChangeNotifier {
     player2TimeLeft.value =
         Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
+    // Restore timer increment
+    final savedIncrement = (state['timerIncrement'] as int?) ?? 0;
+    prefs.setTimerIncrement(savedIncrement);
+
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
@@ -457,5 +474,11 @@ class AppModel extends ChangeNotifier {
       animateBoardRotation = true;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    StockfishService.instance.dispose();
+    super.dispose();
   }
 }

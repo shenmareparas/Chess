@@ -18,6 +18,8 @@ PODS:
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - stockfish (1.8.1):
+    - Flutter
   - webview_flutter_wkwebview (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -29,6 +31,7 @@ DEPENDENCIES:
   - games_services (from `.symlinks/plugins/games_services/darwin`)
   - google_mobile_ads (from `.symlinks/plugins/google_mobile_ads/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - stockfish (from `.symlinks/plugins/stockfish/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
 SPEC REPOS:
@@ -49,6 +52,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/google_mobile_ads/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  stockfish:
+    :path: ".symlinks/plugins/stockfish/ios"
   webview_flutter_wkwebview:
     :path: ".symlinks/plugins/webview_flutter_wkwebview/darwin"
 
@@ -61,6 +66,7 @@ SPEC CHECKSUMS:
   google_mobile_ads: bab325fd4e31c9705cab0cb298e4f5a9bdb7370f
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  stockfish: b4eb49218804f8fa1ee5fef01e5e760c54df0436
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 
 PODFILE CHECKSUM: 66791031430cdcb0135ea4c6d612990a0f405ca5

@@ -154,6 +154,19 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
+                          if (appModel.playerCount == 1)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                '${appModel.aiEngine == 'stockfish' ? 'Stockfish' : 'Minimax'} L${appModel.aiDifficulty}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: theme.lightTile.withValues(alpha: 0.6),
+                                  letterSpacing: 1.0,
+                                ),
+                              ),
+                            ),
                           GameStatus(),
                           Align(
                             alignment: Alignment.centerRight,

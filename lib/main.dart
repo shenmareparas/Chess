@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'logic/ad_service.dart';
+import 'logic/in_app_update_service.dart';
 import 'logic/play_games_service.dart';
 import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
@@ -38,6 +39,9 @@ void main() async {
 
   // Sign in to Play Games Services silently on startup (non-blocking — silently skips if user is not already logged in at OS level)
   PlayGamesService.instance.signInSilently();
+
+  // Check for Google Play Store updates on Android
+  InAppUpdateService.instance.checkForUpdate();
 }
 
 Future<void> _loadFlameAssets(String activeTheme) async {
