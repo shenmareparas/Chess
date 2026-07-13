@@ -34,6 +34,7 @@ class Timers extends StatelessWidget {
           children: [
             TimerWidget(
               timeLeft: appModel.player1TimeLeft,
+              delayLeft: appModel.timerService.player1DelayLeft,
               isActive: isP1Active,
               label: p1Label,
               theme: theme,
@@ -41,6 +42,7 @@ class Timers extends StatelessWidget {
             const SizedBox(width: 12),
             TimerWidget(
               timeLeft: appModel.player2TimeLeft,
+              delayLeft: appModel.timerService.player2DelayLeft,
               isActive: isP2Active,
               label: p2Label,
               theme: theme,

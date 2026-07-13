@@ -244,7 +244,7 @@ class GameController {
       appModel.pushMoveMeta(meta, silent: true);
     }
     if (changeTurn) {
-      if (!undoing) {
+      if (!undoing && appModel.timerMode == 'increment') {
         appModel.timerService
             .addIncrement(appModel.turn, appModel.timerIncrement);
       }

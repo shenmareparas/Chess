@@ -17,7 +17,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Single Player**: Play against an intelligent AI opponent with 5 difficulty levels
 -   **Two Player Mode**: Offline multiplayer on the same device, with per-player side selection
 -   **Side Selection**: Choose to play as white, black, or random
--   **Timed Games**: Optional time controls for competitive play
+-   **Timed Games**: Optional time controls for competitive play, supporting Fischer Increment and USCF Simple Delay modes
 -   **Game Save & Resume**: Exit mid-game and resume from the exact same position later
 
 ### 🎨 Customization
@@ -84,6 +84,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
+-   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
 
 ## 📦 Installation
 
@@ -169,6 +170,7 @@ lib/
 │   ├── haptic_service.dart        # Centralized haptic feedback (selection/light/medium/heavy/vibrate)
 │   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo")
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
+│   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
 │   └── move_calculation/
 │       ├── ai_move_calculation.dart   # Minimax + alpha-beta pruning (runs in isolate)
 │       ├── ai_move_args.dart          # Isolate argument container
@@ -204,7 +206,10 @@ lib/
         │   └── game_options/
         │       ├── game_mode_picker.dart       # 1P / 2P mode selection
         │       ├── ai_difficulty_picker.dart   # Difficulty 1-5 selection
+        │       ├── ai_engine_picker.dart       # AI Engine (Stockfish vs Minimax) selection
         │       ├── time_limit_picker.dart      # Time control selection
+        │       ├── timer_increment_picker.dart # Time increment value selection
+        │       ├── timer_mode_picker.dart      # Time control mode (Fischer increment vs USCF delay)
         │       ├── side_picker.dart            # White / Black / Random side picker
         │       └── picker.dart                 # Shared picker primitive
         ├── settings_view/

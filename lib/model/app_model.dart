@@ -45,6 +45,7 @@ class AppModel extends ChangeNotifier {
   bool get hapticEnabled => prefs.hapticEnabled;
   String get aiEngine => prefs.aiEngine;
   int get timerIncrement => prefs.timerIncrement;
+  String get timerMode => prefs.timerMode;
   AppTheme get theme => prefs.theme;
   int get themeIndex => prefs.themeIndex;
   int get pieceThemeIndex => prefs.pieceThemeIndex;
@@ -138,7 +139,8 @@ class AppModel extends ChangeNotifier {
     userWon = false;
     turn = Player.player1;
     moveMetaList = [];
-    timerService.configure(timeLimit);
+    timerService.configure(timeLimit,
+        incrementSeconds: timerIncrement, mode: timerMode);
     audio.enabled = prefs.soundEnabled;
     // Reset undo bank for the new game.
     _availableUndos = 1;
@@ -367,6 +369,11 @@ class AppModel extends ChangeNotifier {
     prefs.setTimerIncrement(increment);
   }
 
+  void setTimerMode(String mode) {
+    haptic.light();
+    prefs.setTimerMode(mode);
+  }
+
   void showAchievements() => PlayGamesService.instance.showAchievements();
 
   Future<void> resetSettingsToDefaults() async {
@@ -438,9 +445,13 @@ class AppModel extends ChangeNotifier {
     player2TimeLeft.value =
         Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
-    // Restore timer increment
+    // Restore timer increment and mode
     final savedIncrement = (state['timerIncrement'] as int?) ?? 0;
     prefs.setTimerIncrement(savedIncrement);
+    final savedMode = (state['timerMode'] as String?) ?? 'increment';
+    prefs.setTimerMode(savedMode);
+    timerService.configure(state['timeLimit'] as int,
+        incrementSeconds: savedIncrement, mode: savedMode);
 
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;

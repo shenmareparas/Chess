@@ -33,6 +33,7 @@ class UserPreferences {
   bool hapticEnabled = false;
   String aiEngine = 'stockfish';
   int timerIncrement = 0;
+  String timerMode = 'increment';
 
   List<String> get pieceThemes => sortedPieceThemes;
 
@@ -66,6 +67,7 @@ class UserPreferences {
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
     aiEngine = _prefs!.getString('aiEngine') ?? 'stockfish';
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
+    timerMode = _prefs!.getString('timerMode') ?? 'increment';
     onChanged?.call();
   }
 
@@ -146,6 +148,13 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setTimerMode(String mode) async {
+    timerMode = mode;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString('timerMode', mode);
+    onChanged?.call();
+  }
+
   Future<void> resetToDefaults() async {
     themeName = 'Forest Mint';
     pieceTheme = 'Classic';
@@ -158,6 +167,7 @@ class UserPreferences {
     hapticEnabled = false;
     aiEngine = 'stockfish';
     timerIncrement = 0;
+    timerMode = 'increment';
 
     _prefs ??= await SharedPreferences.getInstance();
     await _prefs!.setString('themeName', themeName);
@@ -171,6 +181,7 @@ class UserPreferences {
     await _prefs!.setBool('hapticEnabled', hapticEnabled);
     await _prefs!.setString('aiEngine', aiEngine);
     await _prefs!.setInt('timerIncrement', timerIncrement);
+    await _prefs!.setString('timerMode', timerMode);
     onChanged?.call();
   }
 }
