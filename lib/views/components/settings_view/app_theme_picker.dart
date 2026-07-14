@@ -51,6 +51,7 @@ class _AppThemePickerState extends State<AppThemePicker> {
           ),
           itemExtent: 44,
           onSelectedItemChanged: (index) {
+            appModel.haptic.selection();
             _debounceTimer?.cancel();
             _debounceTimer = Timer(const Duration(milliseconds: 150), () {
               if (mounted) {
