@@ -55,7 +55,6 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Mapped to customizable engine skill levels (0-20), search depths (3-16), and response time thresholds.
--   **Configurable Engine Selector**: Choose between the built-in local engine (Minimax) or the powerhouse Stockfish AI.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
 -   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
 
@@ -156,14 +155,15 @@ To design, preview, and bulk-export Google Play Store screenshots:
 lib/
 ├── main.dart                       # App entry point; preloads assets, initializes AdMob & Play Games
 ├── model/
-│   ├── app_model.dart             # Central state: game lifecycle, undo bank, save/restore, prefs delegation
+│   ├── app_model.dart             # Central state/ViewModel; delegates to services/prefs
+│   ├── game_state.dart            # Pure Model holding active game outcome/ply state
 │   ├── app_themes.dart            # 8 board/UI theme definitions (sorted alphabetically)
 │   ├── user_preferences.dart      # SharedPreferences wrapper; defines PIECE_THEMES constant
 │   └── player.dart                # Player enum (player1, player2, random)
 ├── logic/
-│   ├── chess_board.dart           # Flame-based board representation and rendering
-│   ├── chess_game.dart            # Flame Game subclass; wires sprites to board state
-│   ├── game_controller.dart       # Move orchestration, AI trigger, undo/redo, promotion, haptics
+│   ├── chess_board.dart           # Pure chess rules engine: board state, push/pop moves, check detection
+│   ├── chess_game.dart            # Flame rendering layer: board drawing, sprites, tap routing
+│   ├── game_controller.dart       # Logic ViewModel: move orchestration, AI, undo/redo, promotion, haptics
 │   ├── chess_piece.dart           # ChessPiece model and ChessPieceType enum
 │   ├── chess_piece_sprite.dart    # Flame Sprite component for chess pieces
 │   ├── chess_constants.dart       # Shared constants (e.g. PROMOTIONS list)
@@ -176,16 +176,12 @@ lib/
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
 │   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
 │   └── move_calculation/
-│       ├── ai_move_calculation.dart   # Minimax + alpha-beta pruning (runs in isolate)
-│       ├── ai_move_args.dart          # Isolate argument container
-│       ├── openings.dart              # Opening book
-│       ├── piece_square_tables.dart   # Position evaluation tables
-│       ├── transposition_table.dart   # TT with softClear() for GC efficiency
+│       ├── piece_square_tables.dart   # squareValue() for incremental eval (undo/pop correctness)
 │       └── move_classes/
 │           ├── move.dart              # Move (from, to, promotionType)
 │           ├── move_meta.dart         # Move metadata (isCheck, isCheckmate, isStalemate, promotion)
-│           ├── move_stack_object.dart # Board move-stack entry
-│           ├── move_and_value.dart    # AI search result container
+│           ├── move_stack_object.dart # Board move-stack entry (push/pop undo/redo)
+│           ├── move_and_value.dart    # MVV-LVA capture priority container
 │           └── direction.dart         # Direction enum for sliding pieces
 └── views/
     ├── main_menu_view.dart        # Main menu: game mode, difficulty, time, side selection
@@ -210,7 +206,6 @@ lib/
         │   └── game_options/
         │       ├── game_mode_picker.dart       # 1P / 2P mode selection
         │       ├── ai_difficulty_picker.dart   # Difficulty 1-5 selection
-        │       ├── ai_engine_picker.dart       # AI Engine (Stockfish vs Minimax) selection
         │       ├── time_limit_picker.dart      # Time control selection
         │       ├── timer_increment_picker.dart # Time increment value selection
         │       ├── timer_mode_picker.dart      # Time control mode (Fischer increment vs USCF delay)

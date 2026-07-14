@@ -124,32 +124,11 @@ class ChessGame extends FlameGame with TapCallbacks {
 
   // ── Input Handling ──
 
+  /// Converts the tap position to a board tile and delegates to the controller.
+  /// The Flame layer has zero routing logic — it is a pure renderer + input forwarder.
   void onTapDown(TapDownEvent event) {
     if (appModel.historyViewIndex != null) return;
-    if (appModel.gameOver || !(appModel.isAIsTurn)) {
-      var tile = _vector2ToTile(event.localPosition);
-      var touchedPiece = board.tiles[tile];
-      if (touchedPiece == selectedPiece) {
-        validMoves = [];
-        selectedPiece = null;
-        appModel.haptic.selection();
-      } else {
-        if (selectedPiece != null &&
-            touchedPiece != null &&
-            touchedPiece.player == selectedPiece?.player) {
-          if (validMoves.contains(tile)) {
-            controller.movePiece(tile);
-          } else {
-            validMoves = [];
-            controller.selectPiece(touchedPiece);
-          }
-        } else if (selectedPiece == null) {
-          controller.selectPiece(touchedPiece);
-        } else {
-          controller.movePiece(tile);
-        }
-      }
-    }
+    controller.handleTap(_vector2ToTile(event.localPosition));
   }
 
   // ── Rendering ──

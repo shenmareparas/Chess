@@ -14,6 +14,7 @@ import '../logic/shared_functions.dart';
 import '../logic/stockfish_service.dart';
 import '../logic/timer_service.dart';
 import 'app_themes.dart';
+import 'game_state.dart';
 import 'player.dart';
 import 'user_preferences.dart';
 
@@ -59,15 +60,29 @@ class AppModel extends ChangeNotifier {
   set player2TimeLeft(ValueNotifier<Duration> val) =>
       timerService.player2TimeLeft.value = val.value;
 
-  // ── Game State ──
+  // ── Game State (Model) ──
+  /// Pure game-outcome data, separated from ViewModel concerns.
+  /// Access via the proxy getters below; do not reach into [_gameState] directly
+  /// from outside this class.
+  final GameState _gameState = GameState();
+
+  // Proxy getters/setters — all external code reads appModel.gameOver etc.
+  // as before; we just delegate to the model layer now.
+  bool get gameOver => _gameState.gameOver;
+  set gameOver(bool v) => _gameState.gameOver = v;
+  bool get stalemate => _gameState.stalemate;
+  set stalemate(bool v) => _gameState.stalemate = v;
+  bool get userWon => _gameState.userWon;
+  set userWon(bool v) => _gameState.userWon = v;
+  Player get turn => _gameState.turn;
+  set turn(Player v) => _gameState.turn = v;
+  List<MoveMeta> get moveMetaList => _gameState.moveMetaList;
+  set moveMetaList(List<MoveMeta> v) => _gameState.moveMetaList = v;
+
+  // ── ViewModel-layer game state ──
   GameController? gameController;
-  bool gameOver = false;
-  bool stalemate = false;
   bool promotionRequested = false;
   bool moveListUpdated = false;
-  bool userWon = false;
-  Player turn = Player.player1;
-  List<MoveMeta> moveMetaList = [];
   int? historyViewIndex;
   final List<MoveStackObject> historyRedoStack = [];
   Timer? _historyAnimationTimer;
@@ -139,11 +154,9 @@ class AppModel extends ChangeNotifier {
     timerService.stop();
     GameStateStorage.clearGameState();
     _gameOverInvertedState = null;
-    gameOver = false;
-    stalemate = false;
-    userWon = false;
-    turn = Player.player1;
-    moveMetaList = [];
+    _gameState.reset(); // reset all pure-model game state in one call
+    promotionRequested = false;
+    moveListUpdated = false;
     historyViewIndex = null;
     historyRedoStack.clear();
     _historyAnimationTimer?.cancel();
@@ -461,11 +474,6 @@ class AppModel extends ChangeNotifier {
     prefs.setHapticEnabled(enabled);
     haptic.enabled = enabled;
     haptic.light();
-  }
-
-  void setAIEngine(String engine) {
-    haptic.light();
-    prefs.setAIEngine(engine);
   }
 
   void setTimerIncrement(int increment) {

@@ -2,61 +2,82 @@
 
 ## Overview
 
-This is a feature-rich chess application built with **Flutter** and **Flame**.
-It offers both single-player (vs AI) and two-player offline modes. The AI utilizes the world-class **Stockfish Chess Engine** (integrated via FFI) with 5 difficulty levels mapped to engine Skill Levels (3-20), search depths (3-16), and response time limits (150ms-2s). A custom Minimax algorithm serves as the fallback engine option.
+A feature-rich chess application built with **Flutter** and **Flame**. Offers single-player (vs Stockfish AI) and two-player offline modes, with timed games, move history review, undo/redo, customizable boards and piece themes, sound, haptic feedback, and full game-save/resume support.
+
+**Architecture**: MVVM via `provider`. `AppModel` (ChangeNotifier) is the ViewModel; `ChessBoard`, services, and data classes are the Model; `lib/views/` + `ChessGame` (Flame) are the View.
+
+---
 
 ## Key Components
 
-### 1. App Entry & State
+### 1. App Entry & State (`lib/model/`, `lib/main.dart`)
 
-- **`lib/main.dart`**: Initializes settings (loading preferences first), preloads essential assets (the active piece theme, Classic theme, and the home screen logo) synchronously to speed up startup, launches remaining theme preloading asynchronously (sequentially throttled with a 100ms delay between themes, starting 3 seconds after boot) to protect main-thread frame metrics, initializes AdMob SDK in the background without blocking startup, and wraps the `CupertinoApp` with a `ChangeNotifierProvider` for `AppModel`. Also calls `PlayGamesService.instance.signInSilently()` and checks for Google Play Store updates on Android via `InAppUpdateService.instance.checkForUpdate()` post-`runApp` (non-blocking).
-- **`lib/model/app_model.dart`**: The central brain for state management, notifying the UI of game state changes, theme changes, and settings. Manages the **undo bank** (`_availableUndos`, starts at 1 per game, earnable via ad), delegates timer control to `TimerService` (configuring time limit, increment, and `timerMode`), delegates audio to `AudioService`, and delegates haptics to `HapticService`. Also handles game save/restore lifecycle (`saveGameState` / `saveGameStateImmediate` / `restoreGameState` including `timerMode` / `timerIncrement` restoration) and two-player `selectedSideP1` configuration.
+- **`lib/main.dart`**: Initializes preferences, preloads the active piece theme and Classic fallback synchronously, then loads remaining themes asynchronously (sequentially throttled: one at a time, 100ms gap, after a 3-second startup delay). Initializes AdMob in the background. Calls `PlayGamesService.instance.signInSilently()` and `InAppUpdateService.instance.checkForUpdate()` post-`runApp` on Android (non-blocking). Wraps `CupertinoApp` in a `ChangeNotifierProvider<AppModel>`.
+- **`lib/model/app_model.dart`**: The central brain for state management, serving as the ViewModel. Manages settings, preloading flags, undo bank updates, and delegates timers, audio, and haptics. Communicates changes to the View and persists state using `GameStateStorage`. Exposes fields of `GameState` via proxy getters/setters.
+- **`lib/model/game_state.dart`**: Pure domain Model layer holding game state parameters (`gameOver`, `stalemate`, `userWon`, `turn`, `moveMetaList`). Fully decoupled from UI logic.
 - **`lib/model/user_preferences.dart`**: Handles saving and loading settings to local storage. Defines `PIECE_THEMES` constant, `hapticEnabled` preference, and `timerMode` ('increment' or 'delay').
-- **`lib/model/app_themes.dart`**: Specifies board and UI colors for all 8 themes (sorted alphabetically by name).
-- **`lib/model/player.dart`**: Player enum (`player1`, `player2`, `random`) and base logic.
+- **`lib/model/app_themes.dart`**: 8 board/UI themes (sorted alphabetically). Add new themes here in `themeList`.
+- **`lib/model/player.dart`**: `Player` enum (`player1`, `player2`, `random`).
 
 ### 2. UI & Views (`lib/views/`)
 
-- **`main_menu_view.dart`**: The starting screen to configure the game (1P/2P, difficulty, time control, side selection). In 2P mode, Player 1 can separately set their preferred starting side (`selectedSideP1`). The main menu also exposes a "Resume" button when a saved game exists (`GameStateStorage.hasSavedGame()`).
-- **`chess_view.dart`**: The primary game interface displaying the Flame-rendered board, move history (which is clickable to review past positions, pauses active AI but keeps timers running, disables board interactions during preview, features a navigation row with Previous/Next chevrons and a Resume button wrapped in ExcludeSemantics, auto-centers the active tile, and supports a 2-second press-and-hold copy gesture), captured pieces, and timers. Reacts dynamically to `GameController` swaps (e.g., on game restart) to re-initialize the Flame layer. Implements `WidgetsBindingObserver` to pause the timer on app background/inactive and resume it when foregrounded. Shows confetti on a human win. The back-button/swipe triggers a **Leave Game dialog** with three actions: "Save & Exit" (`saveAndExitChessView()`), "Exit Without Saving" (`exitChessView()`), and "Cancel" (resumes the timer).
-- **`settings_view.dart`**: For customizing themes, sounds, and other UI preferences. Contains a `DotGridPainter` background and glowing blur blobs, both wrapped in `RepaintBoundary`. App bar includes a reset button that shows a glassmorphic confirmation dialog before calling `resetSettingsToDefaults()`. Integrates: `AppThemePicker`, `PieceThemePicker`, and `Toggles` (Board Rotation, Show Hints, Show Notation, Allow Undo/Redo, Show Move History, Sound, Haptic Feedback toggles) + an Achievements tappable tile.
-- **`components/`**: Directory containing view-specific subcomponents and shared widgets, including:
-  - `game_options/`: Mode selection, AI picker, time limit, time increment picker, and `timer_mode_picker.dart` (lets users choose between 'increment' / Fischer or 'delay' / Simple Delay when a time increment is active).
-  - `chess_view/`: A glassmorphic `PromotionDialog` (wrapped in `PopScope(canPop: false)` to prevent accidental dismissals during games), and `timer_widget.dart` (which dynamically shows remaining delay on the active turn if `timerMode` is set to USCF delay).
-  - `shared/`: `GlassPanel` shared UI containers. The piece preview uses a lightweight standard `PiecePreview` StatelessWidget with standard image caching rather than heavy Flame loops. `PieceThemePicker` contains a developer Easter egg that opens the `PromotionDialog` when the preview is tapped 7 times, showing `FToast` countdown toasts from the 4th tap.
+- **`main_menu_view.dart`**: Game configuration (1P/2P, difficulty, time control, side selection). In 2P mode Player 1 can set their starting side (`selectedSideP1`). Shows "Resume" button if `GameStateStorage.hasSavedGame()` is true.
+- **`chess_view.dart`**: Primary game screen. Hosts Flame board, move history panel, timers, and game controls. Reacts to `GameController` swaps (game restart) by re-initializing the Flame layer. Implements `WidgetsBindingObserver` for timer pause/resume on lifecycle changes. Triggers confetti on human win. Back button shows a **Leave Game dialog** (Save & Exit / Exit Without Saving / Cancel). Checks `promotionRequested` flag on each rebuild and shows `PromotionDialog` via `addPostFrameCallback`.
+- **`settings_view.dart`**: Theme/piece pickers, toggles (Rotation, Hints, Notation, Undo/Redo, Move History, Sound, Haptic), and Achievements tile. Pickers are debounced 150ms. Has a `RepaintBoundary`-isolated dot grid + glow background. Reset button shows a confirmation dialog before calling `resetSettingsToDefaults()`.
+- **`components/`**: Feature-scoped component subdirectories:
+  - `chess_view/`: `PromotionDialog` (non-dismissible, `PopScope(canPop: false)`), `PromotionOption`, `ChessBoardWidget` (Flame↔Flutter bridge).
+  - `chess_view/game_info_and_controls/`: `GameStatus`, `TimerWidget`, `Timers`, `MoveList` (clickable history with 2-second press-to-copy), `UndoRedoButtons`, `RestartExitButtons`, `RoundedAlertButton`.
+  - `main_menu_view/`: `GameOptions`, `MainMenuButtons`, and `game_options/` pickers (mode, difficulty, time limit, increment, timer mode, side).
+  - `settings_view/`: `AppThemePicker`, `PieceThemePicker` (with 7-tap Easter egg + `FToast` countdown), `PiecePreview` (lightweight StatelessWidget), `Toggle`, `Toggles`.
+  - `shared/`: `GlassPanel`, `RoundedButton`, `TextVariable`, `BottomPadding`.
 
-### 3. Game Logic & Flame Integration (`lib/logic/`)
+### 3. Game Logic & Flame (`lib/logic/`)
 
-- **`chess_game.dart` & `game_controller.dart`**: Controls the flow of the game, turn switching, and game loop. `GameController` is responsible for move orchestration, AI triggering, undo/redo (including `undoTwoMoves` for AI games), pawn promotion, and dispatching haptic feedback via `AppModel.haptic` based on move outcome. Applies time increments on turn end if the timer mode is `increment`.
-- **`chess_board.dart`**: Handles the board representation and rendering logic via Flame engine components.
-- **`chess_piece.dart`** & **`chess_constants.dart`**: Define the piece type enum, piece model, and shared constants (e.g. the `PROMOTIONS` list used by both board logic and the promotion dialog).
-- **`shared_functions.dart`**: Utility helpers shared across logic and views — tile-to-coordinate conversions, `oppositePlayer`, `formatPieceTheme`, and `pieceTypeToString`.
-- **`move_calculation/`**: Contains the critical logic for move generation, validation (checks, stalemates), and the fallback Minimax algorithm with alpha-beta pruning, quiescence search, and iterative deepening.
-- **`stockfish_service.dart`**: A singleton service wrapping the native Stockfish binary. Communicates using the UCI protocol via standard input/output channels and synchronizes ready states. Mapped to the selected game difficulty. Handles castling move translations between the custom chess board representation (where castling is modeled as a king capturing its own rook) and the standard UCI format expected by Stockfish (e.g. `e1g1`, `e1c1`).
-- **`timer_service.dart`** & **`audio_service.dart`**: Independent services for game timers (with `pause()`/`resume()` support) and pooled sound effects (`AudioPool` for move sounds, `FlameAudio.play` for game-end sounds). `TimerService` supports both `increment` (Fischer) and `delay` (USCF Simple Delay) modes, managing player clocks and delay countdowns.
-- **`in_app_update_service.dart`**: Service utilizing `in_app_update` for Google Play Store updates on Android. Checks for flexible or immediate updates. Safe JVM compilation (version 17) is enforced across project builds.
-- **`haptic_service.dart`**: Centralized haptic feedback service. Wraps Flutter's `HapticFeedback` APIs and honours the user's `hapticEnabled` setting. Methods: `selection()`, `light()`, `medium()`, `heavy()`, `vibrate()`. Exposed on `AppModel` as `appModel.haptic`. Never call `HapticFeedback.*` directly — always use this service.
-- **`ad_service.dart`**: Integrates `google_mobile_ads` for rewarded interstitial ads ("1 Ad = 1 Undo"). Implements fallback mechanisms that grant the undo reward even when offline or upon ad display failures (`onAdFailedToShowFullScreenContent`). Each new game gives 1 free undo; `grantUndoFromAd()` on `AppModel` adds 1 more.
-- **`game_state_storage.dart`**: Logic for managing full game state persistence via SharedPreferences. Saves and restores player settings, move history, timer durations, game-over/stalemate flags, `timerIncrement`, `timerMode`, and the available undo count. `hasSavedGame()` is used by the main menu to show/hide the Resume button.
-- **`play_games_service.dart`**: Wraps `games_services` to integrate Google Play Games Services (Android) achievements (completely disabled on iOS and web). Handles startup silent sign-in and on-demand interactive achievements UI launcher. Hooked into `AppModel.newGame` (`onGameStarted`), `AppModel.endGame` (`onPlayerWon`), and `GameController.promote`/`_moveCompletion` (`onPawnPromotion`, `onCheckDelivered`). Tracks incremental "Play 10 / Play 50 Games" achievements via `GamesServices.increment`. All calls are fire-and-forget and degrade silently when the service is unavailable.
+- **`chess_game.dart`**: Flame `FlameGame` subclass — the rendering View layer. Handles board drawing (pre-built tile Rects, cached Paint objects), piece sprite animation, board rotation animation, and tap input routing. Delegates ALL game logic to `GameController` via thin proxy methods. Reads `AppModel` directly for rendering state (theme, hints, board inversion). Zero widget imports.
+- **`game_controller.dart`**: The logic ViewModel. Orchestrates move execution, AI triggering (`_aiMove` via Stockfish), undo/redo (`undoMove`, `undoTwoMoves`, `redoMove`, `redoTwoMoves`), and pawn promotion. For human promotion: calls `requestPromotion()` on `AppModel`, holds the turn (`changeTurn: false`), waits for user dialog choice, then calls `promote(type)`. For AI promotion: `board.push()` already embeds the type and calls `addPromotedPiece()`; the controller syncs meta and finalizes the turn without re-calling `addPromotedPiece`. Dispatches haptic feedback based on move outcome. Applies Fischer increment on turn end.
+- **`chess_board.dart`**: Pure Model — the chess rules engine. Board state (`tiles[64]`, `player1Pieces`, etc.), `push`/`pop` for make/unmake moves (with incremental eval restore and Zobrist hash tracking), `movesForPiece`, `kingInCheck`, `kingInCheckmate`. No Flutter imports.
+- **`chess_piece.dart`** & **`chess_constants.dart`**: `ChessPieceType` enum, `ChessPiece` model (with signed `value` and unsigned `materialValue`), and `PROMOTIONS` list.
+- **`shared_functions.dart`**: Utility helpers — tile/coordinate conversions, `oppositePlayer`, `formatPieceTheme`, `pieceTypeToString`.
+- **`move_calculation/`**: Move generation and validation support:
+  - `move_classes/`: `Move`, `MoveMeta`, `MoveStackObject`, `MoveAndValue`, `Direction`.
+  - `piece_square_tables.dart`: `squareValue()` for incremental board evaluation (used for undo/pop correctness in `ChessBoard`).
+  - ~~`openings.dart`~~ — deleted (vestigial, had no effect on Stockfish play).
+  - ~~`transposition_table.dart`~~ — deleted (unused after Stockfish replaced homebrew AI).
+- **`stockfish_service.dart`**: Singleton wrapping the native Stockfish binary via UCI protocol. Synchronizes ready state with `readyok`. Maps difficulty 1–5 to skill level (3–20), search depth (3–16), and move time (150–2000ms). Translates castling between internal king-captures-rook representation and standard UCI notation (`e1g1`, `e1c1`, `e8g8`, `e8c8`).
+- **`timer_service.dart`**: Per-player countdown timers with `pause()`/`resume()`. Supports `increment` (Fischer, added after turn) and `delay` (USCF Simple Delay, clock held for delay duration before decrementing). Fires `onExpired` callback when a player's clock hits zero.
+- **`audio_service.dart`**: Pooled `AudioPool` for rapid move sounds; `FlameAudio.play` for game-end sounds. Respects `soundEnabled` preference.
+- **`haptic_service.dart`**: Centralized haptic output. Methods: `selection()`, `light()`, `medium()`, `heavy()`, `vibrate()`, `warning()` (double-light), `doubleLight()`. Exposed on `AppModel` as `appModel.haptic`. **Never call `HapticFeedback.*` directly.**
+- **`ad_service.dart`**: `google_mobile_ads` rewarded interstitial ("1 Ad = 1 Undo"). Gracefully grants the undo reward even on ad failure or offline. `grantUndoFromAd()` on AppModel adds 1 to the bank.
+- **`game_state_storage.dart`**: Full game state persistence via SharedPreferences. Saves/restores player settings, move history, timer values, `timerMode`, `timerIncrement`, game-over flags, and undo bank. `hasSavedGame()` used by the main menu.
+- **`play_games_service.dart`**: Google Play Games Services (Android only, disabled on iOS). Silent sign-in on startup. Hook points: `onGameStarted` → `AppModel.newGame`; `onPlayerWon` → `AppModel.endGame`; `onPawnPromotion` → `GameController.promote` (human only); `onCheckDelivered` → `GameController._moveCompletion` (human only). All calls are fire-and-forget.
+- **`in_app_update_service.dart`**: Checks for Google Play Store flexible/immediate updates at startup. Errors caught silently.
 
 ### 4. Marketing & Screenshots (`screenshots_editor/`)
 
-- **`screenshots_editor/`**: A Next.js-based local web tool for designing and exporting App Store (iOS) and Google Play Store (Android) screenshots.
-  - Automatically loads slide-specific game themes (Forest Mint, Midnight Slate, etc.).
-  - Configured with custom thin bezel layouts, concentric rounded corners, and layouts (`two-devices`, `three-devices`).
-  - Supports premium background overlays (adjustable film noise opacity) and camera notch bezel toggle settings.
-  - Supports horizontal & vertical alignment (both custom text elements and slide headlines) and stage snap-centering actions.
-  - Auto-saves layout configurations in real-time to `screenshots_editor/app-store-screenshots.json`.
+A local Next.js web tool for designing and exporting App Store (iOS) and Google Play (Android) screenshots. Supports custom slide layouts (`two-devices`, `three-devices`), thin concentric bezels (notch toggleable), film noise overlay, per-element horizontal/vertical alignment, stage snap-centering, and real-time auto-save to `screenshots_editor/app-store-screenshots.json`. Run with `bun dev` (or `npm run dev`) from within `screenshots_editor/`.
+
+---
 
 ## Assets
 
-- Images are located in `assets/images` (with piece subdirectories per theme).
-- Audio effects are in `assets/audio` (`piece_moved.mp3`, `win.wav`, `lose.wav`, `tie.wav`).
-- Fonts (`Inter`) are in `assets/font`.
-- App launcher icons are in `assets/icons`.
+- `assets/images/pieces/<theme>/` — Piece theme images. Folder name must match `formatPieceTheme(theme)` from `shared_functions.dart`. Currently: `classic`, `angular`, `8-bit`, `letters`, `oldschool`, `fairytale`.
+- `assets/images/logo.png` — Home screen logo.
+- `assets/audio/` — `piece_moved.mp3`, `win.wav`, `lose.wav`, `tie.wav`.
+- `assets/font/` — `Inter-VariableFont_slnt,wght.ttf`.
+- `assets/icons/` — App launcher icons.
 
-## Important Note to AI
+---
 
-This context provides a high-level map of the codebase to assist in making localized or architectural changes without breaking existing features. If you are modifying UI look in `views/` and `model/`. If modifying how pieces move or AI difficulty, look inside `logic/`. If modifying haptic feedback patterns, use `HapticService` — never `HapticFeedback.*` directly. If modifying game persistence, change `game_state_storage.dart` and update `AppModel.restoreGameState`.
-If you need to make changes to the app store screenshot generator, modify the Next.js code under `screenshots_editor/` and run `bun dev` to test it.
+## Navigation for AI Agents
+
+| Task | Where to look |
+|---|---|
+| Global state / game lifecycle | `lib/model/app_model.dart` |
+| Move execution / AI / undo | `lib/logic/game_controller.dart` |
+| Chess rules / board state | `lib/logic/chess_board.dart` |
+| Rendering / input | `lib/logic/chess_game.dart` |
+| UI screens | `lib/views/` |
+| Haptic feedback | `lib/logic/haptic_service.dart` (never `HapticFeedback.*` directly) |
+| Game persistence | `lib/logic/game_state_storage.dart` + `AppModel.restoreGameState` |
+| Themes | `lib/model/app_themes.dart` (board themes), `lib/model/user_preferences.dart` (piece themes) |
+| Screenshot editor | `screenshots_editor/` — run `bun dev` to test |

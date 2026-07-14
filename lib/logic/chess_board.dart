@@ -1,14 +1,11 @@
 import 'dart:math' as math;
 
 import '../model/player.dart';
-import 'chess_constants.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/direction.dart';
 import 'move_calculation/move_classes/move.dart';
-import 'move_calculation/move_classes/move_and_value.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'move_calculation/move_classes/move_stack_object.dart';
-import 'move_calculation/openings.dart';
 import 'move_calculation/piece_square_tables.dart';
 import 'shared_functions.dart';
 
@@ -84,7 +81,6 @@ class ChessBoard {
   ChessPiece? enPassantPiece;
   bool player1KingInCheck = false;
   bool player2KingInCheck = false;
-  List<List<Move>> possibleOpenings = List.from(openings);
   int moveCount = 0;
   int zobristHash = 0;
 
@@ -167,8 +163,6 @@ class ChessBoard {
     return player == Player.player1 ? player1Queens : player2Queens;
   }
 
-  int get boardValue => incrementalValue;
-
   // ──────────────────────────────────────────────
   // Push / Pop (make / unmake move)
   // ──────────────────────────────────────────────
@@ -176,21 +170,12 @@ class ChessBoard {
   MoveMeta push(Move move,
       {bool getMeta = false,
       ChessPieceType promotionType = ChessPieceType.promotion}) {
-    var mso = MoveStackObject(
-        move,
-        tiles[move.from],
-        tiles[move.to],
-        enPassantPiece,
-        // Only copy the openings list while it is still relevant.
-        // After the opening book is exhausted the copy is a pure waste.
-        possibleOpenings.isNotEmpty ? List.from(possibleOpenings) : []);
+    var mso =
+        MoveStackObject(move, tiles[move.from], tiles[move.to], enPassantPiece);
     mso.previousHash = zobristHash;
     mso.previousBoardValue = incrementalValue;
     mso.previousInEndGame = inEndGameCached;
     var meta = MoveMeta(move, mso.movedPiece?.player, mso.movedPiece?.type);
-    if (possibleOpenings.isNotEmpty) {
-      _filterPossibleOpenings(move);
-    }
     if (getMeta) {
       _checkMoveAmbiguity(move, meta);
     }
@@ -235,7 +220,6 @@ class ChessBoard {
     incrementalValue = mso.previousBoardValue;
     inEndGameCached = mso.previousInEndGame;
     enPassantPiece = mso.enPassantPiece;
-    possibleOpenings = mso.possibleOpenings ?? [];
     if (mso.castled) {
       _undoCastle(mso);
     } else {
@@ -255,45 +239,6 @@ class ChessBoard {
   // ──────────────────────────────────────────────
   // Move Calculation
   // ──────────────────────────────────────────────
-
-  List<Move> allMoves(Player player, int aiDifficulty,
-      {bool capturesOnly = false}) {
-    // Pre-allocate with a typical upper bound to avoid repeated internal resizing.
-    // A chess position has at most ~218 legal moves; 48 is a reasonable starting
-    // capacity that covers most quiet positions without over-allocating.
-    final List<MoveAndValue> moves = List<MoveAndValue>.empty(growable: true);
-    for (var piece in piecesForPlayer(player)) {
-      var tiles = movesForPiece(piece);
-      for (var tile in tiles) {
-        var victim = this.tiles[tile];
-        bool isCapture = victim != null && victim.player != piece.player;
-        bool isPromotion = piece.type == ChessPieceType.pawn &&
-            (tileToRow(tile) == 0 || tileToRow(tile) == 7);
-
-        // In captures-only mode, skip quiet moves
-        if (capturesOnly && !isCapture && !isPromotion) continue;
-
-        int priority = 0;
-        // MVV-LVA: prioritize captures by victim value - attacker value
-        if (isCapture) {
-          priority =
-              (10000 + victim.materialValue - piece.materialValue).toInt();
-        }
-        if (isPromotion) {
-          for (var promotion in PROMOTIONS) {
-            moves.add(MoveAndValue(
-                Move(piece.tile, tile, promotionType: promotion),
-                priority + 9000));
-          }
-        } else {
-          moves.add(MoveAndValue(Move(piece.tile, tile), priority));
-        }
-      }
-    }
-    // Sort by priority descending: captures and promotions first
-    moves.sort((a, b) => b.value.compareTo(a.value));
-    return List<Move>.generate(moves.length, (i) => moves[i].move);
-  }
 
   List<int> movesForPiece(ChessPiece piece, {bool legal = true}) {
     List<int> moves;
@@ -730,13 +675,6 @@ class ChessBoard {
     }
   }
 
-  void _filterPossibleOpenings(Move move) {
-    possibleOpenings = possibleOpenings
-        .where((opening) =>
-            opening[moveCount] == move && opening.length > moveCount + 1)
-        .toList();
-  }
-
   void _setTile(int? tile, ChessPiece? piece) {
     if (tile != null) {
       tiles[tile] = piece;
@@ -833,7 +771,4 @@ class ChessBoard {
   static int _rowColToTile(int row, int col) {
     return row * 8 + col;
   }
-
-  /// Exposed for null-move pruning in AI search.
-  static int get zobristSideToMoveValue => _zobristSideToMove;
 }

@@ -65,7 +65,8 @@ class UserPreferences {
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
-    aiEngine = _prefs!.getString('aiEngine') ?? 'stockfish';
+    aiEngine = 'stockfish';
+    _prefs!.setString('aiEngine', 'stockfish');
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
     timerMode = _prefs!.getString('timerMode') ?? 'increment';
     onChanged?.call();
@@ -131,13 +132,6 @@ class UserPreferences {
     hapticEnabled = enabled;
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setBool('hapticEnabled', enabled);
-    onChanged?.call();
-  }
-
-  Future<void> setAIEngine(String engine) async {
-    aiEngine = engine;
-    _prefs ??= await SharedPreferences.getInstance();
-    await _prefs!.setString('aiEngine', engine);
     onChanged?.call();
   }
 

@@ -158,7 +158,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                '${appModel.aiEngine == 'stockfish' ? 'Stockfish' : 'Minimax'} L${appModel.aiDifficulty}',
+                                'Stockfish L${appModel.aiDifficulty}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,

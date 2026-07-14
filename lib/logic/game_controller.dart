@@ -1,12 +1,9 @@
 import 'package:async/async.dart';
-import 'package:flutter/foundation.dart';
 
 import '../model/app_model.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
-import 'move_calculation/ai_move_args.dart';
-import 'move_calculation/ai_move_calculation.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'play_games_service.dart';
@@ -32,6 +29,43 @@ class GameController {
   GameController(this.appModel) {}
 
   // ── Piece Selection ──
+
+  /// Routing logic for a board tap at [tile].
+  ///
+  /// Called by the Flame view after it converts a touch position to a tile
+  /// index. Contains all tap-routing decisions so the view stays logic-free.
+  ///
+  /// Guards:
+  /// - No input while it's the AI's turn (unless the game is already over).
+  /// - Deselect: tapping the already-selected piece clears selection.
+  /// - Re-select: tapping a friendly piece swaps selection (or moves if valid).
+  /// - Move: tapping any other tile forwards to [movePiece].
+  void handleTap(int tile) {
+    if (!appModel.gameOver && appModel.isAIsTurn) return;
+    final touchedPiece = board.tiles[tile];
+    if (touchedPiece == selectedPiece) {
+      // Deselect: tap the already-selected piece again.
+      validMoves = [];
+      selectedPiece = null;
+      appModel.haptic.selection();
+    } else if (selectedPiece != null &&
+        touchedPiece != null &&
+        touchedPiece.player == selectedPiece?.player) {
+      // Tap a friendly piece while another is selected.
+      if (validMoves.contains(tile)) {
+        movePiece(tile);
+      } else {
+        validMoves = [];
+        selectPiece(touchedPiece);
+      }
+    } else if (selectedPiece == null) {
+      // No piece selected — try to select this one.
+      selectPiece(touchedPiece);
+    } else {
+      // A piece is selected — try to move to this tile.
+      movePiece(tile);
+    }
+  }
 
   void selectPiece(ChessPiece? piece) {
     if (piece != null) {
@@ -77,53 +111,33 @@ class GameController {
 
   void _aiMove() async {
     if (appModel.gameOver) return;
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
     if (appModel.gameOver) return;
-    if (appModel.aiEngine == 'stockfish') {
-      final movesStr = board.moveStack
-          .map((mso) => StockfishService.msoToUCI(mso))
-          .join(' ');
-      aiOperation = CancelableOperation.fromFuture(
-        StockfishService.instance.getBestMove(movesStr, appModel.aiDifficulty),
-      );
-      aiOperation?.value.then((move) {
-        if (move == null ||
-            (move.from == 0 && move.to == 0) ||
-            appModel.gameOver) {
-          appModel.endGame();
-        } else {
-          validMoves = [];
-          var meta = board.push(move, getMeta: true);
-          appModel.audio.playMovedSound();
-          _moveCompletion(meta, changeTurn: !meta.promotion);
-          if (meta.promotion) {
-            promote(move.promotionType);
-          }
+    final movesStr =
+        board.moveStack.map((mso) => StockfishService.msoToUCI(mso)).join(' ');
+    aiOperation = CancelableOperation.fromFuture(
+      StockfishService.instance.getBestMove(movesStr, appModel.aiDifficulty),
+    );
+    aiOperation?.value.then((move) {
+      if (move == null ||
+          (move.from == 0 && move.to == 0) ||
+          appModel.gameOver) {
+        appModel.endGame();
+      } else {
+        validMoves = [];
+        var meta = board.push(move, getMeta: true);
+        appModel.audio.playMovedSound();
+        _moveCompletion(meta, changeTurn: !meta.promotion);
+        if (meta.promotion) {
+          // board.push() already embedded the promotion type and called
+          // addPromotedPiece(), so we only need to sync the meta list
+          // and finalize the turn — calling promote() would double-add
+          // the piece to queensForPlayer/rooksForPlayer.
+          appModel.moveMetaList.last.promotionType = move.promotionType;
+          _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
         }
-      });
-    } else {
-      final args = AIMoveArgs(
-        board: board,
-        aiPlayer: appModel.aiTurn,
-        aiDifficulty: appModel.aiDifficulty,
-      );
-      aiOperation = CancelableOperation.fromFuture(
-        compute(calculateAIMove, args),
-      );
-      aiOperation?.value.then((move) {
-        if (move == null || appModel.gameOver) {
-          appModel.endGame();
-        } else {
-          validMoves = [];
-          var meta = board.push(move, getMeta: true);
-          appModel.audio.playMovedSound();
-          _moveCompletion(meta, changeTurn: !meta.promotion);
-          if (meta.promotion) {
-            promote(move.promotionType);
-          }
-        }
-      });
-    }
+      }
+    });
   }
 
   void cancelAIMove() {

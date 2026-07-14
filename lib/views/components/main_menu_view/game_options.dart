@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
 import 'game_options/ai_difficulty_picker.dart';
-import 'game_options/ai_engine_picker.dart';
 import 'game_options/game_mode_picker.dart';
 import 'game_options/side_picker.dart';
 import 'game_options/time_limit_picker.dart';
@@ -79,13 +78,6 @@ class GameOptions extends StatelessWidget {
         ),
         const SizedBox(height: 16),
         if (appModel.playerCount == 1) ...[
-          GlassPanel(
-            child: AIEnginePicker(
-              appModel.aiEngine,
-              appModel.setAIEngine,
-            ),
-          ),
-          const SizedBox(height: 16),
           GlassPanel(
             child: AIDifficultyPicker(
               appModel.aiDifficulty,
