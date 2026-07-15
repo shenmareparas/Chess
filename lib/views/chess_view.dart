@@ -235,10 +235,10 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 ),
               ),
 
-              // ── Confetti Overlay ───────────────────────────────────────
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
+                  key: ValueKey('${theme.name}_confetti'),
                   confettiController: _confettiController,
                   blastDirectionality: BlastDirectionality.explosive,
                   shouldLoop: false,

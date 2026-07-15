@@ -4,6 +4,8 @@ import 'package:async/async.dart';
 import '../model/app_model.dart';
 import '../model/player.dart';
 
+import 'checkmate_isolate.dart';
+import 'checkmate_worker.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
@@ -25,10 +27,20 @@ class GameController {
   int? warningTile;
   Move? latestMove;
 
+  /// Persistent background isolate for checkmate detection.
+  /// Spawned once at construction so it is warm before the first move.
+  CheckmateWorker? _checkmateWorker;
+
   /// Called when the view needs to refresh sprites (e.g. after game restore).
   void Function({bool snap})? onSnapSprites;
 
-  GameController(this.appModel) {}
+  GameController(this.appModel) {
+    // Spawn the worker asynchronously so construction is synchronous.
+    // By the time the first move is played the isolate will already be warm.
+    CheckmateWorker.create().then((worker) {
+      _checkmateWorker = worker;
+    });
+  }
 
   // ── Piece Selection ──
 
@@ -280,7 +292,7 @@ class GameController {
     warningTile = null;
     var oppositeTurn = oppositePlayer(appModel.turn);
 
-    // kingInCheck is lightweight (no push/pop), keep synchronous
+    // kingInCheck is lightweight (no push/pop), keep synchronous.
     if (board.kingInCheck(oppositeTurn)) {
       meta.isCheck = true;
       checkHintTile = board.kingForPlayer(oppositeTurn)?.tile;
@@ -290,17 +302,14 @@ class GameController {
       }
     }
 
-    // Run synchronously to avoid expensive object graph serialization in Isolates
-    bool isCheckmate = board.kingInCheckmate(oppositeTurn);
-    if (isCheckmate) {
-      if (!meta.isCheck) {
-        appModel.stalemate = true;
-        meta.isStalemate = true;
-      }
-      meta.isCheck = false;
-      meta.isCheckmate = true;
-      appModel.endGame(silent: true);
-    }
+    // Capture the mover's player BEFORE changeTurn() so endGame() can
+    // determine the winner correctly even after the turn has been flipped.
+    // (Bug fix: endGame() uses `turn` to decide win/lose audio — if we call
+    // it after changeTurn() the wrong player is reported as the winner.)
+    final Player moverTurn = appModel.turn;
+
+    // Apply all non-checkmate state changes and trigger a rebuild immediately
+    // so the move animation plays without waiting for the isolate.
     if (undoing) {
       appModel.popMoveMeta(silent: true);
       appModel.undoEndGame(silent: true);
@@ -315,8 +324,39 @@ class GameController {
       appModel.changeTurn(silent: true);
     }
     selectedPiece = null;
-    // Single rebuild for all the state changes above
+    // First rebuild — shows the move immediately without blocking on checkmate.
     appModel.update();
+
+    // Offload kingInCheckmate to the persistent background isolate so the UI
+    // thread is free to render the move animation.
+    final snapshot = serializeBoardForCheckmate(board, oppositeTurn);
+    // Fall back to compute() if the worker hasn't finished initialising yet
+    // (only possible on the very first move of the very first game).
+    final bool isCheckmate = _checkmateWorker != null
+        ? await _checkmateWorker!.check(snapshot)
+        : checkmateIsolateEntry(snapshot);
+
+    // Guard: the game may have ended for another reason (e.g. timer) while the
+    // isolate was running — skip applying a stale result.
+    if (appModel.gameOver && !isCheckmate) {
+      if (appModel.isAIsTurn && !undoing && changeTurn) {
+        _aiMove();
+      }
+      return;
+    }
+
+    if (isCheckmate) {
+      if (!meta.isCheck) {
+        appModel.stalemate = true;
+        meta.isStalemate = true;
+      }
+      meta.isCheck = false;
+      meta.isCheckmate = true;
+      // Pass moverTurn so endGame() sees the winner, not the post-changeTurn
+      // loser. endGame() compares this against playerSide to play win/lose audio.
+      appModel.endGame(silent: true, winner: moverTurn);
+      appModel.update();
+    }
 
     // Trigger haptic feedback based on move outcome
     final isOpponentMove =
@@ -345,12 +385,22 @@ class GameController {
       }
     }
 
-    if (appModel.isAIsTurn && clearRedo && changeTurn) {
+    // Trigger AI if it's now the AI's turn. Use !undoing instead of clearRedo
+    // so that undoing the human's last move (which restores AI's turn) still
+    // calls _aiMove(), preventing the AI from freezing after an undo-to-AI-turn.
+    if (appModel.isAIsTurn && !undoing && changeTurn) {
       _aiMove();
     }
   }
 
   void snapSprites({bool snap = true}) {
     onSnapSprites?.call(snap: snap);
+  }
+
+  /// Releases the background checkmate isolate. Call when discarding this
+  /// controller (e.g. on new game or app dispose).
+  void dispose() {
+    _checkmateWorker?.dispose();
+    _checkmateWorker = null;
   }
 }

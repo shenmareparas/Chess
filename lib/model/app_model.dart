@@ -88,6 +88,10 @@ class AppModel extends ChangeNotifier {
   final List<MoveStackObject> historyRedoStack = [];
   Timer? _historyAnimationTimer;
 
+  /// Set to true once the essential piece-image assets have finished decoding
+  /// after runApp(). Until then, navigation to ChessView is disabled.
+  bool imagesReady = false;
+
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
   bool get isAIsTurn =>
@@ -184,6 +188,8 @@ class AppModel extends ChangeNotifier {
         playerSide = selectedSideP1;
       }
     }
+    // Dispose the previous controller's background isolate before replacing it.
+    gameController?.dispose();
     gameController = GameController(this);
     timerService.start(() => turn, () => gameOver);
 
@@ -344,15 +350,17 @@ class AppModel extends ChangeNotifier {
     });
   }
 
-  void endGame({bool silent = false}) {
+  void endGame({bool silent = false, Player? winner}) {
     if (gameOver) return;
     _gameOverInvertedState = isBoardInverted;
     gameOver = true;
 
+    final actualWinner = winner ?? turn;
+
     userWon = audio.didUserWin(
       playingWithAI: playingWithAI,
       playerSide: playerSide,
-      turn: turn,
+      turn: actualWinner,
       player1TimeLeft: player1TimeLeft.value,
       player2TimeLeft: player2TimeLeft.value,
     );
@@ -361,7 +369,7 @@ class AppModel extends ChangeNotifier {
       stalemate: stalemate,
       playingWithAI: playingWithAI,
       playerSide: playerSide,
-      turn: turn,
+      turn: actualWinner,
       player1TimeLeft: player1TimeLeft.value,
       player2TimeLeft: player2TimeLeft.value,
     );
@@ -578,6 +586,7 @@ class AppModel extends ChangeNotifier {
     _historyAnimationTimer?.cancel();
 
     // Create a fresh game and replay all moves
+    gameController?.dispose();
     gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
@@ -637,6 +646,7 @@ class AppModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    gameController?.dispose();
     StockfishService.instance.dispose();
     super.dispose();
   }

@@ -95,6 +95,10 @@ class ChessBoard {
     _initIncrementalValue();
   }
 
+  /// Creates an empty board with no pieces.
+  /// Used by [checkmateIsolateEntry] to reconstruct state from a serialized snapshot.
+  ChessBoard.blank();
+
   // ──────────────────────────────────────────────
   // Initialization
   // ──────────────────────────────────────────────
@@ -649,9 +653,7 @@ class ChessBoard {
 
   bool _kingInCheckAtTile(int tile, Player player) {
     for (var piece in piecesForPlayer(oppositePlayer(player))) {
-      if (movesForPiece(piece, legal: false).contains(tile)) {
-        return true;
-      }
+      if (_pieceAttacksTile(piece, tile)) return true;
     }
     return false;
   }
