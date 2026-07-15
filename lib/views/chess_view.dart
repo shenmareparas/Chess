@@ -151,39 +151,63 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
-                      child: Stack(
-                        alignment: Alignment.center,
+                      child: Row(
                         children: [
-                          if (appModel.playerCount == 1)
-                            Align(
+                          Expanded(
+                            child: Align(
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Stockfish L${appModel.aiDifficulty}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: theme.lightTile.withValues(alpha: 0.6),
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
+                              child: appModel.playerCount == 1
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Stockfish L${appModel.aiDifficulty}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.lightTile
+                                                .withValues(alpha: 0.6),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w500,
+                                            color: theme.lightTile
+                                                .withValues(alpha: 0.45),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(),
                             ),
+                          ),
                           GameStatus(),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder: (context) => const SettingsView(),
-                                  ),
-                                );
-                              },
-                              child: Icon(
-                                Icons.settings_rounded,
-                                color: theme.lightTile,
-                                size: 24,
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          const SettingsView(),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.settings_rounded,
+                                  color: theme.lightTile,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),

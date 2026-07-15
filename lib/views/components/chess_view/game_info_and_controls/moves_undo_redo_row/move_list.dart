@@ -21,6 +21,7 @@ class MoveList extends StatefulWidget {
 class _MoveListState extends State<MoveList> {
   final ScrollController scrollController = ScrollController();
   Timer? _holdTimer;
+  bool _isFirstScroll = true;
 
   AppModel get appModel => widget.appModel;
 
@@ -241,26 +242,35 @@ class _MoveListState extends State<MoveList> {
 
   void _scrollToSelected() {
     if (scrollController.hasClients && appModel.moveMetaList.isNotEmpty) {
-      final int selectedTurnIndex = appModel.historyViewIndex == null
-          ? ((appModel.moveMetaList.length - 1) / 2).floor()
-          : (appModel.historyViewIndex! < 0
-              ? 0
-              : (appModel.historyViewIndex! / 2).floor());
+      double targetOffset;
+      if (appModel.historyViewIndex == null) {
+        targetOffset = scrollController.position.maxScrollExtent;
+      } else {
+        final int selectedTurnIndex = appModel.historyViewIndex! < 0
+            ? 0
+            : (appModel.historyViewIndex! / 2).floor();
 
-      final double tileWidth = 132.0;
-      final double viewportWidth = scrollController.position.viewportDimension;
-      final double targetOffset = (selectedTurnIndex * tileWidth) -
-          (viewportWidth / 2) +
-          (tileWidth / 2);
+        final double tileWidth = 132.0;
+        final double viewportWidth =
+            scrollController.position.viewportDimension;
+        targetOffset = (selectedTurnIndex * tileWidth) -
+            (viewportWidth / 2) +
+            (tileWidth / 2);
+      }
 
       final double clampedOffset =
           targetOffset.clamp(0.0, scrollController.position.maxScrollExtent);
 
-      scrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (_isFirstScroll) {
+        scrollController.jumpTo(clampedOffset);
+        _isFirstScroll = false;
+      } else {
+        scrollController.animateTo(
+          clampedOffset,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     }
   }
 

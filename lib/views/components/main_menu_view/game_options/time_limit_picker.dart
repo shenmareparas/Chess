@@ -17,6 +17,8 @@ class TimeLimitPicker extends StatelessWidget {
     final TextEditingController controller = TextEditingController(
       text: isCustom ? selectedTime.toString() : '',
     );
+    String? errorMessage;
+
     showGeneralDialog<void>(
       context: context,
       barrierColor: Colors.black.withValues(alpha: 0.6),
@@ -37,120 +39,157 @@ class TimeLimitPicker extends StatelessWidget {
               animation: anim1,
               child: Container(
                 constraints: const BoxConstraints(maxWidth: 300),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Custom Timer',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFE5E2E1),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Enter custom time limit in minutes',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFFC3C8C2),
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    CupertinoTextField(
-                      controller: controller,
-                      keyboardType: TextInputType.number,
-                      autofocus: true,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 18),
-                      cursorColor: primaryColor,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          width: 1,
-                        ),
-                      ),
-                      placeholder: 'Minutes',
-                      placeholderStyle:
-                          const TextStyle(color: Colors.grey, fontSize: 16),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
+                child: StatefulBuilder(
+                  builder: (dialogContext, setState) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Cancel Button
-                        Expanded(
-                          child: CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () => Navigator.pop(dialogContext),
-                            child: Container(
-                              height: 46,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  width: 1,
-                                ),
-                              ),
-                              child: const Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFC3C8C2),
-                                ),
-                              ),
-                            ),
+                        const Text(
+                          'Custom Timer',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFE5E2E1),
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(width: 12),
-                        // Set Button
-                        Expanded(
-                          child: CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            onPressed: () {
-                              final int? val = int.tryParse(controller.text);
-                              if (val != null && val > 0) {
-                                if (setTime != null) {
-                                  setTime!(val);
-                                }
-                                Navigator.pop(dialogContext);
-                              }
-                            },
-                            child: Container(
-                              height: 46,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F0),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Enter custom time limit in minutes (1 - 180)',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFFC3C8C2),
+                            height: 1.4,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        CupertinoTextField(
+                          controller: controller,
+                          keyboardType: TextInputType.number,
+                          autofocus: true,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 18),
+                          cursorColor: primaryColor,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: errorMessage != null
+                                  ? Colors.redAccent
+                                  : Colors.white.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                          ),
+                          placeholder: 'Minutes',
+                          placeholderStyle:
+                              const TextStyle(color: Colors.grey, fontSize: 16),
+                          onChanged: (_) {
+                            if (errorMessage != null) {
+                              setState(() {
+                                errorMessage = null;
+                              });
+                            }
+                          },
+                        ),
+                        if (errorMessage != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.redAccent,
+                              fontSize: 12,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            // Cancel Button
+                            Expanded(
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: Container(
+                                  height: 46,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.1),
+                                      width: 1,
+                                    ),
                                   ),
-                                ],
-                              ),
-                              child: const Text(
-                                'Set',
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black,
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFFC3C8C2),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
+                            const SizedBox(width: 12),
+                            // Set Button
+                            Expanded(
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  final int? val =
+                                      int.tryParse(controller.text);
+                                  if (val == null) {
+                                    setState(() {
+                                      errorMessage =
+                                          'Please enter a valid number';
+                                    });
+                                  } else if (val < 1 || val > 180) {
+                                    setState(() {
+                                      errorMessage =
+                                          'Time must be between 1 and 180 minutes';
+                                    });
+                                  } else {
+                                    if (setTime != null) {
+                                      setTime!(val);
+                                    }
+                                    Navigator.pop(dialogContext);
+                                  }
+                                },
+                                child: Container(
+                                  height: 46,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFF5F5F0),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Text(
+                                    'Set',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ),

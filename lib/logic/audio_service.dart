@@ -42,7 +42,7 @@ class AudioService {
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;
     } else {
-      winner = turn;
+      winner = turn == Player.player1 ? Player.player2 : Player.player1;
     }
 
     if (playingWithAI) {
@@ -70,7 +70,7 @@ class AudioService {
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;
     } else {
-      winner = turn;
+      winner = turn == Player.player1 ? Player.player2 : Player.player1;
     }
     if (playingWithAI) {
       return winner == playerSide;

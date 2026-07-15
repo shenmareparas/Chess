@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../model/app_model.dart';
+import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'chess_piece_sprite.dart';
@@ -281,7 +282,21 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
   }
 
+  double _getPieceRotation() {
+    if (appModel.enableRotation) {
+      return -currentRotation;
+    }
+    if (appModel.enablePieceRotation &&
+        !appModel.playingWithAI &&
+        appModel.playerCount == 2 &&
+        appModel.turn == Player.player2) {
+      return math.pi;
+    }
+    return 0;
+  }
+
   void _drawPieces(Canvas canvas) {
+    final pieceRotation = _getPieceRotation();
     for (var piece in _allPieces) {
       double x = (spriteMap[piece]?.spriteX ?? 0) + 5;
       double y = (spriteMap[piece]?.spriteY ?? 0) + 5;
@@ -289,7 +304,7 @@ class ChessGame extends FlameGame with TapCallbacks {
 
       canvas.save();
       canvas.translate(x + size / 2, y + size / 2);
-      canvas.rotate(-currentRotation);
+      canvas.rotate(pieceRotation);
       canvas.translate(-(x + size / 2), -(y + size / 2));
 
       spriteMap[piece]?.sprite?.render(

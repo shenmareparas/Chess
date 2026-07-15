@@ -44,6 +44,7 @@ class AppModel extends ChangeNotifier {
   bool get showHints => prefs.showHints;
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
+  bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
   String get aiEngine => prefs.aiEngine;
   int get timerIncrement => prefs.timerIncrement;
@@ -210,10 +211,14 @@ class AppModel extends ChangeNotifier {
     gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
+    historyViewIndex = null;
     notifyListeners();
   }
 
   void saveAndExitChessView() {
+    if (historyViewIndex != null) {
+      setHistoryViewIndex(null, snap: true, playAudio: false);
+    }
     saveGameState();
     gameController?.cancelAIMove();
     timerService.stop();
@@ -243,6 +248,11 @@ class AppModel extends ChangeNotifier {
       bool showLatestMoveHighlight = true}) {
     if (gameController == null) return;
     _historyAnimationTimer?.cancel();
+
+    // Clear any selection/hints on history navigation.
+    gameController!.selectedPiece = null;
+    gameController!.validMoves = const [];
+    gameController!.warningTile = null;
 
     // If returning to current live state (latest move or null)
     if (index == null || index == moveMetaList.length - 1) {
@@ -292,6 +302,8 @@ class AppModel extends ChangeNotifier {
       } else {
         gameController!.latestMove = null;
       }
+    } else {
+      gameController!.latestMove = null;
     }
     if (playAudio) {
       audio.playMovedSound();
@@ -400,6 +412,23 @@ class AppModel extends ChangeNotifier {
     }
   }
 
+  static int getDifficultyElo(int level) {
+    switch (level) {
+      case 1:
+        return 400;
+      case 2:
+        return 800;
+      case 3:
+        return 1200;
+      case 4:
+        return 1600;
+      case 5:
+        return 2000;
+      default:
+        return 1200;
+    }
+  }
+
   void setPlayerSide(Player? side) {
     if (side != null) {
       haptic.light();
@@ -463,6 +492,11 @@ class AppModel extends ChangeNotifier {
   void setEnableRotation(bool enable) {
     haptic.light();
     prefs.setEnableRotation(enable);
+  }
+
+  void setEnablePieceRotation(bool enable) {
+    haptic.light();
+    prefs.setEnablePieceRotation(enable);
   }
 
   void setAllowUndoRedo(bool allow) {
@@ -578,10 +612,9 @@ class AppModel extends ChangeNotifier {
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
       gameController!.latestMove = moveMetaList.last.move;
-      var oppositeTurn = oppositePlayer(turn);
-      if (gameController!.board.kingInCheck(oppositeTurn)) {
+      if (gameController!.board.kingInCheck(turn)) {
         gameController!.checkHintTile =
-            gameController!.board.kingForPlayer(oppositeTurn)?.tile;
+            gameController!.board.kingForPlayer(turn)?.tile;
       }
     }
 

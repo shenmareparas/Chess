@@ -12,16 +12,20 @@ class StockfishService {
   StreamSubscription? _stdoutSubscription;
   Completer<String>? _moveCompleter;
 
-  Completer<void>? _readyCompleter;
+  /// Completer that resolves once the UCI handshake (`uci` → `readyok`) has
+  /// completed for this engine instance. Null means the handshake hasn't
+  /// started yet; completed means the engine is ready to accept commands.
+  Completer<void>? _uciReadyCompleter;
 
   void init() {
     if (_engine != null) return;
     _engine = Stockfish();
+    _uciReadyCompleter = Completer<void>();
     _stdoutSubscription = _engine!.stdout.listen((line) {
       debugPrint("[Stockfish stdout] $line");
       if (line == 'readyok') {
-        if (_readyCompleter != null && !_readyCompleter!.isCompleted) {
-          _readyCompleter!.complete();
+        if (_uciReadyCompleter != null && !_uciReadyCompleter!.isCompleted) {
+          _uciReadyCompleter!.complete();
         }
       }
       if (line.startsWith('bestmove')) {
@@ -36,86 +40,101 @@ class StockfishService {
     });
   }
 
+  /// Waits for the Stockfish process to reach [StockfishState.ready] and then
+  /// performs the one-time UCI handshake (`uci` + `isready` → `readyok`).
+  /// Subsequent calls return immediately once the completer is resolved.
   Future<void> _waitUntilReady() async {
     init();
-    if (_engine!.state.value == StockfishState.ready) return;
 
-    final completer = Completer<void>();
-    void listener() {
+    // Wait for the native process to start.
+    if (_engine!.state.value != StockfishState.ready) {
+      final engineReady = Completer<void>();
+      void listener() {
+        if (_engine!.state.value == StockfishState.ready) {
+          _engine!.state.removeListener(listener);
+          if (!engineReady.isCompleted) engineReady.complete();
+        } else if (_engine!.state.value == StockfishState.error) {
+          _engine!.state.removeListener(listener);
+          if (!engineReady.isCompleted) {
+            engineReady.completeError(StateError('Stockfish engine error'));
+          }
+        }
+      }
+
+      _engine!.state.addListener(listener);
+      // Re-check in case state changed between the first check and addListener.
       if (_engine!.state.value == StockfishState.ready) {
         _engine!.state.removeListener(listener);
-        completer.complete();
-      } else if (_engine!.state.value == StockfishState.error) {
-        _engine!.state.removeListener(listener);
-        completer.completeError(StateError('Stockfish engine error'));
+      } else {
+        await engineReady.future.timeout(const Duration(seconds: 10));
       }
     }
 
-    _engine!.state.addListener(listener);
-
-    if (_engine!.state.value == StockfishState.ready) {
-      _engine!.state.removeListener(listener);
-      return;
+    // Perform the UCI handshake exactly once per engine instance.
+    if (!_uciReadyCompleter!.isCompleted) {
+      debugPrint('[Stockfish stdin] uci');
+      _engine!.stdin = 'uci';
+      debugPrint('[Stockfish stdin] isready');
+      _engine!.stdin = 'isready';
     }
 
-    return completer.future.timeout(const Duration(seconds: 5));
+    // Await the single shared completer — all callers that arrive before
+    // `readyok` will suspend here and wake up together.
+    await _uciReadyCompleter!.future.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        debugPrint(
+            '[Stockfish] WARNING: readyok never received — proceeding anyway');
+      },
+    );
   }
 
   Future<Move> getBestMove(String movesString, int difficulty) async {
     try {
       await _waitUntilReady();
-    } catch (_) {
-      return Move(0, 0);
-    }
-
-    _readyCompleter = Completer<void>();
-    debugPrint("[Stockfish stdin] uci");
-    _engine!.stdin = 'uci';
-    debugPrint("[Stockfish stdin] isready");
-    _engine!.stdin = 'isready';
-
-    try {
-      await _readyCompleter!.future.timeout(const Duration(seconds: 3));
     } catch (e) {
-      debugPrint("[Stockfish] isready timeout or error: $e");
+      debugPrint('[Stockfish] Engine not ready: $e');
+      return Move(0, 0);
     }
 
     _moveCompleter = Completer<String>();
 
-    int skillLevel = 0;
-    int depth = 5;
     int moveTime = 300;
-    switch (difficulty) {
-      case 1:
-        skillLevel = 3;
-        depth = 3;
-        moveTime = 150;
-        break;
-      case 2:
-        skillLevel = 7;
-        depth = 5;
-        moveTime = 300;
-        break;
-      case 3:
-        skillLevel = 12;
-        depth = 8;
-        moveTime = 600;
-        break;
-      case 4:
-        skillLevel = 16;
-        depth = 12;
-        moveTime = 1200;
-        break;
-      case 5:
-        skillLevel = 20;
-        depth = 16;
-        moveTime = 2000;
-        break;
+    int depth = 5;
+    if (difficulty == 1) {
+      moveTime = 100;
+      depth = 1;
+      debugPrint(
+          "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      _engine!.stdin = 'setoption name UCI_LimitStrength value false';
+      debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      _engine!.stdin = 'setoption name Skill Level value 0';
+    } else if (difficulty == 2) {
+      moveTime = 200;
+      depth = 3;
+      debugPrint(
+          "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      _engine!.stdin = 'setoption name UCI_LimitStrength value false';
+      debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      _engine!.stdin = 'setoption name Skill Level value 0';
+    } else {
+      int elo = 1200;
+      if (difficulty == 3) {
+        elo = 1200;
+        moveTime = 400;
+      } else if (difficulty == 4) {
+        elo = 1600;
+        moveTime = 800;
+      } else if (difficulty == 5) {
+        elo = 2000;
+        moveTime = 1500;
+      }
+      debugPrint(
+          "[Stockfish stdin] setoption name UCI_LimitStrength value true");
+      _engine!.stdin = 'setoption name UCI_LimitStrength value true';
+      debugPrint("[Stockfish stdin] setoption name UCI_Elo value $elo");
+      _engine!.stdin = 'setoption name UCI_Elo value $elo';
     }
-
-    debugPrint(
-        "[Stockfish stdin] setoption name Skill Level value $skillLevel");
-    _engine!.stdin = 'setoption name Skill Level value $skillLevel';
 
     if (movesString.trim().isEmpty) {
       debugPrint("[Stockfish stdin] position startpos");
@@ -125,8 +144,13 @@ class StockfishService {
       _engine!.stdin = 'position startpos moves $movesString';
     }
 
-    debugPrint("[Stockfish stdin] go depth $depth movetime $moveTime");
-    _engine!.stdin = 'go depth $depth movetime $moveTime';
+    if (difficulty <= 2) {
+      debugPrint("[Stockfish stdin] go depth $depth movetime $moveTime");
+      _engine!.stdin = 'go depth $depth movetime $moveTime';
+    } else {
+      debugPrint("[Stockfish stdin] go movetime $moveTime");
+      _engine!.stdin = 'go movetime $moveTime';
+    }
 
     try {
       final uciMove = await _moveCompleter!.future.timeout(
@@ -244,5 +268,6 @@ class StockfishService {
       _moveCompleter!.completeError(StateError('Disposed'));
     }
     _moveCompleter = null;
+    _uciReadyCompleter = null;
   }
 }

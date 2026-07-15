@@ -12,17 +12,17 @@ class AIDifficultyPicker extends StatelessWidget {
   String _getDifficultyTier(int level) {
     switch (level) {
       case 1:
-        return 'Novice';
+        return 'Beginner (400 ELO)';
       case 2:
-        return 'Easy';
+        return 'Casual (800 ELO)';
       case 3:
-        return 'Medium';
+        return 'Intermediate (1200 ELO)';
       case 4:
-        return 'Hard';
+        return 'Advanced (1600 ELO)';
       case 5:
-        return 'Master';
+        return 'Master (2000 ELO)';
       default:
-        return 'Medium';
+        return 'Intermediate (1200 ELO)';
     }
   }
 

@@ -40,12 +40,14 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Tap the latest move to return to the live, active game state.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
--   **Move Hints**: Visual indicators for valid moves
+-   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
 -   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
 -   **Alternating Board Notation**: Algebraic coordinates on the board borders dynamically use the alternating background tile color (e.g. dark text on light tiles, light text on dark tiles) for crisp legibility.
 -   **Sound Effects**: Audio feedback for piece movements using a pooled `AudioPool` for rapid playback
 -   **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates
--   **Board Rotation**: Automatic board rotation based on turn (configurable)
+-   **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
+-   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
+-   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates)
 -   **Promotion Handling**: Full support for glassmorphic pawn promotion dialog (wrapped in `PopScope(canPop: false)` to require an explicit piece choice)
 -   **Check Detection**: Visual indicators for check and checkmate
 -   **Stalemate Detection**: Proper game-end condition handling
@@ -54,7 +56,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
--   **5 Difficulty Levels**: Mapped to customizable engine skill levels (0-20), search depths (3-16), and response time thresholds.
+-   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
 -   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
 

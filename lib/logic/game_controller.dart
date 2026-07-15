@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:async/async.dart';
 
 import '../model/app_model.dart';
+import '../model/player.dart';
 
 import 'chess_board.dart';
 import 'chess_piece.dart';
@@ -113,10 +115,62 @@ class GameController {
     if (appModel.gameOver) return;
     await Future.delayed(const Duration(milliseconds: 500));
     if (appModel.gameOver) return;
+
+    final int difficulty = appModel.aiDifficulty;
+    bool playRandomMove = false;
+    if (difficulty == 1) {
+      playRandomMove = math.Random().nextDouble() < 0.60;
+    } else if (difficulty == 2) {
+      playRandomMove = math.Random().nextDouble() < 0.25;
+    }
+
+    if (playRandomMove) {
+      final List<Move> allLegalMoves = [];
+      final activePieces = appModel.turn == Player.player1
+          ? board.player1Pieces
+          : board.player2Pieces;
+      for (var piece in activePieces) {
+        final destinations = board.movesForPiece(piece);
+        for (var dest in destinations) {
+          allLegalMoves.add(Move(piece.tile, dest));
+        }
+      }
+
+      if (allLegalMoves.isNotEmpty) {
+        final randomMove =
+            allLegalMoves[math.Random().nextInt(allLegalMoves.length)];
+        final movingPiece = board.tiles[randomMove.from];
+        if (movingPiece != null && movingPiece.type == ChessPieceType.pawn) {
+          if ((movingPiece.player == Player.player1 &&
+                  randomMove.to ~/ 8 == 7) ||
+              (movingPiece.player == Player.player2 &&
+                  randomMove.to ~/ 8 == 0)) {
+            randomMove.promotionType = ChessPieceType.queen;
+          }
+        }
+
+        final int moveTime = difficulty == 1 ? 100 : 200;
+        await Future.delayed(Duration(milliseconds: moveTime));
+        if (appModel.gameOver ||
+            !appModel.isAIsTurn ||
+            appModel.historyViewIndex != null) return;
+
+        validMoves = [];
+        var meta = board.push(randomMove, getMeta: true);
+        appModel.audio.playMovedSound();
+        _moveCompletion(meta, changeTurn: !meta.promotion);
+        if (meta.promotion) {
+          appModel.moveMetaList.last.promotionType = randomMove.promotionType;
+          _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
+        }
+        return;
+      }
+    }
+
     final movesStr =
         board.moveStack.map((mso) => StockfishService.msoToUCI(mso)).join(' ');
     aiOperation = CancelableOperation.fromFuture(
-      StockfishService.instance.getBestMove(movesStr, appModel.aiDifficulty),
+      StockfishService.instance.getBestMove(movesStr, difficulty),
     );
     aiOperation?.value.then((move) {
       if (move == null ||
@@ -129,10 +183,6 @@ class GameController {
         appModel.audio.playMovedSound();
         _moveCompletion(meta, changeTurn: !meta.promotion);
         if (meta.promotion) {
-          // board.push() already embedded the promotion type and called
-          // addPromotedPiece(), so we only need to sync the meta list
-          // and finalize the turn — calling promote() would double-add
-          // the piece to queensForPlayer/rooksForPlayer.
           appModel.moveMetaList.last.promotionType = move.promotionType;
           _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
         }

@@ -14,6 +14,22 @@ typedef _StatusState = ({
   int aiDifficulty,
 });
 
+class StatusTheme {
+  final Color bgColor;
+  final Color borderColor;
+  final Color textColor;
+  final Color dotColor;
+  final bool showProgress;
+
+  const StatusTheme({
+    required this.bgColor,
+    required this.borderColor,
+    required this.textColor,
+    required this.dotColor,
+    this.showProgress = false,
+  });
+}
+
 class GameStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -29,21 +45,22 @@ class GameStatus extends StatelessWidget {
       builder: (context, state, child) {
         final appModel = Provider.of<AppModel>(context, listen: false);
         final theme = appModel.theme;
+        final statusTheme = _getStatusTheme(state, theme);
         final statusText = _getStatus(state).toUpperCase();
 
         return Center(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0x28201F1F),
+              color: statusTheme.bgColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0x14F5F5F0),
+                color: statusTheme.borderColor,
                 width: 1.0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: theme.lightTile.withValues(alpha: 0.08),
+                  color: statusTheme.dotColor.withValues(alpha: 0.08),
                   blurRadius: 12,
                   spreadRadius: 1,
                 ),
@@ -52,24 +69,22 @@ class GameStatus extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _PulseDot(color: theme.lightTile),
+                _PulseDot(color: statusTheme.dotColor),
                 const SizedBox(width: 8),
                 Text(
                   statusText,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: theme.lightTile,
+                    color: statusTheme.textColor,
                     letterSpacing: 1.5,
                   ),
                 ),
-                if (!state.gameOver &&
-                    state.playerCount == 1 &&
-                    state.isAIsTurn) ...[
+                if (statusTheme.showProgress) ...[
                   const SizedBox(width: 8),
                   CupertinoActivityIndicator(
                     radius: 8,
-                    color: theme.lightTile,
+                    color: statusTheme.textColor,
                   ),
                 ],
               ],
@@ -78,6 +93,70 @@ class GameStatus extends StatelessWidget {
         );
       },
     );
+  }
+
+  StatusTheme _getStatusTheme(_StatusState s, dynamic theme) {
+    if (!s.gameOver) {
+      if (s.playerCount == 1) {
+        if (s.isAIsTurn) {
+          return StatusTheme(
+            bgColor: const Color(0x28201F1F),
+            borderColor: const Color(0x14F5F5F0),
+            textColor: theme.lightTile,
+            dotColor: theme.lightTile,
+            showProgress: true,
+          );
+        } else {
+          return StatusTheme(
+            bgColor: const Color(0x28201F1F),
+            borderColor: const Color(0x14F5F5F0),
+            textColor: theme.lightTile,
+            dotColor: theme.lightTile,
+          );
+        }
+      } else {
+        return StatusTheme(
+          bgColor: const Color(0x28201F1F),
+          borderColor: const Color(0x14F5F5F0),
+          textColor: theme.lightTile,
+          dotColor: theme.lightTile,
+        );
+      }
+    } else {
+      if (s.stalemate) {
+        return const StatusTheme(
+          bgColor: Color(0x1F9E9E9E),
+          borderColor: Color(0x3D9E9E9E),
+          textColor: Color(0xFFB0BEC5),
+          dotColor: Color(0xFFB0BEC5),
+        );
+      } else {
+        if (s.playerCount == 1) {
+          if (s.isAIsTurn) {
+            return const StatusTheme(
+              bgColor: Color(0x1F4CAF50),
+              borderColor: Color(0x3D4CAF50),
+              textColor: Color(0xFF81C784),
+              dotColor: Color(0xFF81C784),
+            );
+          } else {
+            return const StatusTheme(
+              bgColor: Color(0x1FF44336),
+              borderColor: Color(0x3DF44336),
+              textColor: Color(0xFFE57373),
+              dotColor: Color(0xFFE57373),
+            );
+          }
+        } else {
+          return const StatusTheme(
+            bgColor: Color(0x1F4CAF50),
+            borderColor: Color(0x3D4CAF50),
+            textColor: Color(0xFF81C784),
+            dotColor: Color(0xFF81C784),
+          );
+        }
+      }
+    }
   }
 
   String _getStatus(_StatusState s) {

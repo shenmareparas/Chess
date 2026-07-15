@@ -36,16 +36,18 @@ class MovesUndoRedoRow extends StatelessWidget {
                         child: RoundedIconButton(
                           CupertinoIcons.chevron_left,
                           onPressed: (appModel.historyViewIndex != null &&
-                                  appModel.historyViewIndex! >= 0)
+                                  appModel.historyViewIndex! > 0)
                               ? () {
                                   appModel.haptic.light();
                                   final int currentTurnIndex =
                                       (appModel.historyViewIndex! / 2).floor();
-                                  if (currentTurnIndex > 0) {
+                                  if (appModel.historyViewIndex == 1) {
+                                    appModel.selectHistoryTurn(0);
+                                  } else if (currentTurnIndex > 0) {
                                     appModel.selectHistoryTurn(
                                         currentTurnIndex - 1);
                                   } else {
-                                    appModel.setHistoryViewIndex(-1,
+                                    appModel.setHistoryViewIndex(0,
                                         snap: true, playAudio: false);
                                   }
                                 }
