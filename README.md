@@ -235,11 +235,11 @@ The chess application interfaces with the **Stockfish Chess Engine** using the *
 1. **UCI Protocol Integration**: The app sends standard chess commands (`position startpos moves ...`, `go depth X movetime Y`) to the engine's standard input and listens to its standard output for search information and the computed `bestmove`.
 2. **Readiness Synchronization**: To prevent race conditions, the engine uses event-driven synchronization (`readyok` response completers) before executing position evaluations.
 3. **Engine Settings mapping**:
-    - **Level 1 (Novice)**: Skill level 3, depth 3, thinking time limit 150ms.
-    - **Level 2 (Easy)**: Skill level 7, depth 5, thinking time limit 300ms.
-    - **Level 3 (Medium)**: Skill level 12, depth 8, thinking time limit 600ms.
-    - **Level 4 (Hard)**: Skill level 16, depth 12, thinking time limit 1200ms.
-    - **Level 5 (Master)**: Skill level 20, depth 16, thinking time limit 2000ms.
+    - **Level 1 (Beginner - 400 ELO)**: Skill Level 0, depth 1, search time limit 100ms. Features a 60% chance of playing a random legal move (blunder pass).
+    - **Level 2 (Casual - 800 ELO)**: Skill Level 0, depth 3, search time limit 200ms. Features a 25% chance of playing a random legal move (blunder pass).
+    - **Level 3 (Intermediate - 1200 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 1200, search time limit 400ms.
+    - **Level 4 (Advanced - 1600 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 1600, search time limit 800ms.
+    - **Level 5 (Master - 2000 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 2000, search time limit 1500ms.
 
 **Learn more**: [Stockfish Chess Engine Official Website](https://stockfishchess.org/)
 

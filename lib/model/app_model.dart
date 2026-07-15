@@ -388,6 +388,8 @@ class AppModel extends ChangeNotifier {
 
   void undoEndGame({bool silent = false}) {
     gameOver = false;
+    stalemate = false;
+    userWon = false;
     _gameOverInvertedState = null;
     if (!silent) notifyListeners();
   }
