@@ -8,6 +8,7 @@ class Toggle extends StatelessWidget {
   final bool? toggle;
   final Function(bool)? setFunc;
   final IconData icon;
+  final bool enabled;
 
   const Toggle(
     this.label, {
@@ -16,6 +17,7 @@ class Toggle extends StatelessWidget {
     this.subtitle,
     this.toggle,
     this.setFunc,
+    this.enabled = true,
   }) : super(key: key);
 
   @override
@@ -23,53 +25,57 @@ class Toggle extends StatelessWidget {
     final appModel = Provider.of<AppModel>(context, listen: false);
     final theme = appModel.theme;
     final isActive = toggle ?? false;
+    final opacity = enabled ? 1.0 : 0.4;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: isActive
-                ? theme.lightTile
-                : const Color(0xFFC3C8C2).withValues(alpha: 0.6),
-            size: 24,
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFFE5E2E1),
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
+    return Opacity(
+      opacity: opacity,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isActive
+                  ? theme.lightTile
+                  : const Color(0xFFC3C8C2).withValues(alpha: 0.6),
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
                   Text(
-                    subtitle!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: const Color(0xFFC3C8C2).withValues(alpha: 0.7),
+                    label,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFFE5E2E1),
                     ),
                   ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: const Color(0xFFC3C8C2).withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-          Switch.adaptive(
-            value: isActive,
-            activeThumbColor: theme.lightTile,
-            activeTrackColor: theme.lightTile.withValues(alpha: 0.5),
-            inactiveTrackColor: const Color(0xFF353534),
-            onChanged: setFunc,
-          ),
-        ],
+            Switch.adaptive(
+              value: isActive,
+              activeThumbColor: theme.lightTile,
+              activeTrackColor: theme.lightTile.withValues(alpha: 0.5),
+              inactiveTrackColor: const Color(0xFF353534),
+              onChanged: enabled ? setFunc : null,
+            ),
+          ],
+        ),
       ),
     );
   }

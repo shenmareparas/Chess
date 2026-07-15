@@ -5,6 +5,8 @@ import 'game_options/ai_difficulty_picker.dart';
 import 'game_options/game_mode_picker.dart';
 import 'game_options/side_picker.dart';
 import 'game_options/time_limit_picker.dart';
+import 'game_options/timer_increment_picker.dart';
+import 'game_options/timer_mode_picker.dart';
 
 class GameOptions extends StatelessWidget {
   final AppModel appModel;
@@ -104,9 +106,55 @@ class GameOptions extends StatelessWidget {
         GlassPanel(
           child: TimeLimitPicker(
             selectedTime: appModel.timeLimit,
-            setTime: appModel.setTimeLimit,
+            setTime: (val) {
+              appModel.setTimeLimit(val);
+              if (val != null && val > 0) {
+                Future.delayed(const Duration(milliseconds: 150), () {
+                  if (scrollController != null &&
+                      scrollController!.hasClients) {
+                    scrollController!.animateTo(
+                      scrollController!.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOut,
+                    );
+                  }
+                });
+              }
+            },
           ),
         ),
+        if (appModel.timeLimit > 0) ...[
+          const SizedBox(height: 16),
+          GlassPanel(
+            child: TimerIncrementPicker(
+              appModel.timerIncrement,
+              (val) {
+                appModel.setTimerIncrement(val);
+                if (val > 0) {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (scrollController != null &&
+                        scrollController!.hasClients) {
+                      scrollController!.animateTo(
+                        scrollController!.position.maxScrollExtent,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOut,
+                      );
+                    }
+                  });
+                }
+              },
+            ),
+          ),
+          if (appModel.timerIncrement > 0) ...[
+            const SizedBox(height: 16),
+            GlassPanel(
+              child: TimerModePicker(
+                appModel.timerMode,
+                appModel.setTimerMode,
+              ),
+            ),
+          ],
+        ],
         const SizedBox(height: 20),
       ],
     );

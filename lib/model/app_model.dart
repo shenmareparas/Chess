@@ -8,10 +8,13 @@ import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/haptic_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
+import '../logic/move_calculation/move_classes/move_stack_object.dart';
 import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
+import '../logic/stockfish_service.dart';
 import '../logic/timer_service.dart';
 import 'app_themes.dart';
+import 'game_state.dart';
 import 'player.dart';
 import 'user_preferences.dart';
 
@@ -41,7 +44,11 @@ class AppModel extends ChangeNotifier {
   bool get showHints => prefs.showHints;
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
+  bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
+  String get aiEngine => prefs.aiEngine;
+  int get timerIncrement => prefs.timerIncrement;
+  String get timerMode => prefs.timerMode;
   AppTheme get theme => prefs.theme;
   int get themeIndex => prefs.themeIndex;
   int get pieceThemeIndex => prefs.pieceThemeIndex;
@@ -54,19 +61,41 @@ class AppModel extends ChangeNotifier {
   set player2TimeLeft(ValueNotifier<Duration> val) =>
       timerService.player2TimeLeft.value = val.value;
 
-  // ── Game State ──
+  // ── Game State (Model) ──
+  /// Pure game-outcome data, separated from ViewModel concerns.
+  /// Access via the proxy getters below; do not reach into [_gameState] directly
+  /// from outside this class.
+  final GameState _gameState = GameState();
+
+  // Proxy getters/setters — all external code reads appModel.gameOver etc.
+  // as before; we just delegate to the model layer now.
+  bool get gameOver => _gameState.gameOver;
+  set gameOver(bool v) => _gameState.gameOver = v;
+  bool get stalemate => _gameState.stalemate;
+  set stalemate(bool v) => _gameState.stalemate = v;
+  bool get userWon => _gameState.userWon;
+  set userWon(bool v) => _gameState.userWon = v;
+  Player get turn => _gameState.turn;
+  set turn(Player v) => _gameState.turn = v;
+  List<MoveMeta> get moveMetaList => _gameState.moveMetaList;
+  set moveMetaList(List<MoveMeta> v) => _gameState.moveMetaList = v;
+
+  // ── ViewModel-layer game state ──
   GameController? gameController;
-  bool gameOver = false;
-  bool stalemate = false;
   bool promotionRequested = false;
   bool moveListUpdated = false;
-  bool userWon = false;
-  Player turn = Player.player1;
-  List<MoveMeta> moveMetaList = [];
+  int? historyViewIndex;
+  final List<MoveStackObject> historyRedoStack = [];
+  Timer? _historyAnimationTimer;
+
+  /// Set to true once the essential piece-image assets have finished decoding
+  /// after runApp(). Until then, navigation to ChessView is disabled.
+  bool imagesReady = false;
 
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
-  bool get isAIsTurn => playingWithAI && (turn == aiTurn);
+  bool get isAIsTurn =>
+      playingWithAI && (turn == aiTurn) && (historyViewIndex == null);
   bool get playingWithAI => playerCount == 1;
 
   // ── Save Debounce ──
@@ -130,12 +159,14 @@ class AppModel extends ChangeNotifier {
     timerService.stop();
     GameStateStorage.clearGameState();
     _gameOverInvertedState = null;
-    gameOver = false;
-    stalemate = false;
-    userWon = false;
-    turn = Player.player1;
-    moveMetaList = [];
-    timerService.configure(timeLimit);
+    _gameState.reset(); // reset all pure-model game state in one call
+    promotionRequested = false;
+    moveListUpdated = false;
+    historyViewIndex = null;
+    historyRedoStack.clear();
+    _historyAnimationTimer?.cancel();
+    timerService.configure(timeLimit,
+        incrementSeconds: timerIncrement, mode: timerMode);
     audio.enabled = prefs.soundEnabled;
     // Reset undo bank for the new game.
     _availableUndos = 1;
@@ -157,6 +188,8 @@ class AppModel extends ChangeNotifier {
         playerSide = selectedSideP1;
       }
     }
+    // Dispose the previous controller's background isolate before replacing it.
+    gameController?.dispose();
     gameController = GameController(this);
     timerService.start(() => turn, () => gameOver);
 
@@ -184,10 +217,14 @@ class AppModel extends ChangeNotifier {
     gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
+    historyViewIndex = null;
     notifyListeners();
   }
 
   void saveAndExitChessView() {
+    if (historyViewIndex != null) {
+      setHistoryViewIndex(null, snap: true, playAudio: false);
+    }
     saveGameState();
     gameController?.cancelAIMove();
     timerService.stop();
@@ -210,15 +247,120 @@ class AppModel extends ChangeNotifier {
     saveGameState();
   }
 
-  void endGame({bool silent = false}) {
+  void setHistoryViewIndex(int? index,
+      {int? visualIndex,
+      bool snap = true,
+      bool playAudio = false,
+      bool showLatestMoveHighlight = true}) {
+    if (gameController == null) return;
+    _historyAnimationTimer?.cancel();
+
+    // Clear any selection/hints on history navigation.
+    gameController!.selectedPiece = null;
+    gameController!.validMoves = const [];
+    gameController!.warningTile = null;
+
+    // If returning to current live state (latest move or null)
+    if (index == null || index == moveMetaList.length - 1) {
+      while (historyRedoStack.isNotEmpty) {
+        gameController!.board.pushMSO(historyRedoStack.removeLast());
+      }
+      historyViewIndex = null;
+      moveListUpdated = true;
+      if (moveMetaList.isNotEmpty) {
+        gameController!.latestMove = moveMetaList.last.move;
+      } else {
+        gameController!.latestMove = null;
+      }
+      if (!gameOver) {
+        timerService.resume();
+        if (isAIsTurn) {
+          gameController!.triggerAIMove();
+        }
+      }
+      if (playAudio) {
+        audio.playMovedSound();
+      }
+      gameController!.snapSprites(snap: snap);
+      notifyListeners();
+      return;
+    }
+
+    // Do not pause game during review
+    gameController?.cancelAIMove();
+
+    int targetLength = index + 1;
+    if (gameController!.board.moveStack.length > targetLength) {
+      while (gameController!.board.moveStack.length > targetLength) {
+        historyRedoStack.add(gameController!.board.pop());
+      }
+    } else if (gameController!.board.moveStack.length < targetLength) {
+      while (gameController!.board.moveStack.length < targetLength &&
+          historyRedoStack.isNotEmpty) {
+        gameController!.board.pushMSO(historyRedoStack.removeLast());
+      }
+    }
+
+    historyViewIndex = visualIndex ?? index;
+    if (index >= 0 && index < moveMetaList.length) {
+      if (showLatestMoveHighlight) {
+        gameController!.latestMove = moveMetaList[index].move;
+      } else {
+        gameController!.latestMove = null;
+      }
+    } else {
+      gameController!.latestMove = null;
+    }
+    if (playAudio) {
+      audio.playMovedSound();
+    }
+    gameController!.snapSprites(snap: snap);
+    notifyListeners();
+  }
+
+  void selectHistoryTurn(int turnIndex) {
+    _historyAnimationTimer?.cancel();
+
+    final int whiteMoveIndex = turnIndex * 2;
+    final int? blackMoveIndex =
+        (turnIndex * 2 + 1 < moveMetaList.length) ? (turnIndex * 2 + 1) : null;
+
+    // 1. Instantly snap to the position before White's move (index - 1, or -1 for the very start)
+    // Pass visualIndex: whiteMoveIndex so that the UI immediately highlights the selected turn tile.
+    // Set showLatestMoveHighlight: false so the board does not show the previous turn's highlight squares.
+    final int beforeWhiteIndex = whiteMoveIndex > 0 ? (whiteMoveIndex - 1) : -1;
+    setHistoryViewIndex(beforeWhiteIndex,
+        visualIndex: whiteMoveIndex,
+        snap: true,
+        playAudio: false,
+        showLatestMoveHighlight: false);
+
+    // 2. Schedule White's move to play with animation (snap = false) after a brief frame delay
+    _historyAnimationTimer = Timer(const Duration(milliseconds: 250), () {
+      setHistoryViewIndex(whiteMoveIndex,
+          visualIndex: whiteMoveIndex, snap: false, playAudio: true);
+
+      // 3. Schedule Black's move to play after the White move finishes sliding
+      if (blackMoveIndex != null) {
+        _historyAnimationTimer = Timer(const Duration(milliseconds: 600), () {
+          setHistoryViewIndex(blackMoveIndex,
+              visualIndex: blackMoveIndex, snap: false, playAudio: true);
+        });
+      }
+    });
+  }
+
+  void endGame({bool silent = false, Player? winner}) {
     if (gameOver) return;
     _gameOverInvertedState = isBoardInverted;
     gameOver = true;
 
+    final actualWinner = winner ?? turn;
+
     userWon = audio.didUserWin(
       playingWithAI: playingWithAI,
       playerSide: playerSide,
-      turn: turn,
+      turn: actualWinner,
       player1TimeLeft: player1TimeLeft.value,
       player2TimeLeft: player2TimeLeft.value,
     );
@@ -227,7 +369,7 @@ class AppModel extends ChangeNotifier {
       stalemate: stalemate,
       playingWithAI: playingWithAI,
       playerSide: playerSide,
-      turn: turn,
+      turn: actualWinner,
       player1TimeLeft: player1TimeLeft.value,
       player2TimeLeft: player2TimeLeft.value,
     );
@@ -246,6 +388,8 @@ class AppModel extends ChangeNotifier {
 
   void undoEndGame({bool silent = false}) {
     gameOver = false;
+    stalemate = false;
+    userWon = false;
     _gameOverInvertedState = null;
     if (!silent) notifyListeners();
   }
@@ -275,6 +419,23 @@ class AppModel extends ChangeNotifier {
       haptic.light();
       aiDifficulty = difficulty;
       notifyListeners();
+    }
+  }
+
+  static int getDifficultyElo(int level) {
+    switch (level) {
+      case 1:
+        return 400;
+      case 2:
+        return 800;
+      case 3:
+        return 1200;
+      case 4:
+        return 1600;
+      case 5:
+        return 2000;
+      default:
+        return 1200;
     }
   }
 
@@ -343,6 +504,11 @@ class AppModel extends ChangeNotifier {
     prefs.setEnableRotation(enable);
   }
 
+  void setEnablePieceRotation(bool enable) {
+    haptic.light();
+    prefs.setEnablePieceRotation(enable);
+  }
+
   void setAllowUndoRedo(bool allow) {
     haptic.light();
     prefs.setAllowUndoRedo(allow);
@@ -352,6 +518,16 @@ class AppModel extends ChangeNotifier {
     prefs.setHapticEnabled(enabled);
     haptic.enabled = enabled;
     haptic.light();
+  }
+
+  void setTimerIncrement(int increment) {
+    haptic.light();
+    prefs.setTimerIncrement(increment);
+  }
+
+  void setTimerMode(String mode) {
+    haptic.light();
+    prefs.setTimerMode(mode);
   }
 
   void showAchievements() => PlayGamesService.instance.showAchievements();
@@ -407,8 +583,12 @@ class AppModel extends ChangeNotifier {
     stalemate = state['stalemate'] as bool;
     turn = Player.player1;
     moveMetaList = [];
+    historyViewIndex = null;
+    historyRedoStack.clear();
+    _historyAnimationTimer?.cancel();
 
     // Create a fresh game and replay all moves
+    gameController?.dispose();
     gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
@@ -425,6 +605,14 @@ class AppModel extends ChangeNotifier {
     player2TimeLeft.value =
         Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
+    // Restore timer increment and mode
+    final savedIncrement = (state['timerIncrement'] as int?) ?? 0;
+    prefs.setTimerIncrement(savedIncrement);
+    final savedMode = (state['timerMode'] as String?) ?? 'increment';
+    prefs.setTimerMode(savedMode);
+    timerService.configure(state['timeLimit'] as int,
+        incrementSeconds: savedIncrement, mode: savedMode);
+
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
     stalemate = state['stalemate'] as bool;
@@ -435,10 +623,9 @@ class AppModel extends ChangeNotifier {
     // Update visual state from last move
     if (moveMetaList.isNotEmpty) {
       gameController!.latestMove = moveMetaList.last.move;
-      var oppositeTurn = oppositePlayer(turn);
-      if (gameController!.board.kingInCheck(oppositeTurn)) {
+      if (gameController!.board.kingInCheck(turn)) {
         gameController!.checkHintTile =
-            gameController!.board.kingForPlayer(oppositeTurn)?.tile;
+            gameController!.board.kingForPlayer(turn)?.tile;
       }
     }
 
@@ -457,5 +644,12 @@ class AppModel extends ChangeNotifier {
       animateBoardRotation = true;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    gameController?.dispose();
+    StockfishService.instance.dispose();
+    super.dispose();
   }
 }

@@ -2,7 +2,7 @@
 
 # ♟️ AI Chess - Flutter Chess Game
 
-A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against an AI with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, haptic feedback, and local preference persistence with game-state save/resume.
+A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against the world-class **Stockfish Chess Engine** with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, haptic feedback, and local preference persistence with game-state save/resume.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B?logo=flutter)](https://flutter.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?logo=dart)](https://dart.dev)
@@ -17,7 +17,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Single Player**: Play against an intelligent AI opponent with 5 difficulty levels
 -   **Two Player Mode**: Offline multiplayer on the same device, with per-player side selection
 -   **Side Selection**: Choose to play as white, black, or random
--   **Timed Games**: Optional time controls for competitive play
+-   **Timed Games**: Optional time controls for competitive play, supporting Fischer Increment and USCF Simple Delay modes
 -   **Game Save & Resume**: Exit mid-game and resume from the exact same position later
 
 ### 🎨 Customization
@@ -28,36 +28,38 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
+    -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
+    -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move.
+    -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Piece images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
     -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
-    -   **Sequential Asset Preloading**: Remaining piece theme images are preloaded sequentially (one theme at a time, 100ms apart) after a 3-second startup delay, protecting main-thread frame metrics.
+    -   **Sequential Asset Preloading**: Remaining piece theme images are preloaded sequentially (one image at a time, yielding to the event loop, 100ms gap) after a 3-second startup delay, protecting main-thread frame metrics.
     -   **Isolated Background Repaints**: Heavy background paint layers (dot grids and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
 
 ### 🎯 Gameplay Features
 
--   **Move History**: Track all moves throughout the game using Standard Algebraic Notation (SAN)
+-   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
--   **Move Hints**: Visual indicators for valid moves
--   **Board Notation**: Algebraic notation (a-h, 1-8) coordinates on the board borders
+-   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
+-   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
+-   **Alternating Board Notation**: Algebraic coordinates on the board borders dynamically use the alternating background tile color (e.g. dark text on light tiles, light text on dark tiles) for crisp legibility.
 -   **Sound Effects**: Audio feedback for piece movements using a pooled `AudioPool` for rapid playback
 -   **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates
--   **Board Rotation**: Automatic board rotation based on turn (configurable)
+-   **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
+-   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
+-   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates)
 -   **Promotion Handling**: Full support for glassmorphic pawn promotion dialog (wrapped in `PopScope(canPop: false)` to require an explicit piece choice)
 -   **Check Detection**: Visual indicators for check and checkmate
 -   **Stalemate Detection**: Proper game-end condition handling
 
 ### 🤖 AI Features
 
--   **5 Difficulty Levels**: From beginner to expert (depth 1-5)
--   **Minimax Algorithm**: With alpha-beta pruning optimization
--   **Iterative Deepening**: Ensures best move ordering
--   **Quiescence Search**: Avoids horizon effect for captures
--   **Null Move Pruning & LMR**: Advanced search optimizations
--   **Opening Book**: Pre-calculated moves for distinct openings
--   **Transposition Table Caching**: Reuses computed position evaluation records with optimized `softClear()` to eliminate redundant sub-tree searches without GC pressure
--   **High-Performance Attack Detection**: Fast pseudo-legal attack logic and pre-built board layout structures to reduce garbage collection overhead
--   **Cancellable AI Tasks**: AI compute runs in an isolate via `CancelableOperation` so it can be cleanly cancelled on game restart or exit
+-   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
+-   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
+-   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
+-   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
+-   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
 
 ### 🏆 Achievements
 
@@ -88,6 +90,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
+-   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
 
 ## 📦 Installation
 
@@ -155,14 +158,15 @@ To design, preview, and bulk-export Google Play Store screenshots:
 lib/
 ├── main.dart                       # App entry point; preloads assets, initializes AdMob & Play Games
 ├── model/
-│   ├── app_model.dart             # Central state: game lifecycle, undo bank, save/restore, prefs delegation
+│   ├── app_model.dart             # Central state/ViewModel; delegates to services/prefs
+│   ├── game_state.dart            # Pure Model holding active game outcome/ply state
 │   ├── app_themes.dart            # 8 board/UI theme definitions (sorted alphabetically)
 │   ├── user_preferences.dart      # SharedPreferences wrapper; defines PIECE_THEMES constant
 │   └── player.dart                # Player enum (player1, player2, random)
 ├── logic/
-│   ├── chess_board.dart           # Flame-based board representation and rendering
-│   ├── chess_game.dart            # Flame Game subclass; wires sprites to board state
-│   ├── game_controller.dart       # Move orchestration, AI trigger, undo/redo, promotion, haptics
+│   ├── chess_board.dart           # Pure chess rules engine: board state, push/pop moves, check detection
+│   ├── chess_game.dart            # Flame rendering layer: board drawing, sprites, tap routing
+│   ├── game_controller.dart       # Logic ViewModel: move orchestration, AI, undo/redo, promotion, haptics
 │   ├── chess_piece.dart           # ChessPiece model and ChessPieceType enum
 │   ├── chess_piece_sprite.dart    # Flame Sprite component for chess pieces
 │   ├── chess_constants.dart       # Shared constants (e.g. PROMOTIONS list)
@@ -173,17 +177,14 @@ lib/
 │   ├── haptic_service.dart        # Centralized haptic feedback (selection/light/medium/heavy/vibrate)
 │   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo")
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
+│   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
 │   └── move_calculation/
-│       ├── ai_move_calculation.dart   # Minimax + alpha-beta pruning (runs in isolate)
-│       ├── ai_move_args.dart          # Isolate argument container
-│       ├── openings.dart              # Opening book
-│       ├── piece_square_tables.dart   # Position evaluation tables
-│       ├── transposition_table.dart   # TT with softClear() for GC efficiency
+│       ├── piece_square_tables.dart   # squareValue() for incremental eval (undo/pop correctness)
 │       └── move_classes/
 │           ├── move.dart              # Move (from, to, promotionType)
 │           ├── move_meta.dart         # Move metadata (isCheck, isCheckmate, isStalemate, promotion)
-│           ├── move_stack_object.dart # Board move-stack entry
-│           ├── move_and_value.dart    # AI search result container
+│           ├── move_stack_object.dart # Board move-stack entry (push/pop undo/redo)
+│           ├── move_and_value.dart    # MVV-LVA capture priority container
 │           └── direction.dart         # Direction enum for sliding pieces
 └── views/
     ├── main_menu_view.dart        # Main menu: game mode, difficulty, time, side selection
@@ -209,6 +210,8 @@ lib/
         │       ├── game_mode_picker.dart       # 1P / 2P mode selection
         │       ├── ai_difficulty_picker.dart   # Difficulty 1-5 selection
         │       ├── time_limit_picker.dart      # Time control selection
+        │       ├── timer_increment_picker.dart # Time increment value selection
+        │       ├── timer_mode_picker.dart      # Time control mode (Fischer increment vs USCF delay)
         │       ├── side_picker.dart            # White / Black / Random side picker
         │       └── picker.dart                 # Shared picker primitive
         ├── settings_view/
@@ -223,33 +226,22 @@ lib/
             └── bottom_padding.dart            # Safe-area bottom padding
 ```
 
-## 🧠 AI Algorithm
+## 🧠 AI Engine & Algorithm
 
-The chess AI uses the **Minimax algorithm with alpha-beta pruning** to determine optimal moves:
+The chess application interfaces with the **Stockfish Chess Engine** using the **UCI (Universal Chess Interface)** protocol via Dart FFI.
 
 ### How It Works
 
-1. **Minimax Algorithm**: Evaluates the game tree by simulating moves and counter-moves
-2. **Alpha-Beta Pruning**: Optimizes search by eliminating branches that won't affect the final decision
-3. **Advanced Optimizations**: Utilizes Quiescence Search, Null Move Pruning, and Late Move Reductions (LMR)
-4. **Depth-Based Difficulty**:
-    - Level 1: Depth 1 (1 half-move lookahead)
-    - Level 2: Depth 2 (1 full move)
-    - Level 3: Depth 3 (1.5 full moves)
-    - Level 4: Depth 4 (2 full moves)
-    - Level 5: Depth 5 (2.5 full moves)
+1. **UCI Protocol Integration**: The app sends standard chess commands (`position startpos moves ...`, `go depth X movetime Y`) to the engine's standard input and listens to its standard output for search information and the computed `bestmove`.
+2. **Readiness Synchronization**: To prevent race conditions, the engine uses event-driven synchronization (`readyok` response completers) before executing position evaluations.
+3. **Engine Settings mapping**:
+    - **Level 1 (Beginner - 400 ELO)**: Skill Level 0, depth 1, search time limit 100ms. Features a 60% chance of playing a random legal move (blunder pass).
+    - **Level 2 (Casual - 800 ELO)**: Skill Level 0, depth 3, search time limit 200ms. Features a 25% chance of playing a random legal move (blunder pass).
+    - **Level 3 (Intermediate - 1200 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 1200, search time limit 400ms.
+    - **Level 4 (Advanced - 1600 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 1600, search time limit 800ms.
+    - **Level 5 (Master - 2000 ELO)**: Natively leverages `UCI_LimitStrength` and target `UCI_Elo` of 2000, search time limit 1500ms.
 
-### Position Evaluation
-
-The AI evaluates positions based on:
-
--   Material advantage (piece values)
--   Piece positioning and mobility
--   King safety
--   Pawn structure
--   Control of center squares
-
-**Learn more**: [Alpha-Beta Pruning on Wikipedia](https://en.wikipedia.org/wiki/Alpha–beta_pruning)
+**Learn more**: [Stockfish Chess Engine Official Website](https://stockfishchess.org/)
 
 ## ⚙️ Configuration
 

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../model/app_model.dart';
 import '../../../model/app_themes.dart';
@@ -23,7 +24,16 @@ class MainMenuButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = appModel.theme;
+    // Rebuild only when imagesReady flips — avoids unnecessary rebuilds from
+    // other AppModel changes (move meta, timers, etc.)
+    final imagesReady = Selector<AppModel, bool>(
+      selector: (_, m) => m.imagesReady,
+      builder: (context, ready, _) => _buildButtons(context, theme, ready),
+    );
+    return imagesReady;
+  }
 
+  Widget _buildButtons(BuildContext context, AppTheme theme, bool ready) {
     return Container(
       width: double.infinity,
       child: Column(
@@ -34,6 +44,7 @@ class MainMenuButtons extends StatelessWidget {
               isPrimary: false,
               theme: theme,
               secondaryAlpha: 0.45,
+              ready: ready,
               onPressed: () {
                 appModel.haptic.light();
                 Navigator.push(
@@ -58,6 +69,7 @@ class MainMenuButtons extends StatelessWidget {
             label: 'Start Game',
             isPrimary: true,
             theme: theme,
+            ready: ready,
             onPressed: () {
               appModel.haptic.light();
               Navigator.push(
@@ -86,6 +98,7 @@ class MainMenuButtons extends StatelessWidget {
     required bool isPrimary,
     required AppTheme theme,
     required VoidCallback onPressed,
+    required bool ready,
     double secondaryAlpha = 0.12,
   }) {
     final isAndroid = defaultTargetPlatform == TargetPlatform.android;
@@ -100,16 +113,19 @@ class MainMenuButtons extends StatelessWidget {
             isPrimary ? primaryBg : secondaryBg) ==
         Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF241A00);
+    final disabledTextColor = textColor.withValues(alpha: 0.45);
 
     return Container(
       width: double.infinity,
       height: 54,
       decoration: BoxDecoration(
-        color: isPrimary ? primaryBg : secondaryBg,
+        color: isPrimary
+            ? primaryBg.withValues(alpha: ready ? 1.0 : 0.55)
+            : secondaryBg,
         borderRadius: BorderRadius.circular(30),
         border:
             isPrimary ? null : Border.all(color: secondaryBorder, width: 1.5),
-        boxShadow: isPrimary
+        boxShadow: (isPrimary && ready)
             ? [
                 BoxShadow(
                   color: primaryBg.withValues(alpha: 0.3),
@@ -121,17 +137,27 @@ class MainMenuButtons extends StatelessWidget {
       ),
       child: CupertinoButton(
         padding: EdgeInsets.zero,
-        onPressed: onPressed,
+        // Null onPressed disables the button visually and functionally.
+        onPressed: ready ? onPressed : null,
         child: Center(
-          child: Text(
-            label.toUpperCase(),
-            style: TextStyle(
-              color: textColor,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.5,
-            ),
-          ),
+          child: ready
+              ? Text(
+                  label.toUpperCase(),
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.5,
+                  ),
+                )
+              : SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: disabledTextColor,
+                  ),
+                ),
         ),
       ),
     );

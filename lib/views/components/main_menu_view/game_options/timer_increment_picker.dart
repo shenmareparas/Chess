@@ -2,37 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../model/app_model.dart';
 
-class AIDifficultyPicker extends StatelessWidget {
-  final int aiDifficulty;
-  final Function(int?) setFunc;
+class TimerIncrementPicker extends StatelessWidget {
+  final int selectedIncrement;
+  final Function(int) setFunc;
 
-  const AIDifficultyPicker(this.aiDifficulty, this.setFunc, {Key? key})
+  const TimerIncrementPicker(this.selectedIncrement, this.setFunc, {Key? key})
       : super(key: key);
-
-  String _getDifficultyTier(int level) {
-    switch (level) {
-      case 1:
-        return 'Beginner (400 ELO)';
-      case 2:
-        return 'Casual (800 ELO)';
-      case 3:
-        return 'Intermediate (1200 ELO)';
-      case 4:
-        return 'Advanced (1600 ELO)';
-      case 5:
-        return 'Master (2000 ELO)';
-      default:
-        return 'Intermediate (1200 ELO)';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<AppModel>(context).theme;
     final primaryColor = theme.lightTile;
     final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
-    final badgeColor = theme.moveHint.withValues(alpha: 1.0);
-    final badgeBgColor = theme.moveHint.withValues(alpha: 0.12);
 
     final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
     final isDarkBg =
@@ -45,43 +26,27 @@ class AIDifficultyPicker extends StatelessWidget {
     final inactiveTextColor =
         isDarkBg ? const Color(0x99C3C8C2) : const Color(0x99313030);
 
-    final String tierLabel = _getDifficultyTier(aiDifficulty);
+    final List<MapEntry<int, String>> options = [
+      const MapEntry(0, 'None'),
+      const MapEntry(3, '3s'),
+      const MapEntry(5, '5s'),
+      const MapEntry(7, '7s'),
+      const MapEntry(10, '10s'),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with title and tier badge
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'AI DIFFICULTY',
-              style: TextStyle(
-                color: primaryColor,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1.5,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: badgeBgColor,
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                tierLabel,
-                style: TextStyle(
-                  color: badgeColor,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
+        Text(
+          'INCREMENT',
+          style: TextStyle(
+            color: primaryColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.5,
+          ),
         ),
         const SizedBox(height: 12),
-        // Selection Row
         Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
@@ -90,26 +55,28 @@ class AIDifficultyPicker extends StatelessWidget {
             border: Border.all(color: trackBorderColor, width: 1),
           ),
           child: Row(
-            children: List.generate(5, (index) {
-              final level = index + 1;
-              final isSelected = aiDifficulty == level;
+            children: options.map((entry) {
+              final int value = entry.key;
+              final String label = entry.value;
+              final bool isSelected = selectedIncrement == value;
+
               return Expanded(
                 child: GestureDetector(
-                  onTap: () => setFunc(level),
+                  onTap: () => setFunc(value),
                   behavior: HitTestBehavior.opaque,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     alignment: Alignment.center,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected ? activeBgColor : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '$level',
+                      label,
                       style: TextStyle(
                         color: isSelected ? primaryColor : inactiveTextColor,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontWeight:
                             isSelected ? FontWeight.w600 : FontWeight.w500,
                       ),
@@ -117,7 +84,7 @@ class AIDifficultyPicker extends StatelessWidget {
                   ),
                 ),
               );
-            }),
+            }).toList(),
           ),
         ),
       ],

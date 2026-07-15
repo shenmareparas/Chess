@@ -5,6 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../model/app_model.dart';
+import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'chess_piece_sprite.dart';
@@ -48,10 +49,38 @@ class ChessGame extends FlameGame with TapCallbacks {
   List<ChessPiece> _allPieces = [];
 
   ChessGame(this.controller, this.appModel) {
-    controller.onSnapSprites = () => snapSprites();
-    // width and tileSize are calculated in onGameResize
-    for (var piece
-        in controller.board.player1Pieces + controller.board.player2Pieces) {
+    controller.onSnapSprites = ({bool snap = true}) => snapSprites(snap: snap);
+    // Gather all pieces that exist in the active lists as well as captured pieces in move stacks.
+    // This ensures that when review mode restores captured pieces, they have initialized sprites.
+    final Set<ChessPiece> allUniquePieces = {};
+    allUniquePieces.addAll(controller.board.player1Pieces);
+    allUniquePieces.addAll(controller.board.player2Pieces);
+    for (var mso in controller.board.moveStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+    for (var mso in controller.board.redoStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+    for (var mso in appModel.historyRedoStack) {
+      if (mso.takenPiece != null) {
+        allUniquePieces.add(mso.takenPiece!);
+      }
+      if (mso.enPassantPiece != null) {
+        allUniquePieces.add(mso.enPassantPiece!);
+      }
+    }
+
+    for (var piece in allUniquePieces) {
       spriteMap[piece] = ChessPieceSprite(piece, appModel.pieceTheme);
     }
     _rebuildPieceCache();
@@ -96,31 +125,11 @@ class ChessGame extends FlameGame with TapCallbacks {
 
   // ── Input Handling ──
 
+  /// Converts the tap position to a board tile and delegates to the controller.
+  /// The Flame layer has zero routing logic — it is a pure renderer + input forwarder.
   void onTapDown(TapDownEvent event) {
-    if (appModel.gameOver || !(appModel.isAIsTurn)) {
-      var tile = _vector2ToTile(event.localPosition);
-      var touchedPiece = board.tiles[tile];
-      if (touchedPiece == selectedPiece) {
-        validMoves = [];
-        selectedPiece = null;
-        appModel.haptic.selection();
-      } else {
-        if (selectedPiece != null &&
-            touchedPiece != null &&
-            touchedPiece.player == selectedPiece?.player) {
-          if (validMoves.contains(tile)) {
-            controller.movePiece(tile);
-          } else {
-            validMoves = [];
-            controller.selectPiece(touchedPiece);
-          }
-        } else if (selectedPiece == null) {
-          controller.selectPiece(touchedPiece);
-        } else {
-          controller.movePiece(tile);
-        }
-      }
-    }
+    if (appModel.historyViewIndex != null) return;
+    controller.handleTap(_vector2ToTile(event.localPosition));
   }
 
   // ── Rendering ──
@@ -249,10 +258,12 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
   }
 
-  void snapSprites() {
+  void snapSprites({bool snap = true}) {
     _rebuildPieceCache();
-    for (var piece in _allPieces) {
-      spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
+    if (snap) {
+      for (var piece in _allPieces) {
+        spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
+      }
     }
   }
 
@@ -271,7 +282,21 @@ class ChessGame extends FlameGame with TapCallbacks {
     }
   }
 
+  double _getPieceRotation() {
+    if (appModel.enableRotation) {
+      return -currentRotation;
+    }
+    if (appModel.enablePieceRotation &&
+        !appModel.playingWithAI &&
+        appModel.playerCount == 2 &&
+        appModel.turn == Player.player2) {
+      return math.pi;
+    }
+    return 0;
+  }
+
   void _drawPieces(Canvas canvas) {
+    final pieceRotation = _getPieceRotation();
     for (var piece in _allPieces) {
       double x = (spriteMap[piece]?.spriteX ?? 0) + 5;
       double y = (spriteMap[piece]?.spriteY ?? 0) + 5;
@@ -279,7 +304,7 @@ class ChessGame extends FlameGame with TapCallbacks {
 
       canvas.save();
       canvas.translate(x + size / 2, y + size / 2);
-      canvas.rotate(-currentRotation);
+      canvas.rotate(pieceRotation);
       canvas.translate(-(x + size / 2), -(y + size / 2));
 
       spriteMap[piece]?.sprite?.render(

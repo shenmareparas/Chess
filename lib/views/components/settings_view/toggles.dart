@@ -23,15 +23,24 @@ class Toggles extends StatelessWidget {
       child: Column(
         children: [
           Toggle(
-            'Board Rotation (2P)',
+            'Auto-Rotate Board (2P)',
             icon: Icons.sync,
             toggle: appModel.enableRotation,
             setFunc: appModel.setEnableRotation,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
-            'Show Hints',
-            icon: Icons.lightbulb_outline_rounded,
+            'Auto-Rotate Pieces (2P)',
+            icon: Icons.rotate_left_rounded,
+            toggle:
+                appModel.enableRotation ? false : appModel.enablePieceRotation,
+            setFunc: appModel.setEnablePieceRotation,
+            enabled: !appModel.enableRotation,
+          ),
+          Divider(height: 1, color: themeColor, thickness: 1),
+          Toggle(
+            'Move Hints & Highlights',
+            icon: Icons.track_changes_rounded,
             toggle: appModel.showHints,
             setFunc: appModel.setShowHints,
           ),

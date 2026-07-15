@@ -7,6 +7,7 @@ import '../../../../model/app_themes.dart';
 
 class TimerWidget extends StatelessWidget {
   final ValueListenable<Duration> timeLeft;
+  final ValueListenable<int>? delayLeft;
   final bool isActive;
   final String label;
   final AppTheme theme;
@@ -14,6 +15,7 @@ class TimerWidget extends StatelessWidget {
   const TimerWidget({
     Key? key,
     required this.timeLeft,
+    this.delayLeft,
     required this.isActive,
     required this.label,
     required this.theme,
@@ -104,19 +106,45 @@ class TimerWidget extends StatelessWidget {
                         const SizedBox(width: 6),
                       ],
                       Expanded(
-                        child: Text(
-                          label.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 9.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.2,
-                            color: isActive
-                                ? (isLowTime
-                                    ? const Color(0xFFFC5C5C)
-                                    : theme.lightTile)
-                                : theme.lightTile.withValues(alpha: 0.45),
-                          ),
-                        ),
+                        child: delayLeft == null
+                            ? Text(
+                                label.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                  color: isActive
+                                      ? (isLowTime
+                                          ? const Color(0xFFFC5C5C)
+                                          : theme.lightTile)
+                                      : theme.lightTile.withValues(alpha: 0.45),
+                                ),
+                              )
+                            : ValueListenableBuilder<int>(
+                                valueListenable: delayLeft!,
+                                builder: (context, delayVal, child) {
+                                  final showDelay = isActive && delayVal > 0;
+                                  final displayLabel = showDelay
+                                      ? '${label.toUpperCase()} [DELAY: ${(delayVal / 1000).toStringAsFixed(1)}s]'
+                                      : label.toUpperCase();
+                                  return Text(
+                                    displayLabel,
+                                    style: TextStyle(
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 1.2,
+                                      color: isActive
+                                          ? (isLowTime
+                                              ? const Color(0xFFFC5C5C)
+                                              : theme.lightTile)
+                                          : theme.lightTile
+                                              .withValues(alpha: 0.45),
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  );
+                                },
+                              ),
                       ),
                     ],
                   ),

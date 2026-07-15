@@ -37,7 +37,9 @@ class AudioService {
     }
 
     Player winner;
-    if (player1TimeLeft == Duration.zero) {
+    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
+      winner = turn;
+    } else if (player1TimeLeft == Duration.zero) {
       winner = Player.player2;
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;
@@ -65,7 +67,9 @@ class AudioService {
     required Duration player2TimeLeft,
   }) {
     Player winner;
-    if (player1TimeLeft == Duration.zero) {
+    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
+      winner = turn;
+    } else if (player1TimeLeft == Duration.zero) {
       winner = Player.player2;
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;

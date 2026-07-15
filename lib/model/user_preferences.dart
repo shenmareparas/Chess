@@ -30,7 +30,11 @@ class UserPreferences {
   bool showHints = true;
   bool showNotation = false;
   bool enableRotation = true;
+  bool enablePieceRotation = true;
   bool hapticEnabled = false;
+  String aiEngine = 'stockfish';
+  int timerIncrement = 0;
+  String timerMode = 'increment';
 
   List<String> get pieceThemes => sortedPieceThemes;
 
@@ -60,8 +64,13 @@ class UserPreferences {
     showHints = _prefs!.getBool('showHints') ?? true;
     showNotation = _prefs!.getBool('showNotation') ?? false;
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
+    enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
+    aiEngine = 'stockfish';
+    _prefs!.setString('aiEngine', 'stockfish');
+    timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
+    timerMode = _prefs!.getString('timerMode') ?? 'increment';
     onChanged?.call();
   }
 
@@ -114,6 +123,13 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setEnablePieceRotation(bool enable) async {
+    enablePieceRotation = enable;
+    _prefs ??= await SharedPreferences.getInstance();
+    _prefs!.setBool('enablePieceRotation', enable);
+    onChanged?.call();
+  }
+
   Future<void> setAllowUndoRedo(bool allow) async {
     allowUndoRedo = allow;
     _prefs ??= await SharedPreferences.getInstance();
@@ -128,6 +144,20 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setTimerIncrement(int increment) async {
+    timerIncrement = increment;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setInt('timerIncrement', increment);
+    onChanged?.call();
+  }
+
+  Future<void> setTimerMode(String mode) async {
+    timerMode = mode;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setString('timerMode', mode);
+    onChanged?.call();
+  }
+
   Future<void> resetToDefaults() async {
     themeName = 'Forest Mint';
     pieceTheme = 'Classic';
@@ -136,8 +166,12 @@ class UserPreferences {
     showHints = true;
     showNotation = false;
     enableRotation = true;
+    enablePieceRotation = true;
     allowUndoRedo = true;
     hapticEnabled = false;
+    aiEngine = 'stockfish';
+    timerIncrement = 0;
+    timerMode = 'increment';
 
     _prefs ??= await SharedPreferences.getInstance();
     await _prefs!.setString('themeName', themeName);
@@ -147,8 +181,12 @@ class UserPreferences {
     await _prefs!.setBool('showHints', showHints);
     await _prefs!.setBool('showNotation', showNotation);
     await _prefs!.setBool('enableRotation', enableRotation);
+    await _prefs!.setBool('enablePieceRotation', enablePieceRotation);
     await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
     await _prefs!.setBool('hapticEnabled', hapticEnabled);
+    await _prefs!.setString('aiEngine', aiEngine);
+    await _prefs!.setInt('timerIncrement', timerIncrement);
+    await _prefs!.setString('timerMode', timerMode);
     onChanged?.call();
   }
 }

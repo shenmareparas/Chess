@@ -151,26 +151,63 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                     Padding(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 10),
-                      child: Stack(
-                        alignment: Alignment.center,
+                      child: Row(
                         children: [
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: appModel.playerCount == 1
+                                  ? Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          'Stockfish L${appModel.aiDifficulty}',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: theme.lightTile
+                                                .withValues(alpha: 0.6),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
+                                          style: TextStyle(
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w500,
+                                            color: theme.lightTile
+                                                .withValues(alpha: 0.45),
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+                          ),
                           GameStatus(),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: CupertinoButton(
-                              padding: EdgeInsets.zero,
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  CupertinoPageRoute(
-                                    builder: (context) => const SettingsView(),
-                                  ),
-                                );
-                              },
-                              child: Icon(
-                                Icons.settings_rounded,
-                                color: theme.lightTile,
-                                size: 24,
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) =>
+                                          const SettingsView(),
+                                    ),
+                                  );
+                                },
+                                child: Icon(
+                                  Icons.settings_rounded,
+                                  color: theme.lightTile,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),
@@ -180,7 +217,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
 
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(horizontal: 0),
                         child: Center(
                           child: ChessBoardWidget(appModel, chessGame!),
                         ),
@@ -198,19 +235,14 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 ),
               ),
 
-              // ── Confetti Overlay ───────────────────────────────────────
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
+                  key: ValueKey('${theme.name}_confetti'),
                   confettiController: _confettiController,
                   blastDirectionality: BlastDirectionality.explosive,
                   shouldLoop: false,
-                  colors: [
-                    theme.lightTile,
-                    theme.darkTile,
-                    theme.moveHint,
-                    theme.latestMove,
-                  ],
+                  colors: _getConfettiColors(theme),
                 ),
               ),
             ],
@@ -218,6 +250,23 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  List<Color> _getConfettiColors(AppTheme theme) {
+    final List<Color> result = [];
+    final candidates = [
+      theme.lightTile,
+      theme.moveHint,
+      theme.latestMove,
+      theme.notation,
+    ];
+    for (final color in candidates) {
+      final hsv = HSVColor.fromColor(color);
+      final saturation = hsv.saturation > 0.6 ? hsv.saturation : 0.6;
+      final value = hsv.value > 0.8 ? hsv.value : 0.8;
+      result.add(hsv.withSaturation(saturation).withValue(value).toColor());
+    }
+    return result;
   }
 
   void _showPromotionDialog(AppModel appModel) {
