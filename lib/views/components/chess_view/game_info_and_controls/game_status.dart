@@ -12,6 +12,7 @@ typedef _StatusState = ({
   Player turn,
   bool stalemate,
   int aiDifficulty,
+  int? historyViewIndex,
 });
 
 class StatusTheme {
@@ -41,10 +42,63 @@ class GameStatus extends StatelessWidget {
         turn: m.turn,
         stalemate: m.stalemate,
         aiDifficulty: m.aiDifficulty,
+        historyViewIndex: m.historyViewIndex,
       ),
       builder: (context, state, child) {
         final appModel = Provider.of<AppModel>(context, listen: false);
         final theme = appModel.theme;
+
+        final isHistoryMode = state.historyViewIndex != null;
+        if (isHistoryMode) {
+          return Center(
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
+              onPressed: () {
+                appModel.haptic.light();
+                appModel.setHistoryViewIndex(null);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: theme.moveHint.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: theme.moveHint.withValues(alpha: 0.5),
+                    width: 1.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: theme.moveHint.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      CupertinoIcons.play_arrow_solid,
+                      color: theme.moveHint,
+                      size: 12,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'RESUME',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: theme.moveHint,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         final statusTheme = _getStatusTheme(state, theme);
         final statusText = _getStatus(state).toUpperCase();
 

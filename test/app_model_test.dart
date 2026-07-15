@@ -83,5 +83,51 @@ void main() {
           appModel.gameController!.board.kingForPlayer(Player.player1)?.tile;
       expect(appModel.gameController!.checkHintTile, whiteKingTile);
     });
+
+    test('winner is correctly determined as the active player on checkmate', () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+
+      // Simulate human as White, playing with AI, and White delivers checkmate (turn = player1)
+      appModel.playerSide = Player.player1;
+      appModel.setPlayerCount(1); // Set playing with AI (playerCount = 1)
+      appModel.turn = Player.player1;
+
+      // When game ends with time remaining on both sides
+      final userWon = appModel.audio.didUserWin(
+        playingWithAI: appModel.playingWithAI,
+        playerSide: appModel.playerSide,
+        turn: appModel.turn,
+        player1TimeLeft: const Duration(minutes: 5),
+        player2TimeLeft: const Duration(minutes: 5),
+      );
+
+      // User (White) delivered checkmate on their turn, so they should win
+      expect(userWon, isTrue);
+    });
+
+    test('winner is correctly determined as the active player on checkmate in untimed games', () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+
+      // Simulate human as White, playing with AI, and White delivers checkmate (turn = player1)
+      appModel.playerSide = Player.player1;
+      appModel.setPlayerCount(1);
+      appModel.turn = Player.player1;
+
+      // In an untimed game, both time left values are Duration.zero
+      final userWon = appModel.audio.didUserWin(
+        playingWithAI: appModel.playingWithAI,
+        playerSide: appModel.playerSide,
+        turn: appModel.turn,
+        player1TimeLeft: Duration.zero,
+        player2TimeLeft: Duration.zero,
+      );
+
+      // User (White) delivered checkmate, so they should win
+      expect(userWon, isTrue);
+    });
   });
 }

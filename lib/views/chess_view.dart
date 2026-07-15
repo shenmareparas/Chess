@@ -242,12 +242,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                   confettiController: _confettiController,
                   blastDirectionality: BlastDirectionality.explosive,
                   shouldLoop: false,
-                  colors: [
-                    theme.lightTile,
-                    theme.darkTile,
-                    theme.moveHint,
-                    theme.latestMove,
-                  ],
+                  colors: _getConfettiColors(theme),
                 ),
               ),
             ],
@@ -255,6 +250,23 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         );
       },
     );
+  }
+
+  List<Color> _getConfettiColors(AppTheme theme) {
+    final List<Color> result = [];
+    final candidates = [
+      theme.lightTile,
+      theme.moveHint,
+      theme.latestMove,
+      theme.notation,
+    ];
+    for (final color in candidates) {
+      final hsv = HSVColor.fromColor(color);
+      final saturation = hsv.saturation > 0.6 ? hsv.saturation : 0.6;
+      final value = hsv.value > 0.8 ? hsv.value : 0.8;
+      result.add(hsv.withSaturation(saturation).withValue(value).toColor());
+    }
+    return result;
   }
 
   void _showPromotionDialog(AppModel appModel) {

@@ -81,7 +81,11 @@ class UndoRedoButtons extends StatelessWidget {
   void _executeUndo() {
     if (appModel.gameController != null) {
       if (appModel.playingWithAI) {
-        appModel.gameController!.undoTwoMoves();
+        if (appModel.gameOver && appModel.userWon) {
+          appModel.gameController!.undoMove();
+        } else {
+          appModel.gameController!.undoTwoMoves();
+        }
       } else {
         appModel.gameController!.undoMove();
       }

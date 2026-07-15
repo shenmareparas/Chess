@@ -37,12 +37,14 @@ class AudioService {
     }
 
     Player winner;
-    if (player1TimeLeft == Duration.zero) {
+    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
+      winner = turn;
+    } else if (player1TimeLeft == Duration.zero) {
       winner = Player.player2;
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;
     } else {
-      winner = turn == Player.player1 ? Player.player2 : Player.player1;
+      winner = turn;
     }
 
     if (playingWithAI) {
@@ -65,12 +67,14 @@ class AudioService {
     required Duration player2TimeLeft,
   }) {
     Player winner;
-    if (player1TimeLeft == Duration.zero) {
+    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
+      winner = turn;
+    } else if (player1TimeLeft == Duration.zero) {
       winner = Player.player2;
     } else if (player2TimeLeft == Duration.zero) {
       winner = Player.player1;
     } else {
-      winner = turn == Player.player1 ? Player.player2 : Player.player1;
+      winner = turn;
     }
     if (playingWithAI) {
       return winner == playerSide;

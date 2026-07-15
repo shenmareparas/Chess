@@ -38,7 +38,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🎯 Gameplay Features
 
--   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Tap the latest move to return to the live, active game state.
+-   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
 -   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
 -   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).

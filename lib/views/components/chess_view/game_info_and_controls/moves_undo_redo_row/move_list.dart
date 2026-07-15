@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../../../logic/chess_piece.dart';
 import '../../../../../logic/move_calculation/move_classes/move_meta.dart';
@@ -22,13 +23,22 @@ class _MoveListState extends State<MoveList> {
   final ScrollController scrollController = ScrollController();
   Timer? _holdTimer;
   bool _isFirstScroll = true;
+  late FToast _fToast;
 
   AppModel get appModel => widget.appModel;
+
+  @override
+  void initState() {
+    super.initState();
+    _fToast = FToast();
+    _fToast.init(context);
+  }
 
   @override
   void dispose() {
     _holdTimer?.cancel();
     scrollController.dispose();
+    _fToast.removeCustomToast();
     super.dispose();
   }
 
@@ -41,33 +51,38 @@ class _MoveListState extends State<MoveList> {
   }
 
   void _showCopiedOverlay(BuildContext context) {
-    final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).size.height * 0.15,
-        left: 0,
-        right: 0,
-        child: Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: BoxDecoration(
-              color: CupertinoColors.systemGrey.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(10),
+    _fToast.removeCustomToast();
+    _fToast.showToast(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xCC201F1F),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: CupertinoColors.white.withValues(alpha: 0.12),
+            width: 1,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x40000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
             ),
-            child: Text(
-              'Moves copied to clipboard',
-              style: TextStyle(
-                color: CupertinoColors.white,
-                fontSize: 14,
-                decoration: TextDecoration.none,
-              ),
-            ),
+          ],
+        ),
+        child: const Text(
+          'Moves copied to clipboard',
+          style: TextStyle(
+            color: Color(0xFFE5E2E1),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.none,
           ),
         ),
       ),
+      gravity: ToastGravity.BOTTOM,
+      toastDuration: const Duration(seconds: 4),
     );
-    overlay.insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 4), () => overlayEntry.remove());
   }
 
   @override

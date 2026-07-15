@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 
 import '../../../../model/app_model.dart';
-import '../../shared/glass_panel.dart';
 import 'moves_undo_redo_row/move_list.dart';
 import 'moves_undo_redo_row/rounded_icon_button.dart';
 import 'moves_undo_redo_row/undo_redo_buttons.dart';
@@ -52,40 +51,6 @@ class MovesUndoRedoRow extends StatelessWidget {
                                   }
                                 }
                               : null,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 1,
-                        child: CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            appModel.haptic.light();
-                            appModel.setHistoryViewIndex(null);
-                          },
-                          child: GlassPanel(
-                            padding: EdgeInsets.zero,
-                            borderRadius: 14,
-                            child: Container(
-                              width: double.infinity,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: appModel.theme.moveHint
-                                    .withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(
-                                  color: appModel.theme.moveHint
-                                      .withValues(alpha: 0.5),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Icon(
-                                CupertinoIcons.play_arrow_solid,
-                                color: appModel.theme.moveHint,
-                                size: 22,
-                              ),
-                            ),
-                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
