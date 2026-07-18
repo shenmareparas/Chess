@@ -84,7 +84,8 @@ void main() {
       expect(appModel.gameController!.checkHintTile, whiteKingTile);
     });
 
-    test('winner is correctly determined as the active player on checkmate', () async {
+    test('winner is correctly determined as the active player on checkmate',
+        () async {
       final prefs = UserPreferences();
       await prefs.load();
       final appModel = AppModel(prefs: prefs);
@@ -107,7 +108,9 @@ void main() {
       expect(userWon, isTrue);
     });
 
-    test('winner is correctly determined as the active player on checkmate in untimed games', () async {
+    test(
+        'winner is correctly determined as the active player on checkmate in untimed games',
+        () async {
       final prefs = UserPreferences();
       await prefs.load();
       final appModel = AppModel(prefs: prefs);

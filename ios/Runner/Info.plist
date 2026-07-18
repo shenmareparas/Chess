@@ -13,9 +13,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>AI Chess</string>
+	<string>Chess</string>
 	<key>CFBundleDisplayName</key>
-	<string>AI Chess</string>
+	<string>Chess</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

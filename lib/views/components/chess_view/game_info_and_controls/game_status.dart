@@ -58,7 +58,8 @@ class GameStatus extends StatelessWidget {
                 appModel.setHistoryViewIndex(null);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: theme.moveHint.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),

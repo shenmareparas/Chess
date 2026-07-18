@@ -1,13 +1,13 @@
 {
   "schemaVersion": 2,
-  "appName": "AI Chess",
+  "appName": "Chess",
   "themeId": "forest-mint",
   "connectedCanvas": true,
   "locales": [
     "en"
   ],
   "locale": "en",
-  "device": "feature-graphic",
+  "device": "android",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
   "slidesByDevice": {
@@ -18,7 +18,7 @@
         "layout": "hero",
         "themeId": "forest-mint",
         "label": {
-          "en": "AI CHESS"
+          "en": "CHESS"
         },
         "headline": {
           "en": "Challenge our advanced\nchess engine"
@@ -48,7 +48,7 @@
         "layout": "device-top",
         "themeId": "midnight-slate",
         "label": {
-          "en": "OFFLINE MULTIPLAYER"
+          "en": "LOCAL MULTIPLAYER"
         },
         "headline": {
           "en": "Play with friends\nlocally on one device"
@@ -210,7 +210,7 @@
         "themeId": "forest-mint",
         "label": {},
         "headline": {
-          "en": "Smart AI\nStunning Themes\nZero Interruptions"
+          "en": "Stunning Themes\nPlay with Friends\nPower by Stockfish 18"
         },
         "screenshot": "/screenshots/android/phone/en/ai_chess.png",
         "screenshotSecondary": "/screenshots/android/phone/en/custom_themes_primary_fg.png",

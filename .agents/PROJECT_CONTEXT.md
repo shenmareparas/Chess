@@ -1,4 +1,4 @@
-# AI Chess App - Project Context
+# Chess App - Project Context
 
 ## Overview
 
@@ -26,9 +26,10 @@ A feature-rich chess application built with **Flutter** and **Flame**. Offers si
 - **`settings_view.dart`**: Theme/piece pickers, toggles (Auto-Rotate Board, Auto-Rotate Pieces, Move Hints & Highlights, Notation, Undo/Redo, Move History, Sound, Haptic), and Achievements tile. Pickers are debounced 150ms. Has a `RepaintBoundary`-isolated dot grid + glow background. Reset button shows a confirmation dialog before calling `resetSettingsToDefaults()`.
 - **`components/`**: Feature-scoped component subdirectories:
   - `chess_view/`: `PromotionDialog` (non-dismissible, `PopScope(canPop: false)`), `PromotionOption`, `ChessBoardWidget` (Flame↔Flutter bridge).
-  - `chess_view/game_info_and_controls/`: `GameStatus` (replaces status text with a RESUME button when reviewing history), `TimerWidget`, `Timers`, `MoveList` (clickable history with 2-second press-to-copy using FToast), `UndoRedoButtons`, `RestartExitButtons`, `RoundedAlertButton`.
-  - `main_menu_view/`: `GameOptions`, `MainMenuButtons` ( Start/Resume buttons show a progress spinner if `!imagesReady`), and `game_options/` pickers (mode, difficulty, time limit, increment, timer mode, side).
-  - `settings_view/`: `AppThemePicker`, `PieceThemePicker` (with 7-tap Easter egg + `FToast` countdown), `PiecePreview` (lightweight StatelessWidget).
+  - `chess_view/game_info_and_controls/`: `GameStatus` (replaces status text with a RESUME button when reviewing history), `TimerWidget`, `Timers`, `MovesUndoRedoRow` (main row layout), `RestartExitButtons`, `RoundedAlertButton`.
+  - `chess_view/game_info_and_controls/moves_undo_redo_row/`: `MoveList` (clickable history with 2-second press-to-copy using FToast), `UndoRedoButtons`, `RoundedIconButton`.
+  - `main_menu_view/`: `GameOptions`, `MainMenuButtons` (Start/Resume buttons show a progress spinner if `!imagesReady`), and `game_options/` pickers (mode, difficulty, time limit, increment, timer mode, side).
+  - `settings_view/`: `AppThemePicker`, `PieceThemePicker` (with 7-tap Easter egg + `FToast` countdown), `PiecePreview` (lightweight StatelessWidget), `Toggle` (individual settings row), `Toggles` (collection of all settings toggles).
   - `shared/`: `GlassPanel`, `RoundedButton`, `TextVariable`, `BottomPadding`.
 
 ### 3. Game Logic & Flame (`lib/logic/`)

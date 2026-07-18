@@ -1,6 +1,6 @@
 <a href='https://play.google.com/store/apps/details?id=com.shenmareparas.chess'><img alt='Chess App Icon' src="https://github.com/shenmareparas/Chess/assets/112749923/54c38dbd-7a06-416e-8419-09f27654cbcd" width = 250/></a>
 
-# ♟️ AI Chess - Flutter Chess Game
+# ♟️ Chess Offline: Play 2 Player - Flutter Chess Game
 
 A feature-rich chess application built with **Flutter** and the **Flame** engine. It supports single-player games against the world-class **Stockfish Chess Engine** with multiple difficulty levels, offline two-player play, timed games, customizable boards, multiple piece styles, sound effects, haptic feedback, and local preference persistence with game-state save/resume.
 
@@ -200,9 +200,13 @@ lib/
         │       ├── game_status.dart            # Turn/result status text
         │       ├── timer_widget.dart           # Animated countdown timer display
         │       ├── timers.dart                 # Dual-timer row
-        │       ├── moves_undo_redo_row.dart    # Undo/redo controls row
+        │       ├── moves_undo_redo_row.dart    # Undo/redo controls row (main row layout)
         │       ├── restart_exit_buttons.dart   # Restart and exit action buttons
-        │       └── rounded_alert_button.dart   # Styled alert/action button
+        │       ├── rounded_alert_button.dart   # Styled alert/action button
+        │       └── moves_undo_redo_row/
+        │           ├── move_list.dart          # Interactive move list panel
+        │           ├── rounded_icon_button.dart# Reusable icon button
+        │           └── undo_redo_buttons.dart  # Undo/redo control buttons
         ├── main_menu_view/
         │   ├── main_menu_buttons.dart          # Start / Resume game buttons
         │   ├── game_options.dart               # Options panel container
@@ -218,7 +222,8 @@ lib/
         │   ├── app_theme_picker.dart           # Board theme CupertinoPicker (debounced 150ms)
         │   ├── piece_theme_picker.dart         # Piece theme CupertinoPicker + Easter egg
         │   ├── piece_preview.dart              # Lightweight StatelessWidget piece preview
-        │   └── toggles.dart                   # All settings toggles + Achievements tile
+        │   ├── toggle.dart                     # Reusable switch row
+        │   └── toggles.dart                    # All settings toggles + Achievements tile
         └── shared/
             ├── glass_panel.dart               # Glassmorphic container with optional animation
             ├── rounded_button.dart            # Reusable rounded button

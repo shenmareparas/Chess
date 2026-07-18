@@ -1055,7 +1055,7 @@ function FeatureGraphicCanvas({
         <img src={resolved} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       </div>
     );
-  };
+  };  const isCentered = layout === "feature-graphic";
 
   return (
     <div
@@ -1067,84 +1067,16 @@ function FeatureGraphicCanvas({
         background: bgGradient,
         display: "flex",
         alignItems: "center",
-        justifyContent: layout === "feature-graphic" ? "center" : "flex-start",
-        padding: `0 ${cW * 0.08}px`,
+        justifyContent: isCentered ? "center" : "flex-start",
+        padding: isCentered ? 0 : `0 ${cW * 0.08}px`,
         color: theme.bgAlt || theme.accent,
       }}
     >
-      {layout === "feature-graphic" ? (
+      {isCentered ? (
         renderTextContent(false)
       ) : (
         <>
-          {layout !== "feature-graphic-phone-left" && renderTextContent(true)}
-
-          {/* Right side Mockups */}
-          {layout === "feature-graphic-split" && (
-            <div
-              style={{
-                position: "absolute",
-                right: cW * 0.12,
-                bottom: -cH * 0.12,
-                height: cH * 0.95,
-                aspectRatio: "9 / 19.5",
-                zIndex: 5,
-              }}
-            >
-              <AndroidPhone src={screenshot} showCameraDot={false} />
-            </div>
-          )}
-
-          {layout === "feature-graphic-mockup" && (
-            <div
-              style={{
-                position: "absolute",
-                right: cW * 0.1,
-                bottom: -cH * 0.16,
-                height: cH * 1.05,
-                aspectRatio: "9 / 19.5",
-                zIndex: 5,
-                transform: "rotate(-12deg)",
-                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.4))",
-              }}
-            >
-              <AndroidPhone src={screenshot} showCameraDot={false} />
-            </div>
-          )}
-
-          {layout === "feature-graphic-dual" && (
-            <div style={{ position: "absolute", right: cW * 0.05, bottom: -cH * 0.14, width: cW * 0.45, height: cH * 1.1, zIndex: 5 }}>
-              {/* Back Phone */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  bottom: -cH * 0.05,
-                  height: cH * 0.9,
-                  aspectRatio: "9 / 19.5",
-                  transform: "rotate(-16deg)",
-                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
-                  opacity: 0.9,
-                }}
-              >
-                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
-              </div>
-              {/* Front Phone */}
-              <div
-                style={{
-                  position: "absolute",
-                  right: cW * 0.02,
-                  bottom: 0,
-                  height: cH * 0.95,
-                  aspectRatio: "9 / 19.5",
-                  transform: "rotate(8deg)",
-                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.45))",
-                  zIndex: 6,
-                }}
-              >
-                <AndroidPhone src={screenshot} showCameraDot={false} />
-              </div>
-            </div>
-          )}
+          {renderTextContent(true)}
 
           {layout === "feature-graphic-cards" && (
             <div style={{ position: "absolute", right: cW * 0.04, bottom: -cH * 0.1, width: cW * 0.46, height: cH * 1.1, zIndex: 5 }}>
@@ -1180,29 +1112,133 @@ function FeatureGraphicCanvas({
             </div>
           )}
 
-          {layout === "feature-graphic-phone-left" && (
-            <>
-              {/* Phone Mockup on Left */}
+          {layout === "feature-graphic-triple-mockup" && (
+            <div style={{ position: "absolute", right: cW * 0.02, bottom: -cH * 0.18, width: cW * 0.52, height: cH * 1.15, zIndex: 5 }}>
+              {/* Left Phone */}
               <div
                 style={{
                   position: "absolute",
-                  left: cW * 0.1,
-                  bottom: -cH * 0.16,
-                  height: cH * 1.05,
+                  left: 0,
+                  bottom: -cH * 0.06,
+                  height: cH * 0.88,
                   aspectRatio: "9 / 19.5",
-                  zIndex: 5,
+                  transform: "rotate(-12deg)",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.82,
+                }}
+              >
+                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
+              </div>
+              {/* Right Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  bottom: -cH * 0.06,
+                  height: cH * 0.88,
+                  aspectRatio: "9 / 19.5",
                   transform: "rotate(12deg)",
-                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.4))",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.82,
+                }}
+              >
+                <AndroidPhone src={screenshotTertiary} showCameraDot={false} />
+              </div>
+              {/* Center Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  bottom: 0,
+                  height: cH * 0.98,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 18px 45px rgba(0,0,0,0.5))",
+                  zIndex: 7,
                 }}
               >
                 <AndroidPhone src={screenshot} showCameraDot={false} />
               </div>
-              
-              {/* Content on the Right */}
-              <div style={{ marginLeft: cW * 0.46, zIndex: 10 }}>
-                {renderTextContent(true)}
+            </div>
+          )}
+
+          {layout === "feature-graphic-dual-upright" && (
+            <div style={{ position: "absolute", right: cW * 0.05, bottom: -cH * 0.16, width: cW * 0.45, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: cW * 0.15,
+                  bottom: -cH * 0.08,
+                  height: cH * 0.92,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.9,
+                }}
+              >
+                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
               </div>
-            </>
+              {/* Front Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: cW * 0.02,
+                  bottom: 0,
+                  height: cH * 0.95,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.45))",
+                  zIndex: 6,
+                }}
+              >
+                <AndroidPhone src={screenshot} showCameraDot={false} />
+              </div>
+            </div>
+          )}
+
+          {layout === "feature-graphic-fan-cards" && (
+            <div style={{ position: "absolute", right: cW * 0.02, bottom: -cH * 0.1, width: cW * 0.52, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back-Most (4th Card) */}
+              {renderBareScreenshot(screenshotSecondary || screenshot, {
+                position: "absolute",
+                right: cW * 0.02,
+                top: cH * 0.06,
+                height: cH * 0.74,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(24deg)",
+                opacity: 0.65,
+              })}
+              {/* 3rd Card */}
+              {renderBareScreenshot(screenshotTertiary, {
+                position: "absolute",
+                right: cW * 0.1,
+                top: cH * 0.1,
+                height: cH * 0.78,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(8deg)",
+                opacity: 0.8,
+              })}
+              {/* 2nd Card */}
+              {renderBareScreenshot(screenshotSecondary, {
+                position: "absolute",
+                right: cW * 0.18,
+                top: cH * 0.14,
+                height: cH * 0.82,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-8deg)",
+                opacity: 0.9,
+              })}
+              {/* Front Card */}
+              {renderBareScreenshot(screenshot, {
+                position: "absolute",
+                right: cW * 0.26,
+                top: cH * 0.18,
+                height: cH * 0.86,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-20deg)",
+                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.55))",
+                zIndex: 6,
+              })}
+            </div>
           )}
         </>
       )}

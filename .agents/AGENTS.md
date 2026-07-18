@@ -1,6 +1,6 @@
-# AI Coding Guidelines for AI Chess Flutter App
+# AI Coding Guidelines for Chess Flutter App
 
-You are an AI coding assistant working on the "AI Chess" Flutter application.
+You are an AI coding assistant working on the "Chess" Flutter application.
 Please adhere to the following guidelines:
 
 ## Technologies & Architecture
@@ -22,7 +22,7 @@ Please adhere to the following guidelines:
 - `lib/model/`: `app_model.dart` (ViewModel/ChangeNotifier), `game_state.dart` (pure game data Model), `app_themes.dart`, `player.dart`, `user_preferences.dart`.
 - `lib/logic/`: `chess_board.dart` (Model — pure rules engine), `chess_game.dart` (View — Flame rendering), `game_controller.dart` (logic ViewModel), `chess_piece.dart`, `chess_constants.dart`, `shared_functions.dart`, `stockfish_service.dart`, `timer_service.dart`, `audio_service.dart`, `haptic_service.dart`, `ad_service.dart`, `in_app_update_service.dart`, `game_state_storage.dart`, `play_games_service.dart`, `chess_piece_sprite.dart`, `checkmate_isolate.dart`, `checkmate_worker.dart`.
 - `lib/logic/move_calculation/`: Move generation/validation support. Contains `move_classes/` (Move, MoveMeta, MoveStackObject, MoveAndValue, Direction) and `piece_square_tables.dart` (incremental eval for undo correctness). **No openings.dart or transposition_table.dart — those were deleted.**
-- `lib/views/`: UI screens (`main_menu_view.dart`, `chess_view.dart`, `settings_view.dart`) and `components/`.
+- `lib/views/`: UI screens (`main_menu_view.dart`, `chess_view.dart`, `settings_view.dart`) and `components/` (`shared/`, `chess_view/`, `main_menu_view/`, `settings_view/` and their respective subdirectories).
 - `lib/views/components/shared/`: `GlassPanel`, `RoundedButton`, `TextVariable`, `BottomPadding`.
 - `assets/images/pieces/<theme>/`: Piece theme folders. Name must match `formatPieceTheme(theme)` in `shared_functions.dart`.
 

@@ -49,7 +49,7 @@ class GameOptions extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                'AI Chess',
+                'Chess',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,

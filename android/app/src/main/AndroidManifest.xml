@@ -11,7 +11,7 @@
         android:xlargeScreens="false"/>
     <application
         android:name="${applicationName}"
-        android:label="AI Chess"
+        android:label="Chess"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

@@ -127,9 +127,19 @@ export function Inspector({
                 layout: next,
                 transforms: undefined,
                 screenshotSecondary:
-                  next === "two-devices" || next === "three-devices" || next === "feature-graphic-dual" ? slide.screenshotSecondary || slide.screenshot : undefined,
+                  next === "two-devices" ||
+                  next === "three-devices" ||
+                  next === "feature-graphic-triple-mockup" ||
+                  next === "feature-graphic-dual-upright" ||
+                  next === "feature-graphic-fan-cards"
+                    ? slide.screenshotSecondary || slide.screenshot
+                    : undefined,
                 screenshotTertiary:
-                  next === "three-devices" ? slide.screenshotTertiary || slide.screenshot : undefined,
+                  next === "three-devices" ||
+                  next === "feature-graphic-triple-mockup" ||
+                  next === "feature-graphic-fan-cards"
+                    ? slide.screenshotTertiary || slide.screenshot
+                    : undefined,
               });
             }}
           >
@@ -166,21 +176,21 @@ export function Inspector({
             placeholder={headlinePlaceholder}
           />
         </div>
-
         {((!isFeatureGraphic && !isNoDevice) || 
-          slide.layout === "feature-graphic-split" || 
-          slide.layout === "feature-graphic-mockup" || 
-          slide.layout === "feature-graphic-dual" || 
-          slide.layout === "feature-graphic-cards" || 
-          slide.layout === "feature-graphic-phone-left") && (
+          slide.layout === "feature-graphic-cards" ||
+          slide.layout === "feature-graphic-triple-mockup" ||
+          slide.layout === "feature-graphic-dual-upright" ||
+          slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
               {slide.layout === "two-devices" || 
                slide.layout === "three-devices" || 
-               slide.layout === "feature-graphic-dual" || 
-               slide.layout === "feature-graphic-cards"
-                ? "Main/Front device screenshot"
-                : "Screenshot"}
+               slide.layout === "feature-graphic-cards" ||
+               slide.layout === "feature-graphic-triple-mockup" ||
+               slide.layout === "feature-graphic-dual-upright" ||
+               slide.layout === "feature-graphic-fan-cards"
+                 ? "Main/Front device screenshot"
+                 : "Screenshot"}
             </Label>
             <ScreenshotPicker
               label="Primary"
@@ -193,11 +203,17 @@ export function Inspector({
 
         {(slide.layout === "two-devices" || 
           slide.layout === "three-devices" || 
-          slide.layout === "feature-graphic-dual" || 
-          slide.layout === "feature-graphic-cards") && (
+          slide.layout === "feature-graphic-cards" ||
+          slide.layout === "feature-graphic-triple-mockup" ||
+          slide.layout === "feature-graphic-dual-upright" ||
+          slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "feature-graphic-cards" ? "Second screenshot (Middle card)" : "Left device screenshot (Back layer)"}
+              {slide.layout === "feature-graphic-cards" || slide.layout === "feature-graphic-fan-cards"
+                ? "Second screenshot (Middle card)" 
+                : slide.layout === "feature-graphic-triple-mockup"
+                  ? "Left phone screenshot"
+                  : "Left device screenshot (Back layer)"}
             </Label>
             <ScreenshotPicker
               label="Secondary"
@@ -208,10 +224,17 @@ export function Inspector({
           </div>
         )}
 
-        {(slide.layout === "three-devices" || slide.layout === "feature-graphic-cards") && (
+        {(slide.layout === "three-devices" || 
+          slide.layout === "feature-graphic-cards" ||
+          slide.layout === "feature-graphic-triple-mockup" ||
+          slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "feature-graphic-cards" ? "Third screenshot (Bottom card)" : "Right device screenshot (Back layer)"}
+              {slide.layout === "feature-graphic-cards" || slide.layout === "feature-graphic-fan-cards"
+                ? "Third screenshot (Bottom card)" 
+                : slide.layout === "feature-graphic-triple-mockup"
+                  ? "Right phone screenshot"
+                  : "Right device screenshot (Back layer)"}
             </Label>
             <ScreenshotPicker
               label="Tertiary"

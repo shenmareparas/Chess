@@ -22,11 +22,10 @@ export type SlideLayout =
   | "device-right"     // device right, headline left
   | "three-devices"    // three layered phones, headline above
   | "feature-graphic"  // 1024×500 banner with icon + name + tagline
-  | "feature-graphic-split"
-  | "feature-graphic-mockup"
-  | "feature-graphic-dual"
   | "feature-graphic-cards"
-  | "feature-graphic-phone-left";
+  | "feature-graphic-triple-mockup"
+  | "feature-graphic-dual-upright"
+  | "feature-graphic-fan-cards";
 
 // Per-element rect in canvas pixel space. Optional rotation in degrees and zIndex.
 export type ElementTransform = {
