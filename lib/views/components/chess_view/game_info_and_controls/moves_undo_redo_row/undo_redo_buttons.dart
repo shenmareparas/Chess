@@ -100,118 +100,101 @@ class UndoRedoButtons extends StatelessWidget {
       barrierColor: Colors.black.withValues(alpha: 0.6),
       barrierDismissible: true,
       barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 250),
+      transitionDuration: const Duration(milliseconds: 240),
       pageBuilder: (dialogContext, anim1, anim2) {
-        final theme = appModel.theme;
         return Center(
           child: Material(
             color: Colors.transparent,
             child: GlassPanel(
-              borderRadius: 32,
-              padding: const EdgeInsets.all(28),
+              borderRadius: 24,
+              padding: const EdgeInsets.all(20),
+              color: const Color(0x80201F1F),
+              animation: anim1,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 340),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Luminous Icon Header
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: theme.darkTile.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.lightTile.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: theme.lightTile.withValues(alpha: 0.15),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        Icons.smart_display_rounded,
-                        color: theme.lightTile,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     const Text(
                       'Out of Undos',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE5E2E1),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     const Text(
                       'You\'ve used all your free undos for this game. Watch a short ad to earn 1 extra undo.',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         color: Color(0xFFC3C8C2),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 28),
-                    Column(
+                    const SizedBox(height: 20),
+                    Row(
                       children: [
-                        // Watch Ad Button
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          onPressed: () {
-                            Navigator.of(dialogContext).pop();
-                            _requestAdUndo(context);
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            height: 54,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF5F5F0),
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x20000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
+                        // Cancel Button
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: Container(
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.05),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  width: 1,
                                 ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.play_arrow_rounded,
-                                    color: const Color(0xFF131313), size: 22),
-                                const SizedBox(width: 6),
-                                const Text(
-                                  'Watch Ad',
-                                  style: TextStyle(
-                                    color: Color(0xFF131313),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
+                              ),
+                              child: const Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFC3C8C2),
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        // Cancel Button
-                        CupertinoButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: Color(0xFF8D928C),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                        const SizedBox(width: 12),
+                        // Watch Ad Button
+                        Expanded(
+                          child: CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              Navigator.of(dialogContext).pop();
+                              _requestAdUndo(context);
+                            },
+                            child: Container(
+                              height: 46,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F5F0),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x33000000),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Text(
+                                'Watch Ad',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1E211F),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -226,7 +209,7 @@ class UndoRedoButtons extends StatelessWidget {
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return Transform.scale(
-          scale: 0.94 + 0.06 * anim1.value,
+          scale: 0.95 + 0.05 * anim1.value,
           child: FadeTransition(
             opacity: anim1,
             child: child,
@@ -259,84 +242,65 @@ class UndoRedoButtons extends StatelessWidget {
       barrierColor: Colors.black.withValues(alpha: 0.6),
       barrierDismissible: true,
       barrierLabel: '',
-      transitionDuration: const Duration(milliseconds: 250),
+      transitionDuration: const Duration(milliseconds: 240),
       pageBuilder: (dialogContext, anim1, anim2) {
-        final theme = appModel.theme;
         return Center(
           child: Material(
             color: Colors.transparent,
             child: GlassPanel(
-              borderRadius: 32,
-              padding: const EdgeInsets.all(28),
+              borderRadius: 24,
+              padding: const EdgeInsets.all(20),
+              color: const Color(0x80201F1F),
+              animation: anim1,
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 340),
+                constraints: const BoxConstraints(maxWidth: 300),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Warning Luminous Icon
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: theme.darkTile.withValues(alpha: 0.4),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFFFC5C5C).withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFC5C5C).withValues(alpha: 0.15),
-                            blurRadius: 15,
-                            spreadRadius: 2,
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.warning_amber_rounded,
-                        color: Color(0xFFFC5C5C),
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     const Text(
                       'Ad Not Ready',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFE5E2E1),
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                     const Text(
                       'No ad is available right now. To keep you from getting stuck, we have granted you a free undo!',
                       style: TextStyle(
-                        fontSize: 15,
+                        fontSize: 14,
                         color: Color(0xFFC3C8C2),
                         height: 1.4,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 20),
                     CupertinoButton(
                       padding: EdgeInsets.zero,
                       onPressed: () => Navigator.of(dialogContext).pop(),
                       child: Container(
                         width: double.infinity,
-                        height: 54,
+                        height: 46,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F0),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x33000000),
+                              blurRadius: 6,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Text(
                           'OK',
                           style: TextStyle(
-                            color: Color(0xFF131313),
+                            color: Color(0xFF1E211F),
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                            fontSize: 15,
                           ),
                         ),
                       ),

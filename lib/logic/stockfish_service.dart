@@ -16,13 +16,18 @@ class StockfishService {
   /// completed for this engine instance. Null means the handshake hasn't
   /// started yet; completed means the engine is ready to accept commands.
   Completer<void>? _uciReadyCompleter;
+  bool _configured = false;
 
   void init() {
     if (_engine != null) return;
     _engine = Stockfish();
     _uciReadyCompleter = Completer<void>();
     _stdoutSubscription = _engine!.stdout.listen((line) {
-      debugPrint("[Stockfish stdout] $line");
+      if (kDebugMode) {
+        if (line == 'readyok' || line.startsWith('bestmove')) {
+          debugPrint("[Stockfish stdout] $line");
+        }
+      }
       if (line == 'readyok') {
         if (_uciReadyCompleter != null && !_uciReadyCompleter!.isCompleted) {
           _uciReadyCompleter!.complete();
@@ -72,9 +77,13 @@ class StockfishService {
 
     // Perform the UCI handshake exactly once per engine instance.
     if (!_uciReadyCompleter!.isCompleted) {
-      debugPrint('[Stockfish stdin] uci');
+      if (kDebugMode) {
+        debugPrint('[Stockfish stdin] uci');
+      }
       _engine!.stdin = 'uci';
-      debugPrint('[Stockfish stdin] isready');
+      if (kDebugMode) {
+        debugPrint('[Stockfish stdin] isready');
+      }
       _engine!.stdin = 'isready';
     }
 
@@ -87,6 +96,14 @@ class StockfishService {
             '[Stockfish] WARNING: readyok never received — proceeding anyway');
       },
     );
+
+    // Apply native configurations only once after the initial handshake finishes.
+    if (!_configured) {
+      _configured = true;
+      _engine!.stdin = 'setoption name Use NNUE value false';
+      _engine!.stdin = 'setoption name Hash value 16';
+      _engine!.stdin = 'setoption name Threads value 1';
+    }
   }
 
   Future<Move> getBestMove(String movesString, int difficulty) async {
@@ -269,5 +286,6 @@ class StockfishService {
     }
     _moveCompleter = null;
     _uciReadyCompleter = null;
+    _configured = false;
   }
 }

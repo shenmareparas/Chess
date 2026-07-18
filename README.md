@@ -28,6 +28,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
+    -   **Stockfish Native Stability & Memory Cap**: Disables the NNUE neural network evaluator (`Use NNUE` = false) to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 (`Threads` = 1) to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion.
     -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
     -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move.
     -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Piece images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
@@ -39,7 +40,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🎯 Gameplay Features
 
--   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts.
+-   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts. The active tile dynamically calculates its width from character measurements to ensure it always auto-scrolls perfectly to the center of the viewport.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
 -   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
 -   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
@@ -56,9 +57,10 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ### 🤖 AI Features
 
 -   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
+-   **Native Stability & Resource Caps**: Configured with `Use NNUE` = false, `Hash` = 16, and `Threads` = 1 to prevent native SIGSEGVs, platform-channel OutOfMemoryErrors, and thread lock contention ANRs.
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
--   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with debug logging.
+-   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with filtered logging under `kDebugMode`.
 -   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
 
 ### 🏆 Achievements

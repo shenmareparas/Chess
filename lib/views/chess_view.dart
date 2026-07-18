@@ -28,6 +28,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
   ChessGame? chessGame;
   late ConfettiController _confettiController;
+  bool _hasPlayedConfetti = false;
 
   _ChessViewState(this.appModel);
 
@@ -114,10 +115,18 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
               .addPostFrameCallback((_) => _showPromotionDialog(appModel));
         }
 
-        if (appModel.gameOver && appModel.userWon) {
-          _confettiController.play();
+        if (appModel.gameOver &&
+            appModel.userWon &&
+            appModel.historyViewIndex == null) {
+          if (!_hasPlayedConfetti) {
+            _confettiController.play();
+            _hasPlayedConfetti = true;
+          }
         } else {
           _confettiController.stop();
+          if (!appModel.gameOver) {
+            _hasPlayedConfetti = false;
+          }
         }
 
         return PopScope(

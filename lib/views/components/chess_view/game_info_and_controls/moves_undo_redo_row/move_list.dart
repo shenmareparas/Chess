@@ -255,6 +255,25 @@ class _MoveListState extends State<MoveList> {
     );
   }
 
+  double _getTurnWidth(int turnIndex, List<MoveMeta> list) {
+    final turnNum = turnIndex + 1;
+    final whiteMove = list[turnIndex * 2];
+    final blackMove =
+        (turnIndex * 2 + 1 < list.length) ? list[turnIndex * 2 + 1] : null;
+
+    final String turnStr = '$turnNum.';
+    final String whiteStr = _moveToString(whiteMove);
+    final String blackStr =
+        blackMove != null ? _moveToString(blackMove) : '___';
+
+    // Monospace character width is approximately 0.6 * fontSize (14) = 8.4 pixels.
+    final double textWidth =
+        (turnStr.length + whiteStr.length + blackStr.length) * 8.4;
+
+    // Horizontal padding (14 * 2 = 28) + two SizedBoxes (12 * 2 = 24) + border width (4)
+    return textWidth + 28.0 + 24.0 + 4.0;
+  }
+
   void _scrollToSelected() {
     if (scrollController.hasClients && appModel.moveMetaList.isNotEmpty) {
       double targetOffset;
@@ -265,12 +284,19 @@ class _MoveListState extends State<MoveList> {
             ? 0
             : (appModel.historyViewIndex! / 2).floor();
 
-        final double tileWidth = 132.0;
+        final List<MoveMeta> list = appModel.moveMetaList;
+
+        double offsetBefore = 0.0;
+        for (int i = 0; i < selectedTurnIndex; i++) {
+          offsetBefore += _getTurnWidth(i, list) + 12.0; // item width + margin
+        }
+
+        final double currentItemWidth = _getTurnWidth(selectedTurnIndex, list);
         final double viewportWidth =
             scrollController.position.viewportDimension;
-        targetOffset = (selectedTurnIndex * tileWidth) -
-            (viewportWidth / 2) +
-            (tileWidth / 2);
+
+        targetOffset =
+            (offsetBefore + currentItemWidth / 2) - (viewportWidth / 2);
       }
 
       final double clampedOffset =
