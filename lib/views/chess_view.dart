@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../logic/ad_service.dart';
 import '../logic/chess_game.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
@@ -135,7 +136,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             if (didPop) return;
             if (appModel.gameOver) {
               appModel.exitChessView();
-              Navigator.of(context).pop();
+              AdService.instance.showExitInterstitialAd(
+                onAdDismissed: () {
+                  if (context.mounted) Navigator.of(context).pop();
+                },
+              );
             } else {
               showExitDialog(context);
             }
@@ -421,7 +426,12 @@ void showExitDialog(BuildContext context) {
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
                             appModel.saveAndExitChessView();
-                            Navigator.of(context).pop();
+                            AdService.instance.showExitInterstitialAd(
+                              onAdDismissed: () {
+                                if (context.mounted)
+                                  Navigator.of(context).pop();
+                              },
+                            );
                           },
                           child: Container(
                             width: double.infinity,
@@ -464,7 +474,12 @@ void showExitDialog(BuildContext context) {
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
                             appModel.exitChessView();
-                            Navigator.of(context).pop();
+                            AdService.instance.showExitInterstitialAd(
+                              onAdDismissed: () {
+                                if (context.mounted)
+                                  Navigator.of(context).pop();
+                              },
+                            );
                           },
                           child: Container(
                             width: double.infinity,
