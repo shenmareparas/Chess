@@ -12,7 +12,8 @@
     <application
         android:name="${applicationName}"
         android:label="Chess"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:largeHeap="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"

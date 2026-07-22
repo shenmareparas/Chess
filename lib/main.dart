@@ -45,8 +45,8 @@ void main() async {
   // When done, notify listeners so the play buttons re-enable.
   _loadFlameAssetsAsync(prefs.pieceTheme, appModel);
 
-  // Sign in to Play Games Services silently on startup
-  PlayGamesService.instance.signInSilently();
+  // Sign in to Play Games Services silently on startup in a microtask after render
+  Future.microtask(() => PlayGamesService.instance.signInSilently());
 
   // Check for Google Play Store updates on Android
   InAppUpdateService.instance.checkForUpdate();
@@ -103,43 +103,6 @@ Future<void> _loadFlameAssetsAsync(
   // Signal that navigation to ChessView is now safe.
   appModel.imagesReady = true;
   appModel.update();
-
-  // Preload remaining piece themes in the background after a startup delay.
-  _preloadRemainingThemesInBackground(activeTheme);
-}
-
-void _preloadRemainingThemesInBackground(String activeTheme) {
-  Future.delayed(const Duration(seconds: 3), () async {
-    for (var theme in PIECE_THEMES) {
-      if (theme == activeTheme || theme == 'Classic') continue;
-      List<String> themeImages = [];
-      for (var color in ['black', 'white']) {
-        for (var piece in [
-          'king',
-          'queen',
-          'rook',
-          'bishop',
-          'knight',
-          'pawn'
-        ]) {
-          themeImages
-              .add('pieces/${formatPieceTheme(theme)}/${piece}_$color.png');
-        }
-      }
-      try {
-        for (final img in themeImages) {
-          await Flame.images.load(img);
-          // Yield to the event loop between each decode so the UI thread can
-          // process frames rather than running all 12 decodes back-to-back.
-          await Future.delayed(Duration.zero);
-        }
-        // Small pause between themes
-        await Future.delayed(const Duration(milliseconds: 100));
-      } catch (e) {
-        // Avoid crash if assets fail to load in background
-      }
-    }
-  });
 }
 
 class Chess extends StatelessWidget {

@@ -28,13 +28,13 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
-    -   **Stockfish Native Stability & Memory Cap**: Disables the NNUE neural network evaluator (`Use NNUE` = false) to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 (`Threads` = 1) to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion.
+    -   **Stockfish Native Stability & Memory Cap**: Configures `Use NNUE` = false, `Threads` = 1, and `Hash` = 16 **before** engine UCI initialization to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion.
     -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
     -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move.
-    -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Piece images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
+    -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Active piece theme images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
     -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
-    -   **Sequential Asset Preloading**: Remaining piece theme images are preloaded sequentially (one image at a time, yielding to the event loop, 100ms gap) after a 3-second startup delay, protecting main-thread frame metrics.
+    -   **On-Demand Piece Theme Loading**: Non-active piece themes load lazily on-demand when selected or previewed, preventing excessive memory usage and GC pauses (`dart::MarkingVisitor`).
     -   **Isolated Background Repaints**: Heavy background paint layers (dot grids and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
 
@@ -57,7 +57,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ### 🤖 AI Features
 
 -   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
--   **Native Stability & Resource Caps**: Configured with `Use NNUE` = false, `Hash` = 16, and `Threads` = 1 to prevent native SIGSEGVs, platform-channel OutOfMemoryErrors, and thread lock contention ANRs.
+-   **Native Stability & Resource Caps**: Configured with `Use NNUE` = false, `Hash` = 16, and `Threads` = 1 **prior** to `uci` initialization to prevent native SIGSEGVs, platform-channel OutOfMemoryErrors, and thread lock contention ANRs.
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with filtered logging under `kDebugMode`.
@@ -67,7 +67,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   **Google Play Games Services** (Android) integration via `games_services` (disabled/hidden on iOS)
 -   8 achievements: First Game, First Win, Beat Level 5, Timed Win, Pawn Promotion, Put in Check, Play 10 Games (incremental), Play 50 Games (incremental)
--   Silent sign-in on startup; interactive sign-in and native achievements UI on demand (Android only)
+-   Silent sign-in on startup (run as an async microtask); interactive sign-in and native achievements UI on demand (Android only)
 
 
 ## 📸 Screenshots
@@ -82,7 +82,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ## 🛠️ Technologies Used
 
--   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.3+4`)
+-   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.5+9`)
 -   **[Flame](https://flame-engine.org/)** — 2D game engine for chess board rendering
 -   **[Provider](https://pub.dev/packages/provider)** — State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)

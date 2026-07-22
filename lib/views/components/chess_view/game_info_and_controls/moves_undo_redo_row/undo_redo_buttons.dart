@@ -268,7 +268,7 @@ class UndoRedoButtons extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'No ad is available right now. To keep you from getting stuck, we have granted you a free undo!',
+                      'No ad is available right now.\nTo keep you from getting stuck,\nwe have granted you a free undo!',
                       style: TextStyle(
                         fontSize: 14,
                         color: Color(0xFFC3C8C2),
