@@ -206,108 +206,115 @@ class _SettingsViewState extends State<SettingsView> {
                 Positioned.fill(
                   child: SafeArea(
                     bottom: false,
-                    child: Column(
-                      children: [
-                        // Glassy App Bar
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: () => Navigator.pop(context),
-                                child: Icon(
-                                  Icons.arrow_back_ios_new_rounded,
-                                  color: theme.lightTile,
-                                  size: 22,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  if (_scrollController.hasClients) {
-                                    _scrollController.animateTo(
-                                      0,
-                                      duration:
-                                          const Duration(milliseconds: 300),
-                                      curve: Curves.easeOut,
-                                    );
-                                  }
-                                },
-                                behavior: HitTestBehavior.opaque,
-                                child: const Text(
-                                  'Settings',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFE5E2E1),
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ),
-                              Consumer<AppModel>(
-                                builder: (context, appModel, child) =>
-                                    CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () =>
-                                      _showResetConfirmation(context, appModel),
-                                  child: Icon(
-                                    Icons.refresh_rounded,
-                                    color: theme.lightTile,
-                                    size: 26,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: ListView(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 16),
-                            physics: const BouncingScrollPhysics(),
-                            children: [
-                              const AppThemePicker(),
-                              const SizedBox(height: 24),
-                              const PieceThemePicker(),
-                              const SizedBox(height: 24),
-                              Consumer<AppModel>(
-                                builder: (context, appModel, child) =>
-                                    Toggles(appModel),
-                              ),
-                              const SizedBox(height: 32),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: Column(
+                          children: [
+                            // Glassy App Bar
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Text(
-                                    'Made with ',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFFC3C8C2),
+                                  CupertinoButton(
+                                    padding: EdgeInsets.zero,
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      color: theme.lightTile,
+                                      size: 22,
                                     ),
                                   ),
-                                  Icon(
-                                    Icons.favorite_rounded,
-                                    color: theme.lightTile,
-                                    size: 13,
+                                  GestureDetector(
+                                    onTap: () {
+                                      if (_scrollController.hasClients) {
+                                        _scrollController.animateTo(
+                                          0,
+                                          duration:
+                                              const Duration(milliseconds: 300),
+                                          curve: Curves.easeOut,
+                                        );
+                                      }
+                                    },
+                                    behavior: HitTestBehavior.opaque,
+                                    child: const Text(
+                                      'Settings',
+                                      style: TextStyle(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFE5E2E1),
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
                                   ),
-                                  const Text(
-                                    ' by Paras Shenmare',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFFC3C8C2),
+                                  Consumer<AppModel>(
+                                    builder: (context, appModel, child) =>
+                                        CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      onPressed: () => _showResetConfirmation(
+                                          context, appModel),
+                                      child: Icon(
+                                        Icons.refresh_rounded,
+                                        color: theme.lightTile,
+                                        size: 26,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                              BottomPadding(),
-                            ],
-                          ),
+                            ),
+                            Expanded(
+                              child: ListView(
+                                controller: _scrollController,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                physics: const BouncingScrollPhysics(),
+                                children: [
+                                  const AppThemePicker(),
+                                  const SizedBox(height: 24),
+                                  const PieceThemePicker(),
+                                  const SizedBox(height: 24),
+                                  Consumer<AppModel>(
+                                    builder: (context, appModel, child) =>
+                                        Toggles(appModel),
+                                  ),
+                                  const SizedBox(height: 32),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Text(
+                                        'Made with ',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFC3C8C2),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.favorite_rounded,
+                                        color: theme.lightTile,
+                                        size: 13,
+                                      ),
+                                      const Text(
+                                        ' by Paras Shenmare',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFC3C8C2),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  BottomPadding(),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

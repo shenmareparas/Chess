@@ -36,6 +36,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
     -   **On-Demand Piece Theme Loading**: Non-active piece themes load lazily on-demand when selected or previewed, preventing excessive memory usage and GC pauses (`dart::MarkingVisitor`).
     -   **Isolated Background Repaints**: Heavy background paint layers (dot grids and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
+    -   **Responsive Foldable & Dynamic Orientation Support**: `ChessBoardWidget` uses dynamic parent constraints (`LayoutBuilder` `min(maxWidth, maxHeight) - 8`) to automatically scale the board for any aspect ratio without `RenderFlex` overflows. The app dynamically manages orientation settings: standard phones and folded outer displays (`shortestSide < 600`) lock to portrait mode, while unfolded inner displays (`shortestSide >= 600`) allow multi-orientation rotation. Main menu options and settings lists are constrained to a max-width of 600px for clean display on large inner screens.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
 
 ### 🎯 Gameplay Features

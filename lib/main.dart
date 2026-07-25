@@ -23,7 +23,7 @@ void main() async {
   await prefs.load();
 
   // Initialize AdMob SDK in the background, don't await to block startup
-  AdService.instance.initialize();
+  unawaited(AdService.instance.initialize());
 
   final appModel = AppModel(prefs: prefs);
 
@@ -105,13 +105,57 @@ Future<void> _loadFlameAssetsAsync(
   appModel.update();
 }
 
-class Chess extends StatelessWidget {
+class Chess extends StatefulWidget {
+  @override
+  State<Chess> createState() => _ChessState();
+}
+
+class _ChessState extends State<Chess> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _updateOrientation();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    super.didChangeMetrics();
+    _updateOrientation();
+  }
+
+  void _updateOrientation() {
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    final size = view.physicalSize / view.devicePixelRatio;
+    if (size.shortestSide < 600) {
+      // Normal phone or folded foldable outer screen: lock to portrait only
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+      ]);
+    } else {
+      // Unfolded foldable inner screen or tablet: allow all orientations
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _updateOrientation();
     return CupertinoApp(
       debugShowCheckedModeBanner: false,
       title: 'Chess',
-      theme: CupertinoThemeData(
+      theme: const CupertinoThemeData(
         brightness: Brightness.dark,
         textTheme: CupertinoTextThemeData(
           textStyle: TextStyle(fontFamily: 'Inter', fontSize: 16),

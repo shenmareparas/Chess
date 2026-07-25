@@ -95,20 +95,27 @@ class _MainMenuViewState extends State<MainMenuView> {
                 // 3. Main Content
                 SafeArea(
                   bottom: false,
-                  child: Column(
-                    children: [
-                      // Scrollable Options List
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: GameOptions(
-                            appModel,
-                            hasSavedGame: _hasSavedGame,
-                            scrollController: _scrollController,
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
+                      child: Column(
+                        children: [
+                          // Scrollable Options List
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: GameOptions(
+                                appModel,
+                                hasSavedGame: _hasSavedGame,
+                                scrollController: _scrollController,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
@@ -158,17 +165,22 @@ class _MainMenuViewState extends State<MainMenuView> {
                   child: Container(
                     color: Colors.transparent,
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        MainMenuButtons(
-                          appModel,
-                          hasSavedGame: _hasSavedGame,
-                          onGameReturned: _checkSavedGame,
-                          onResetScroll: _resetScroll,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MainMenuButtons(
+                              appModel,
+                              hasSavedGame: _hasSavedGame,
+                              onGameReturned: _checkSavedGame,
+                              onResetScroll: _resetScroll,
+                            ),
+                            BottomPadding(),
+                          ],
                         ),
-                        BottomPadding(),
-                      ],
+                      ),
                     ),
                   ),
                 ),

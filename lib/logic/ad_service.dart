@@ -51,10 +51,14 @@ class AdService {
   /// Must be called once in [main()] after [WidgetsFlutterBinding.ensureInitialized()].
   Future<void> initialize() async {
     if (_isInitialized) return;
-    await MobileAds.instance.initialize();
-    _isInitialized = true;
-    _loadRewardedAd();
-    _loadExitInterstitialAd();
+    try {
+      await MobileAds.instance.initialize();
+      _isInitialized = true;
+      _loadRewardedAd();
+      _loadExitInterstitialAd();
+    } catch (e) {
+      debugPrint('[AdService] MobileAds initialization error: $e');
+    }
   }
 
   // ── Ad Loading ──

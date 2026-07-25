@@ -38,16 +38,20 @@ class _GameInfoAndControlsState extends State<GameInfoAndControls> {
   Widget build(BuildContext context) {
     final hasTimer = widget.appModel.timeLimit != 0;
     final extraHeight = hasTimer ? 74 : 0;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Adaptively scale max height based on available screen height so controls fit cleanly without truncation
+    final double maxAllowedHeight = screenHeight > 800
+        ? (204 + extraHeight).toDouble()
+        : (screenHeight * 0.35 + extraHeight * 0.5).clamp(140.0, 280.0);
 
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height > 700
-            ? (204 + extraHeight).toDouble()
-            : (134 + extraHeight).toDouble(),
+        maxHeight: maxAllowedHeight,
       ),
       child: ListView(
         controller: scrollController,
-        physics: ClampingScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         shrinkWrap: true,
         padding: EdgeInsets.zero,
         children: [

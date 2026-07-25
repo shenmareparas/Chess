@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
@@ -12,43 +14,58 @@ class ChessBoardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double boardSize = MediaQuery.of(context).size.width - 8;
-    return Stack(
-      children: [
-        AnimatedRotation(
-          turns: appModel.isBoardInverted ? 0.5 : 0,
-          duration: appModel.animateBoardRotation
-              ? Duration(milliseconds: 600)
-              : Duration.zero,
-          curve: Curves.easeInOut,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: appModel.theme.border,
-                width: 4,
-              ),
-            ),
-            child: Container(
-              width: boardSize,
-              height: boardSize,
-              child: GameWidget(game: chessGame),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double maxSide =
+            math.min(constraints.maxWidth, constraints.maxHeight);
+        final double boardSize = (maxSide - 8).clamp(0.0, double.infinity);
+
+        return Center(
+          child: SizedBox(
+            width: boardSize + 8,
+            height: boardSize + 8,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: AnimatedRotation(
+                    turns: appModel.isBoardInverted ? 0.5 : 0,
+                    duration: appModel.animateBoardRotation
+                        ? const Duration(milliseconds: 600)
+                        : Duration.zero,
+                    curve: Curves.easeInOut,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: appModel.theme.border,
+                          width: 4,
+                        ),
+                      ),
+                      child: SizedBox(
+                        width: boardSize,
+                        height: boardSize,
+                        child: GameWidget(game: chessGame),
+                      ),
+                    ),
+                  ),
+                ),
+                if (appModel.showNotation)
+                  Positioned(
+                    left: 4,
+                    top: 4,
+                    width: boardSize,
+                    height: boardSize,
+                    child: _NotationOverlay(
+                      lightTileColor: appModel.theme.lightTile,
+                      darkTileColor: appModel.theme.darkTile,
+                      isRotated: appModel.isBoardInverted,
+                      size: boardSize,
+                    ),
+                  ),
+              ],
             ),
           ),
-        ),
-        if (appModel.showNotation)
-          Positioned(
-            left: 4,
-            top: 4,
-            width: boardSize,
-            height: boardSize,
-            child: _NotationOverlay(
-              lightTileColor: appModel.theme.lightTile,
-              darkTileColor: appModel.theme.darkTile,
-              isRotated: appModel.isBoardInverted,
-              size: boardSize,
-            ),
-          ),
-      ],
+        );
+      },
     );
   }
 }
