@@ -33,7 +33,6 @@ class UserPreferences {
   bool enablePieceRotation = true;
   bool hapticEnabled = false;
   bool hasRatedApp = false;
-  String aiEngine = 'stockfish';
   int timerIncrement = 0;
   String timerMode = 'increment';
 
@@ -69,8 +68,6 @@ class UserPreferences {
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
     hasRatedApp = _prefs!.getBool('hasRatedApp') ?? false;
-    aiEngine =
-        'stockfish'; // Always forced — not user-configurable, no need to persist.
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
     timerMode = _prefs!.getString('timerMode') ?? 'increment';
     onChanged?.call();
@@ -178,7 +175,6 @@ class UserPreferences {
     enablePieceRotation = true;
     allowUndoRedo = true;
     hapticEnabled = false;
-    aiEngine = 'stockfish';
     timerIncrement = 0;
     timerMode = 'increment';
 
@@ -193,7 +189,6 @@ class UserPreferences {
     await _prefs!.setBool('enablePieceRotation', enablePieceRotation);
     await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
     await _prefs!.setBool('hapticEnabled', hapticEnabled);
-    await _prefs!.setString('aiEngine', aiEngine);
     await _prefs!.setInt('timerIncrement', timerIncrement);
     await _prefs!.setString('timerMode', timerMode);
     onChanged?.call();

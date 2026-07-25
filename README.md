@@ -197,8 +197,7 @@ lib/
 │           ├── move.dart              # Move (from, to, promotionType)
 │           ├── move_meta.dart         # Move metadata (isCheck, isCheckmate, isStalemate, promotion)
 │           ├── move_stack_object.dart # Board move-stack entry (push/pop undo/redo)
-│           ├── move_and_value.dart    # MVV-LVA capture priority container
-│           └── direction.dart         # Direction enum for sliding pieces
+│           └── direction.dart         # Direction enum for sliding piece calculations
 └── views/
     ├── main_menu_view.dart        # Main menu: game mode, difficulty, time, side selection
     ├── chess_view.dart            # Game screen: board, timers, controls, confetti, exit dialog

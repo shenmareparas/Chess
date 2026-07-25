@@ -42,10 +42,11 @@ A feature-rich chess application built with **Flutter** and **Flame**. Offers si
 - **`chess_piece.dart`** & **`chess_constants.dart`**: `ChessPieceType` enum, `ChessPiece` model, and `PROMOTIONS` list.
 - **`shared_functions.dart`**: Utility helpers — tile/coordinate conversions, `oppositePlayer`, `formatPieceTheme`, `pieceTypeToString`.
 - **`move_calculation/`**: Move generation and validation support:
-  - `move_classes/`: `Move`, `MoveMeta`, `MoveStackObject`, `MoveAndValue`, `Direction`.
+  - `move_classes/`: `Move`, `MoveMeta`, `MoveStackObject`, `Direction`.
   - `piece_square_tables.dart`: `squareValue()` for incremental board evaluation (used for undo/pop correctness in `ChessBoard`).
   - ~~`openings.dart`~~ — deleted (vestigial, had no effect on Stockfish play).
   - ~~`transposition_table.dart`~~ — deleted (unused after Stockfish replaced homebrew AI).
+  - ~~`move_and_value.dart`~~ — deleted (unused legacy class).
 - **`stockfish_service.dart`**: Singleton wrapping the native Stockfish binary via UCI protocol. Configured with `Use NNUE` = false, `Hash` = 16, and `Threads` = 1 **before** issuing `uci` + `isready` handshakes to prevent native C++ `SIGSEGV`, `OutOfMemoryError`, and ANRs. Performs the UCI handshake exactly once per engine instance using `_uciReadyCompleter`. **All `debugPrint` calls** (both the stdout filter and the stdin logging in `getBestMove()`) are guarded with `if (kDebugMode)`. Maps difficulty 1–2 to Skill Level 0 (depth 1, 100ms and depth 3, 200ms respectively), and difficulty 3–5 to `UCI_LimitStrength` + target `UCI_Elo` values. Translates castling between internal king-captures-rook representation and standard UCI notation.
 - **`timer_service.dart`**: Per-player countdown timers with `pause()`/`resume()`. Supports `increment` (Fischer, added after turn) and `delay` (USCF Simple Delay, clock held for delay duration before decrementing). Fires `onExpired` callback when a player's clock hits zero.
 - **`audio_service.dart`**: Pooled `AudioPool` for rapid move sounds; `FlameAudio.play` for game-end sounds. Respects `soundEnabled` preference.

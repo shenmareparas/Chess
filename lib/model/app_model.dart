@@ -46,7 +46,6 @@ class AppModel extends ChangeNotifier {
   bool get enableRotation => prefs.enableRotation;
   bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
-  String get aiEngine => prefs.aiEngine;
   int get timerIncrement => prefs.timerIncrement;
   String get timerMode => prefs.timerMode;
   AppTheme get theme => prefs.theme;
