@@ -147,9 +147,9 @@ class AppModel extends ChangeNotifier {
     audio.initialize();
     haptic.enabled = this.prefs.hapticEnabled;
 
-    if (prefs == null) {
-      this.prefs.load();
-    }
+    // Note: prefs.load() is intentionally NOT called here. The caller
+    // (main.dart) awaits prefs.load() before constructing AppModel so that
+    // all preferences are available from the very first frame.
   }
 
   // ── Game Lifecycle ──
@@ -578,9 +578,8 @@ class AppModel extends ChangeNotifier {
     selectedSide = Player.values[state['selectedSide'] as int];
     selectedSideP1 = Player
         .values[(state['selectedSideP1'] as int?) ?? Player.player1.index];
-    timerService.configure(state['timeLimit'] as int);
-    gameOver = state['gameOver'] as bool;
-    stalemate = state['stalemate'] as bool;
+    // timerService will be fully configured below once increment + mode are
+    // read from state. gameOver/stalemate are restored after move replay.
     turn = Player.player1;
     moveMetaList = [];
     historyViewIndex = null;
@@ -606,10 +605,13 @@ class AppModel extends ChangeNotifier {
         Duration(milliseconds: state['player2TimeLeftMs'] as int);
 
     // Restore timer increment and mode
+    // Assign fields directly — using the setters would trigger a SharedPrefs
+    // write and an extra notifyListeners() call for each, both of which are
+    // undesirable mid-restore. The values were just read from SharedPrefs.
     final savedIncrement = (state['timerIncrement'] as int?) ?? 0;
-    prefs.setTimerIncrement(savedIncrement);
+    prefs.timerIncrement = savedIncrement;
     final savedMode = (state['timerMode'] as String?) ?? 'increment';
-    prefs.setTimerMode(savedMode);
+    prefs.timerMode = savedMode;
     timerService.configure(state['timeLimit'] as int,
         incrementSeconds: savedIncrement, mode: savedMode);
 
