@@ -32,6 +32,7 @@ class UserPreferences {
   bool enableRotation = true;
   bool enablePieceRotation = true;
   bool hapticEnabled = false;
+  bool hasRatedApp = false;
   String aiEngine = 'stockfish';
   int timerIncrement = 0;
   String timerMode = 'increment';
@@ -67,8 +68,9 @@ class UserPreferences {
     enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
-    aiEngine = 'stockfish';
-    _prefs!.setString('aiEngine', 'stockfish');
+    hasRatedApp = _prefs!.getBool('hasRatedApp') ?? false;
+    aiEngine =
+        'stockfish'; // Always forced — not user-configurable, no need to persist.
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
     timerMode = _prefs!.getString('timerMode') ?? 'increment';
     onChanged?.call();
@@ -140,7 +142,14 @@ class UserPreferences {
   Future<void> setHapticEnabled(bool enabled) async {
     hapticEnabled = enabled;
     _prefs ??= await SharedPreferences.getInstance();
-    _prefs!.setBool('hapticEnabled', enabled);
+    await _prefs!.setBool('hapticEnabled', enabled);
+    onChanged?.call();
+  }
+
+  Future<void> setHasRatedApp(bool rated) async {
+    hasRatedApp = rated;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setBool('hasRatedApp', rated);
     onChanged?.call();
   }
 

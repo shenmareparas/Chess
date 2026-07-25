@@ -24,6 +24,10 @@ class _MoveListState extends State<MoveList> {
   Timer? _holdTimer;
   bool _isFirstScroll = true;
   late FToast _fToast;
+  // Track last-seen state to avoid registering _scrollToSelected after every
+  // rebuild (timer ticks, AI thinking, etc.) — only fire when relevant state changes.
+  int _lastMoveCount = -1;
+  int? _lastHistoryIndex = -2; // sentinel distinct from null and any valid index
 
   AppModel get appModel => widget.appModel;
 
@@ -87,9 +91,17 @@ class _MoveListState extends State<MoveList> {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSelected();
-    });
+    // Only schedule a scroll when the move list or selected history item
+    // actually changes — not on every parent rebuild (timer ticks, AI, etc.).
+    final moveCount = appModel.moveMetaList.length;
+    final historyIndex = appModel.historyViewIndex;
+    if (moveCount != _lastMoveCount || historyIndex != _lastHistoryIndex) {
+      _lastMoveCount = moveCount;
+      _lastHistoryIndex = historyIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToSelected();
+      });
+    }
 
     final turns = <Widget>[];
     final list = appModel.moveMetaList;
@@ -317,8 +329,10 @@ class _MoveListState extends State<MoveList> {
 
   String _allMoves() {
     var moveString = '';
-    appModel.moveMetaList.asMap().forEach((index, move) {
-      var turnNumber = ((index + 1) / 2).ceil();
+    final list = appModel.moveMetaList;
+    for (int index = 0; index < list.length; index++) {
+      final move = list[index];
+      final turnNumber = ((index + 1) / 2).ceil();
       if (index % 2 == 0) {
         moveString += index == 0 ? '$turnNumber. ' : '\n$turnNumber. ';
       }
@@ -326,7 +340,7 @@ class _MoveListState extends State<MoveList> {
       if (index % 2 == 0) {
         moveString += ' ';
       }
-    });
+    }
     if (appModel.gameOver) {
       if (appModel.turn == Player.player1) {
         moveString += ' ';

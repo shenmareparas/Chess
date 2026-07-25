@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flame/game.dart';
@@ -90,6 +91,7 @@ class _NotationOverlay extends StatefulWidget {
 class _NotationOverlayState extends State<_NotationOverlay> {
   late bool _visibleRotated;
   double _opacity = 1.0;
+  Timer? _fadeTimer;
 
   @override
   void initState() {
@@ -98,19 +100,30 @@ class _NotationOverlayState extends State<_NotationOverlay> {
   }
 
   @override
+  void dispose() {
+    _fadeTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(_NotationOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isRotated != widget.isRotated) {
+      // Cancel any in-flight fade timer before starting a new one.
+      // Without this, rapid board rotations within the 600 ms window
+      // would stack multiple timers that all attempt setState.
+      _fadeTimer?.cancel();
       setState(() {
         _opacity = 0.0;
       });
-      Future.delayed(Duration(milliseconds: 600), () {
+      _fadeTimer = Timer(const Duration(milliseconds: 600), () {
         if (mounted) {
           setState(() {
             _visibleRotated = widget.isRotated;
             _opacity = 1.0;
           });
         }
+        _fadeTimer = null;
       });
     }
   }

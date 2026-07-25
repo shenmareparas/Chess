@@ -710,17 +710,12 @@ class ChessBoard {
     }
   }
 
-  List<ChessPiece> _piecesOfTypeForPlayer(
+  Iterable<ChessPiece> _piecesOfTypeForPlayer(
       ChessPieceType? type, Player? player) {
-    List<ChessPiece> pieces = [];
-    if (type != null && player != null) {
-      for (var piece in piecesForPlayer(player)) {
-        if (piece.type == type) {
-          pieces.add(piece);
-        }
-      }
-    }
-    return pieces;
+    if (type == null || player == null) return const [];
+    // Return a lazy iterable — avoids allocating a full List<ChessPiece> for
+    // ambiguity checks that typically only need to test existence or iterate once.
+    return piecesForPlayer(player).where((p) => p.type == type);
   }
 
   // ──────────────────────────────────────────────

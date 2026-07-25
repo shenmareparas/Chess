@@ -117,18 +117,26 @@ class StockfishService {
     if (difficulty == 1) {
       moveTime = 100;
       depth = 1;
-      debugPrint(
-          "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      if (kDebugMode) {
+        debugPrint(
+            "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      }
       _engine!.stdin = 'setoption name UCI_LimitStrength value false';
-      debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      if (kDebugMode) {
+        debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      }
       _engine!.stdin = 'setoption name Skill Level value 0';
     } else if (difficulty == 2) {
       moveTime = 200;
       depth = 3;
-      debugPrint(
-          "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      if (kDebugMode) {
+        debugPrint(
+            "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+      }
       _engine!.stdin = 'setoption name UCI_LimitStrength value false';
-      debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      if (kDebugMode) {
+        debugPrint("[Stockfish stdin] setoption name Skill Level value 0");
+      }
       _engine!.stdin = 'setoption name Skill Level value 0';
     } else {
       int elo = 1200;
@@ -142,26 +150,34 @@ class StockfishService {
         elo = 2000;
         moveTime = 1500;
       }
-      debugPrint(
-          "[Stockfish stdin] setoption name UCI_LimitStrength value true");
+      if (kDebugMode) {
+        debugPrint(
+            "[Stockfish stdin] setoption name UCI_LimitStrength value true");
+      }
       _engine!.stdin = 'setoption name UCI_LimitStrength value true';
-      debugPrint("[Stockfish stdin] setoption name UCI_Elo value $elo");
+      if (kDebugMode) {
+        debugPrint("[Stockfish stdin] setoption name UCI_Elo value $elo");
+      }
       _engine!.stdin = 'setoption name UCI_Elo value $elo';
     }
 
     if (movesString.trim().isEmpty) {
-      debugPrint("[Stockfish stdin] position startpos");
+      if (kDebugMode) debugPrint("[Stockfish stdin] position startpos");
       _engine!.stdin = 'position startpos';
     } else {
-      debugPrint("[Stockfish stdin] position startpos moves $movesString");
+      if (kDebugMode) {
+        debugPrint("[Stockfish stdin] position startpos moves $movesString");
+      }
       _engine!.stdin = 'position startpos moves $movesString';
     }
 
     if (difficulty <= 2) {
-      debugPrint("[Stockfish stdin] go depth $depth movetime $moveTime");
+      if (kDebugMode) {
+        debugPrint("[Stockfish stdin] go depth $depth movetime $moveTime");
+      }
       _engine!.stdin = 'go depth $depth movetime $moveTime';
     } else {
-      debugPrint("[Stockfish stdin] go movetime $moveTime");
+      if (kDebugMode) debugPrint("[Stockfish stdin] go movetime $moveTime");
       _engine!.stdin = 'go movetime $moveTime';
     }
 
@@ -170,7 +186,7 @@ class StockfishService {
         Duration(milliseconds: moveTime + 1500),
         onTimeout: () => 'none',
       );
-      debugPrint("[Stockfish] computed best move: $uciMove");
+      if (kDebugMode) debugPrint("[Stockfish] computed best move: $uciMove");
       if (uciMove == 'none' || uciMove.length < 4) {
         return Move(0, 0);
       }

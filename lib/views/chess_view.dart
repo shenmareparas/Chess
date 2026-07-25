@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../logic/ad_service.dart';
 import '../logic/chess_game.dart';
+import '../logic/rating_service.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
 import 'components/chess_view/chess_board_widget.dart';
@@ -30,6 +31,10 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   ChessGame? chessGame;
   late ConfettiController _confettiController;
   bool _hasPlayedConfetti = false;
+  // Confetti colors only change with the theme. Cache to avoid recomputing
+  // (via HSVColor transforms) on every Consumer<AppModel> rebuild.
+  List<Color>? _cachedConfettiColors;
+  String? _cachedConfettiThemeName;
 
   _ChessViewState(this.appModel);
 
@@ -135,12 +140,24 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             if (appModel.gameOver) {
-              appModel.exitChessView();
-              AdService.instance.showExitInterstitialAd(
-                onAdDismissed: () {
-                  if (context.mounted) Navigator.of(context).pop();
-                },
-              );
+              void performExit() {
+                appModel.exitChessView();
+                AdService.instance.showExitInterstitialAd(
+                  onAdDismissed: () {
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                );
+              }
+
+              if (appModel.userWon && !appModel.prefs.hasRatedApp) {
+                RatingService.instance.showRatingPrompt(
+                  context,
+                  prefs: appModel.prefs,
+                  onComplete: performExit,
+                );
+              } else {
+                performExit();
+              }
             } else {
               showExitDialog(context);
             }
@@ -261,21 +278,28 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     );
   }
 
+  /// Returns confetti colors derived from the active theme.
+  /// Result is cached by theme name so it is only recomputed on theme change,
+  /// not on every Consumer<AppModel> rebuild (moves, timer ticks, etc.).
   List<Color> _getConfettiColors(AppTheme theme) {
-    final List<Color> result = [];
-    final candidates = [
-      theme.lightTile,
-      theme.moveHint,
-      theme.latestMove,
-      theme.notation,
-    ];
-    for (final color in candidates) {
-      final hsv = HSVColor.fromColor(color);
-      final saturation = hsv.saturation > 0.6 ? hsv.saturation : 0.6;
-      final value = hsv.value > 0.8 ? hsv.value : 0.8;
-      result.add(hsv.withSaturation(saturation).withValue(value).toColor());
+    if (_cachedConfettiThemeName != theme.name) {
+      _cachedConfettiThemeName = theme.name;
+      final List<Color> result = [];
+      final candidates = [
+        theme.lightTile,
+        theme.moveHint,
+        theme.latestMove,
+        theme.notation,
+      ];
+      for (final color in candidates) {
+        final hsv = HSVColor.fromColor(color);
+        final saturation = hsv.saturation > 0.6 ? hsv.saturation : 0.6;
+        final value = hsv.value > 0.8 ? hsv.value : 0.8;
+        result.add(hsv.withSaturation(saturation).withValue(value).toColor());
+      }
+      _cachedConfettiColors = result;
     }
-    return result;
+    return _cachedConfettiColors!;
   }
 
   void _showPromotionDialog(AppModel appModel) {

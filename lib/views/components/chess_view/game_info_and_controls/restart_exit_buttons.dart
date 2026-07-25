@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../logic/ad_service.dart';
+import '../../../../logic/rating_service.dart';
 import '../../../../model/app_model.dart';
 import '../../../chess_view.dart';
 import '../../shared/glass_panel.dart';
@@ -186,8 +188,24 @@ class RestartExitButtons extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () {
               if (appModel.gameOver) {
-                appModel.exitChessView();
-                Navigator.pop(context);
+                void performExit() {
+                  appModel.exitChessView();
+                  AdService.instance.showExitInterstitialAd(
+                    onAdDismissed: () {
+                      if (context.mounted) Navigator.of(context).pop();
+                    },
+                  );
+                }
+
+                if (appModel.userWon && !appModel.prefs.hasRatedApp) {
+                  RatingService.instance.showRatingPrompt(
+                    context,
+                    prefs: appModel.prefs,
+                    onComplete: performExit,
+                  );
+                } else {
+                  performExit();
+                }
               } else {
                 showExitDialog(context);
               }

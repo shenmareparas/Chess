@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.0
   fluttertoast: ^9.1.0
   stockfish: ^1.8.1
+  in_app_review: ^2.0.12
 
 dev_dependencies:
   flutter_test:

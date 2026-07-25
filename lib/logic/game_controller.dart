@@ -19,6 +19,8 @@ import 'stockfish_service.dart';
 class GameController {
   final AppModel appModel;
   final ChessBoard board = ChessBoard();
+  // Single shared Random instance — avoids seeding a new PRNG per AI move.
+  static final _random = math.Random();
 
   CancelableOperation? aiOperation;
   List<int> validMoves = [];
@@ -131,9 +133,9 @@ class GameController {
     final int difficulty = appModel.aiDifficulty;
     bool playRandomMove = false;
     if (difficulty == 1) {
-      playRandomMove = math.Random().nextDouble() < 0.60;
+      playRandomMove = _random.nextDouble() < 0.60;
     } else if (difficulty == 2) {
-      playRandomMove = math.Random().nextDouble() < 0.25;
+      playRandomMove = _random.nextDouble() < 0.25;
     }
 
     if (playRandomMove) {
@@ -150,7 +152,7 @@ class GameController {
 
       if (allLegalMoves.isNotEmpty) {
         final randomMove =
-            allLegalMoves[math.Random().nextInt(allLegalMoves.length)];
+            allLegalMoves[_random.nextInt(allLegalMoves.length)];
         final movingPiece = board.tiles[randomMove.from];
         if (movingPiece != null && movingPiece.type == ChessPieceType.pawn) {
           if ((movingPiece.player == Player.player1 &&

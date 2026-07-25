@@ -18,7 +18,7 @@ class AudioService {
 
   void playMovedSound() {
     if (!_enabled) return;
-    FlameAudio.play('piece_moved.mp3');
+    FlameAudio.play('piece_moved.mp3', volume: 1.0);
   }
 
   void playGameEndSound({
@@ -32,7 +32,7 @@ class AudioService {
     if (!_enabled) return;
 
     if (stalemate) {
-      FlameAudio.play('tie.wav');
+      FlameAudio.play('tie.wav', volume: 1.0);
       return;
     }
 
@@ -49,12 +49,12 @@ class AudioService {
 
     if (playingWithAI) {
       if (winner == playerSide) {
-        FlameAudio.play('win.wav');
+        FlameAudio.play('win.wav', volume: 1.0);
       } else {
-        FlameAudio.play('lose.wav');
+        FlameAudio.play('lose.wav', volume: 1.0);
       }
     } else {
-      FlameAudio.play('win.wav');
+      FlameAudio.play('win.wav', volume: 1.0);
     }
   }
 

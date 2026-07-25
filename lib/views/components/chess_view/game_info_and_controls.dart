@@ -15,23 +15,14 @@ class GameInfoAndControls extends StatefulWidget {
 }
 
 class _GameInfoAndControlsState extends State<GameInfoAndControls> {
-  final ScrollController scrollController = ScrollController();
-
   @override
   void dispose() {
-    scrollController.dispose();
     super.dispose();
   }
 
   @override
   void didUpdateWidget(GameInfoAndControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only request a scroll-to-bottom when the move list actually changed,
-    // not on every arbitrary rebuild. This avoids registering a new
-    // addPostFrameCallback on every Consumer<AppModel> notification.
-    if (widget.appModel.moveListUpdated) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
-    }
   }
 
   @override
@@ -49,11 +40,8 @@ class _GameInfoAndControlsState extends State<GameInfoAndControls> {
       constraints: BoxConstraints(
         maxHeight: maxAllowedHeight,
       ),
-      child: ListView(
-        controller: scrollController,
-        physics: const ClampingScrollPhysics(),
-        shrinkWrap: true,
-        padding: EdgeInsets.zero,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Timers(widget.appModel),
           MovesUndoRedoRow(widget.appModel),
@@ -61,11 +49,5 @@ class _GameInfoAndControlsState extends State<GameInfoAndControls> {
         ],
       ),
     );
-  }
-
-  void _scrollToBottom() {
-    if (scrollController.hasClients) {
-      scrollController.jumpTo(scrollController.position.maxScrollExtent);
-    }
   }
 }

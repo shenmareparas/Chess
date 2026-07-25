@@ -50,7 +50,7 @@ class _MainMenuViewState extends State<MainMenuView> {
 
   @override
   Widget build(BuildContext context) {
-    final appModel = Provider.of<AppModel>(context);
+    final appModel = Provider.of<AppModel>(context, listen: false);
     return Selector<AppModel, AppTheme>(
       selector: (_, m) => m.theme,
       builder: (context, theme, child) {
@@ -61,11 +61,13 @@ class _MainMenuViewState extends State<MainMenuView> {
             ),
             child: Stack(
               children: [
-                // 1. Dot Grid Background
+                // 1. Dot Grid Background (RepaintBoundary isolates it on its own GPU layer)
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: DotGridPainter(
-                        color: theme.lightTile.withValues(alpha: 0.05)),
+                  child: RepaintBoundary(
+                    child: CustomPaint(
+                      painter: DotGridPainter(
+                          color: theme.lightTile.withValues(alpha: 0.05)),
+                    ),
                   ),
                 ),
 
@@ -92,28 +94,32 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
-                // 3. Main Content
-                SafeArea(
-                  bottom: false,
-                  child: Align(
-                    alignment: Alignment.topCenter,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Column(
-                        children: [
-                          // Scrollable Options List
-                          Expanded(
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: GameOptions(
-                                appModel,
-                                hasSavedGame: _hasSavedGame,
-                                scrollController: _scrollController,
+                // 3. Main Content — uses Consumer so picker changes (difficulty,
+                // time limit, side, etc.) trigger rebuilds of the interactive
+                // content while the static background layers above stay isolated.
+                Consumer<AppModel>(
+                  builder: (context, appModel, _) => SafeArea(
+                    bottom: false,
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        child: Column(
+                          children: [
+                            // Scrollable Options List
+                            Expanded(
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 20),
+                                child: GameOptions(
+                                  appModel,
+                                  hasSavedGame: _hasSavedGame,
+                                  scrollController: _scrollController,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -157,28 +163,31 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
-                // 4. Floating Bottom Action Buttons
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    color: Colors.transparent,
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            MainMenuButtons(
-                              appModel,
-                              hasSavedGame: _hasSavedGame,
-                              onGameReturned: _checkSavedGame,
-                              onResetScroll: _resetScroll,
-                            ),
-                            BottomPadding(),
-                          ],
+                // 4. Floating Bottom Action Buttons — also inside Consumer so
+                // the imagesReady spinner and hasSavedGame state update correctly.
+                Consumer<AppModel>(
+                  builder: (context, appModel, _) => Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      color: Colors.transparent,
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 600),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              MainMenuButtons(
+                                appModel,
+                                hasSavedGame: _hasSavedGame,
+                                onGameReturned: _checkSavedGame,
+                                onResetScroll: _resetScroll,
+                              ),
+                              BottomPadding(),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -192,3 +201,4 @@ class _MainMenuViewState extends State<MainMenuView> {
     );
   }
 }
+

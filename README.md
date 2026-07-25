@@ -28,22 +28,29 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
-    -   **Stockfish Native Stability & Memory Cap**: Configures `Use NNUE` = false, `Threads` = 1, and `Hash` = 16 **before** engine UCI initialization to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion.
+    -   **Stockfish Native Stability & Memory Cap**: Configures `Use NNUE` = false, `Threads` = 1, and `Hash` = 16 **before** engine UCI initialization to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion. All stdin logging in `getBestMove()` is also gated behind `if (kDebugMode)` to ensure zero overhead in release builds.
     -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
-    -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move.
+    -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move. `_piecesOfTypeForPlayer()` returns a lazy `Iterable.where()` rather than eagerly allocating a `List<ChessPiece>` for ambiguity checks.
     -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Active piece theme images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
     -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
     -   **On-Demand Piece Theme Loading**: Non-active piece themes load lazily on-demand when selected or previewed, preventing excessive memory usage and GC pauses (`dart::MarkingVisitor`).
-    -   **Isolated Background Repaints**: Heavy background paint layers (dot grids and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
+    -   **Isolated Background Repaints**: Heavy background paint layers (dot grids in `MainMenuView` and `SettingsView`, and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
     -   **Responsive Foldable & Dynamic Orientation Support**: `ChessBoardWidget` uses dynamic parent constraints (`LayoutBuilder` `min(maxWidth, maxHeight) - 8`) to automatically scale the board for any aspect ratio without `RenderFlex` overflows. The app dynamically manages orientation settings: standard phones and folded outer displays (`shortestSide < 600`) lock to portrait mode, while unfolded inner displays (`shortestSide >= 600`) allow multi-orientation rotation. Main menu options and settings lists are constrained to a max-width of 600px for clean display on large inner screens.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
+    -   **Guarded Scroll Callbacks**: `MoveList.build()` tracks `_lastMoveCount` and `_lastHistoryIndex` and only registers `addPostFrameCallback` (which iterates the full move list to compute pixel offsets) when the list or history selection actually changes — not on every timer tick or AI notification.
+    -   **Column Layout for Controls Panel**: `GameInfoAndControls` uses a `Column` instead of `ListView(shrinkWrap: true)`, eliminating the double layout pass that occurred on every AppModel notification.
+    -   **Selective Provider Subscriptions**: `MainMenuView` uses `Provider.of<AppModel>(context, listen: false)` at its root; interactive sub-trees are wrapped in `Consumer<AppModel>` inside `Selector<AppModel, AppTheme>`, scoping rebuilds while keeping static background layers (`RepaintBoundary`-isolated dot grid & radial glows) unpainted during option changes.
+    -   **Cached Confetti Colors**: Theme-derived confetti colors (computed via `HSVColor` transforms) are cached by theme name in `_ChessViewState` and only recomputed when the active theme actually changes.
+    -   **Static AI Random Instance**: `GameController` holds a `static final _random = math.Random()` shared across all AI moves, avoiding 3 PRNG re-seedings per move at difficulty levels 1 & 2.
+    -   **Cancellable Notation Fade Timer**: `_NotationOverlay.didUpdateWidget` uses a tracked `Timer? _fadeTimer` (cancelled in `dispose()` and before each new schedule) instead of a bare `Future.delayed`, preventing stacked setState callbacks from rapid board rotations within the 600 ms window.
 
 ### 🎯 Gameplay Features
 
 -   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts. The active tile dynamically calculates its width from character measurements to ensure it always auto-scrolls perfectly to the center of the viewport.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
 -   **Exit Match Interstitial Ads**: Displays a non-intrusive interstitial ad when leaving a chess match back to the main menu (with AdMob Console server-side frequency capping and instant offline fallback)
+-   **In-App Store Rating Prompt**: Seamlessly prompts for app rating/review on Google Play Store or App Store using `in_app_review` after a human victory upon returning to the main menu (guarded by `hasRatedApp` user preference)
 -   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
 -   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
 -   **Alternating Board Notation**: Algebraic coordinates on the board borders dynamically use the alternating background tile color (e.g. dark text on light tiles, light text on dark tiles) for crisp legibility.
@@ -95,6 +102,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
 -   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
+-   **[in_app_review](https://pub.dev/packages/in_app_review)** — Google Play Store & App Store native rating prompt
 
 ## 📦 Installation
 
@@ -182,6 +190,7 @@ lib/
 │   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo")
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
 │   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
+│   ├── rating_service.dart        # Google Play Store / App Store rating prompt (in_app_review)
 │   └── move_calculation/
 │       ├── piece_square_tables.dart   # squareValue() for incremental eval (undo/pop correctness)
 │       └── move_classes/
