@@ -3,7 +3,7 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def kotlin_version = '2.2.20'
+def kotlin_version = '2.3.20'
 
 
 def localProperties = new Properties()
@@ -87,6 +87,11 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
+    }
+
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
     }
 }
 

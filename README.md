@@ -91,7 +91,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ## 🛠️ Technologies Used
 
--   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.5+9`)
+-   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+12`)
 -   **[Flame](https://flame-engine.org/)** — 2D game engine for chess board rendering
 -   **[Provider](https://pub.dev/packages/provider)** — State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
@@ -100,6 +100,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
+-   **[in_app_purchase](https://pub.dev/packages/in_app_purchase)** — In-app purchases / monetization
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
 -   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
 -   **[in_app_review](https://pub.dev/packages/in_app_review)** — Google Play Store & App Store native rating prompt

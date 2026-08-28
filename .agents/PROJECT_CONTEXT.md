@@ -56,6 +56,7 @@ A feature-rich chess application built with **Flutter** and **Flame**. Offers si
 - **`play_games_service.dart`**: Google Play Games Services (Android only, disabled on iOS). Silent sign-in on startup run in a microtask after render. Hook points: `onGameStarted` → `AppModel.newGame`; `onPlayerWon` → `AppModel.endGame`; `onPawnPromotion` → `GameController.promote` (human only); `onCheckDelivered` → `GameController._moveCompletion` (human only). All calls are fire-and-forget.
 - **`in_app_update_service.dart`**: Checks for Google Play Store flexible/immediate updates at startup. Errors caught silently.
 - **`rating_service.dart`**: Singleton wrapping `in_app_review` package to prompt Google Play Store / App Store rating review dialog after human victory upon returning to the main menu (guarded by `hasRatedApp` preference).
+- **In-App Purchases**: Uses `in_app_purchase` package with Google Play Billing permission `com.android.vending.BILLING` configured in `AndroidManifest.xml`. Built with AGP `9.0.1`, Kotlin `2.3.20`, and Gradle `9.1.0`.
 
 ### 4. Marketing & Screenshots (`screenshots_editor/`)
 
