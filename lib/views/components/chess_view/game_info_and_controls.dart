@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 
 import '../../../model/app_model.dart';
 import 'game_info_and_controls/moves_undo_redo_row.dart';

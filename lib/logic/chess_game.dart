@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
-import 'package:flutter/cupertino.dart';
 
 import '../model/app_model.dart';
 import '../model/player.dart';

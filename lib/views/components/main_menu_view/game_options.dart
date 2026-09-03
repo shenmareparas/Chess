@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
 import 'game_options/ai_difficulty_picker.dart';

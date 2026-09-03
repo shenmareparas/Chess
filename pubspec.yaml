@@ -39,6 +39,8 @@ dependencies:
   in_app_review: ^2.0.12
   in_app_purchase: ^3.2.0
 
+  cupertino_ui: any
+  material_ui: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../logic/chess_constants.dart';
 import '../../../model/app_model.dart';
