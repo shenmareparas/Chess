@@ -3,7 +3,7 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"
 }
 
-def kotlin_version = '2.3.20'
+def kotlin_version = '2.4.0'
 
 
 def localProperties = new Properties()
@@ -37,7 +37,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.shenmareparas.chess"
-    compileSdkVersion 36
+    compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
 
 
@@ -58,7 +58,7 @@ android {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.shenmareparas.chess"
         minSdkVersion flutter.minSdkVersion
-        targetSdkVersion 36
+        targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         ndk {
