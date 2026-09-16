@@ -201,4 +201,3 @@ class _MainMenuViewState extends State<MainMenuView> {
     );
   }
 }
-

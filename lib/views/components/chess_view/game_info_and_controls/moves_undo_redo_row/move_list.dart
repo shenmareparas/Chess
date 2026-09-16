@@ -27,7 +27,8 @@ class _MoveListState extends State<MoveList> {
   // Track last-seen state to avoid registering _scrollToSelected after every
   // rebuild (timer ticks, AI thinking, etc.) — only fire when relevant state changes.
   int _lastMoveCount = -1;
-  int? _lastHistoryIndex = -2; // sentinel distinct from null and any valid index
+  int? _lastHistoryIndex =
+      -2; // sentinel distinct from null and any valid index
 
   AppModel get appModel => widget.appModel;
 

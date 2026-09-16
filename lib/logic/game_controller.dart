@@ -151,8 +151,7 @@ class GameController {
       }
 
       if (allLegalMoves.isNotEmpty) {
-        final randomMove =
-            allLegalMoves[_random.nextInt(allLegalMoves.length)];
+        final randomMove = allLegalMoves[_random.nextInt(allLegalMoves.length)];
         final movingPiece = board.tiles[randomMove.from];
         if (movingPiece != null && movingPiece.type == ChessPieceType.pawn) {
           if ((movingPiece.player == Player.player1 &&

@@ -91,6 +91,10 @@ class AppModel extends ChangeNotifier {
   /// after runApp(). Until then, navigation to ChessView is disabled.
   bool imagesReady = false;
 
+  /// Set to true when exiting the match view to prevent lifecycle events
+  /// or debounce timers from saving state after an explicit exit.
+  bool isExiting = false;
+
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
   bool get isAIsTurn =>
@@ -154,6 +158,9 @@ class AppModel extends ChangeNotifier {
   // ── Game Lifecycle ──
 
   void newGame({bool notify = true}) {
+    isExiting = false;
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
@@ -212,19 +219,27 @@ class AppModel extends ChangeNotifier {
     }
   }
 
-  void exitChessView() {
+  Future<void> exitChessView() async {
+    isExiting = true;
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     gameController?.cancelAIMove();
     timerService.stop();
-    GameStateStorage.clearGameState();
+    await GameStateStorage.clearGameState();
     historyViewIndex = null;
     notifyListeners();
   }
 
-  void saveAndExitChessView() {
+  Future<void> saveAndExitChessView() async {
     if (historyViewIndex != null) {
       setHistoryViewIndex(null, snap: true, playAudio: false);
     }
-    saveGameState();
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
+    if (!gameOver) {
+      await GameStateStorage.saveGameState(this);
+    }
+    isExiting = true;
     gameController?.cancelAIMove();
     timerService.stop();
     notifyListeners();
@@ -381,6 +396,8 @@ class AppModel extends ChangeNotifier {
       );
     }
 
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     GameStateStorage.clearGameState();
     if (!silent) notifyListeners();
   }
@@ -548,6 +565,7 @@ class AppModel extends ChangeNotifier {
   /// Rapid undo/redo or move bursts collapse into a single write,
   /// preventing SharedPreferences I/O on every single event.
   void saveGameState() {
+    if (gameOver || isExiting) return;
     _saveDebounceTimer?.cancel();
     _saveDebounceTimer = Timer(
       const Duration(milliseconds: 400),
@@ -559,6 +577,7 @@ class AppModel extends ChangeNotifier {
   /// Use this in lifecycle events (app pause, explicit exit) to ensure
   /// no data is lost.
   void saveGameStateImmediate() {
+    if (gameOver || isExiting) return;
     _saveDebounceTimer?.cancel();
     _saveDebounceTimer = null;
     GameStateStorage.saveGameState(this);
@@ -568,6 +587,9 @@ class AppModel extends ChangeNotifier {
     final state = await GameStateStorage.loadGameState();
     if (state == null) return;
 
+    isExiting = false;
+    _saveDebounceTimer?.cancel();
+    _saveDebounceTimer = null;
     gameController?.cancelAIMove();
     timerService.stop();
 

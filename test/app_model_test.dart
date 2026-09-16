@@ -1,4 +1,5 @@
 import 'package:en_passant/logic/game_controller.dart';
+import 'package:en_passant/logic/game_state_storage.dart';
 import 'package:en_passant/model/app_model.dart';
 import 'package:en_passant/model/player.dart';
 import 'package:en_passant/model/user_preferences.dart';
@@ -131,6 +132,38 @@ void main() {
 
       // User (White) delivered checkmate, so they should win
       expect(userWon, isTrue);
+    });
+
+    test('exitChessView clears saved game and prevents subsequent saves',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      appModel.newGame();
+
+      // Save game state
+      appModel.saveGameStateImmediate();
+      expect(await GameStateStorage.hasSavedGame(), isTrue);
+
+      // Exit without saving
+      await appModel.exitChessView();
+      expect(appModel.isExiting, isTrue);
+      expect(await GameStateStorage.hasSavedGame(), isFalse);
+
+      // Attempting to save after exit should be blocked
+      appModel.saveGameStateImmediate();
+      expect(await GameStateStorage.hasSavedGame(), isFalse);
+    });
+
+    test('saveAndExitChessView saves game state and marks isExiting', () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      appModel.newGame();
+
+      await appModel.saveAndExitChessView();
+      expect(appModel.isExiting, isTrue);
+      expect(await GameStateStorage.hasSavedGame(), isTrue);
     });
   });
 }

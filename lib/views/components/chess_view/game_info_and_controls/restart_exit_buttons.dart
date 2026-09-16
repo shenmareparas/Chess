@@ -188,8 +188,8 @@ class RestartExitButtons extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () {
               if (appModel.gameOver) {
-                void performExit() {
-                  appModel.exitChessView();
+                void performExit() async {
+                  await appModel.exitChessView();
                   AdService.instance.showExitInterstitialAd(
                     onAdDismissed: () {
                       if (context.mounted) Navigator.of(context).pop();

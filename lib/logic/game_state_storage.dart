@@ -31,6 +31,7 @@ class GameStateStorage {
   }
 
   static Future<void> saveGameState(AppModel appModel) async {
+    if (appModel.gameOver || appModel.isExiting) return;
     if (appModel.gameController == null) return;
     var gameController = appModel.gameController;
     if (gameController == null) return;
@@ -70,8 +71,12 @@ class GameStateStorage {
   static Future<Map<String, dynamic>?> loadGameState() async {
     final prefs = await _getPrefs();
 
-    // Check if any game state exists
-    if (!prefs.containsKey(_gameStateKey)) {
+    // Check if any game state exists or if the saved game was already over
+    if (!prefs.containsKey(_gameStateKey) ||
+        prefs.getBool(_gameOverKey) == true) {
+      if (prefs.containsKey(_gameStateKey)) {
+        await clearGameState();
+      }
       return null;
     }
 
@@ -120,7 +125,8 @@ class GameStateStorage {
 
   static Future<bool> hasSavedGame() async {
     final prefs = await _getPrefs();
-    return prefs.containsKey(_gameStateKey);
+    return prefs.containsKey(_gameStateKey) &&
+        (prefs.getBool(_gameOverKey) != true);
   }
 
   /// Parses the saved moves list from the state map.

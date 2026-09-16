@@ -43,7 +43,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Selective Provider Subscriptions**: `MainMenuView` uses `Provider.of<AppModel>(context, listen: false)` at its root; interactive sub-trees are wrapped in `Consumer<AppModel>` inside `Selector<AppModel, AppTheme>`, scoping rebuilds while keeping static background layers (`RepaintBoundary`-isolated dot grid & radial glows) unpainted during option changes.
     -   **Cached Confetti Colors**: Theme-derived confetti colors (computed via `HSVColor` transforms) are cached by theme name in `_ChessViewState` and only recomputed when the active theme actually changes.
     -   **Static AI Random Instance**: `GameController` holds a `static final _random = math.Random()` shared across all AI moves, avoiding 3 PRNG re-seedings per move at difficulty levels 1 & 2.
-    -   **Cancellable Notation Fade Timer**: `_NotationOverlay.didUpdateWidget` uses a tracked `Timer? _fadeTimer` (cancelled in `dispose()` and before each new schedule) instead of a bare `Future.delayed`, preventing stacked setState callbacks from rapid board rotations within the 600 ms window.
+    -   **Cancellable Notation Fade Timer**: `_NotationOverlay.didUpdateWidget` uses a tracked `Timer? _fadeTimer` (cancelled in `dispose()` and before each new schedule in `didUpdateWidget`) instead of a bare `Future.delayed`, preventing stacked setState callbacks from rapid board rotations within the 600 ms window.
+    -   **Lifecycle-Guarded Exit & Save Synchronization**: Cancels in-flight 400ms debounced save timers (`_saveDebounceTimer`) upon match exit or checkmate, guards against auto-saving during OS lifecycle transitions (`isExiting` flag prevents exit interstitial ads from triggering saves), and ignores completed games in storage to ensure a clean home screen state.
 
 ### 🎯 Gameplay Features
 
@@ -92,11 +93,12 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 ## 🛠️ Technologies Used
 
 -   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+12`)
+-   **[cupertino_ui](https://pub.dev/packages/cupertino_ui)** & **[material_ui](https://pub.dev/packages/material_ui)** — UI design components and styling wrappers
 -   **[Flame](https://flame-engine.org/)** — 2D game engine for chess board rendering
 -   **[Provider](https://pub.dev/packages/provider)** — State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** — Sound effects with pooled `AudioPool` for rapid move sounds
--   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic)
+-   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic) and exit interstitial ads (`google_mobile_ads` 9.1.0 with native `Google-Mobile-Ads-SDK` 13.9.0)
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
@@ -111,7 +113,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   Flutter SDK (3.0.0 or higher)
 -   Dart SDK (3.0.0 or higher)
--   Android Studio / Xcode (for mobile development)
+-   Android Studio / Xcode (iOS 15.0+ deployment target)
 -   A device or emulator
 
 ### Steps

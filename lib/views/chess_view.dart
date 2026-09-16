@@ -79,6 +79,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (appModel.isExiting) return;
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
       if (!appModel.gameOver) {
@@ -140,8 +141,8 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             if (appModel.gameOver) {
-              void performExit() {
-                appModel.exitChessView();
+              void performExit() async {
+                await appModel.exitChessView();
                 AdService.instance.showExitInterstitialAd(
                   onAdDismissed: () {
                     if (context.mounted) Navigator.of(context).pop();
@@ -440,11 +441,11 @@ void showExitDialog(BuildContext context) {
                         // Save & Exit (Solid Premium Button)
                         CupertinoButton(
                           padding: EdgeInsets.zero,
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.pop(dialogContext);
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
-                            appModel.saveAndExitChessView();
+                            await appModel.saveAndExitChessView();
                             AdService.instance.showExitInterstitialAd(
                               onAdDismissed: () {
                                 if (context.mounted)
@@ -488,11 +489,11 @@ void showExitDialog(BuildContext context) {
                         // Exit Without Saving (Glass / Outline Button)
                         CupertinoButton(
                           padding: EdgeInsets.zero,
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.pop(dialogContext);
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
-                            appModel.exitChessView();
+                            await appModel.exitChessView();
                             AdService.instance.showExitInterstitialAd(
                               onAdDismissed: () {
                                 if (context.mounted)
@@ -562,7 +563,7 @@ void showExitDialog(BuildContext context) {
       );
     },
   ).then((_) {
-    if (!appModel.gameOver) {
+    if (!appModel.gameOver && !appModel.isExiting) {
       appModel.timerService.resume();
     }
   });
