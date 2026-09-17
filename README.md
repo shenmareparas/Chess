@@ -113,7 +113,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   Flutter SDK (3.0.0 or higher)
 -   Dart SDK (3.0.0 or higher)
--   Android Studio / Xcode (iOS 15.0+ deployment target)
+-   Android Studio / Xcode (Android Gradle Plugin 9.4.0, Gradle 9.7.1, Kotlin 2.4.0, iOS 15.0+ deployment target)
 -   A device or emulator
 
 ### Steps
