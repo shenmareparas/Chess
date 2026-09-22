@@ -44,3 +44,5 @@ app.*.map.json
 # Screenshots Editor
 /screenshots_editor/node_modules/
 /screenshots_editor/.next/
+# Widget Preview related
+.widget_preview/
