@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:material_ui/material_ui.dart';
 
 import '../logic/audio_service.dart';
+import '../logic/chess_piece.dart';
 import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/haptic_service.dart';
@@ -100,6 +101,11 @@ class AppModel extends ChangeNotifier {
   bool get isAIsTurn =>
       playingWithAI && (turn == aiTurn) && (historyViewIndex == null);
   bool get playingWithAI => playerCount == 1;
+
+  /// Pieces captured from [player]'s side (i.e. pieces that player lost).
+  /// Returns an empty list if no game or board is active.
+  List<ChessPieceType> capturedPiecesFor(Player player) =>
+      gameController?.board.capturedPiecesFor(player) ?? const [];
 
   // ── Save Debounce ──
   Timer? _saveDebounceTimer;

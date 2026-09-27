@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 import '../logic/ad_service.dart';
 import '../logic/chess_game.dart';
 import '../logic/rating_service.dart';
+import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
+import 'components/chess_view/captured_pieces_row.dart';
 import 'components/chess_view/chess_board_widget.dart';
 import 'components/chess_view/game_info_and_controls.dart';
 import 'components/chess_view/game_info_and_controls/game_status.dart';
@@ -184,7 +186,46 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Center(
-                          child: ChessBoardWidget(appModel, chessGame!),
+                          child: ChessBoardWidget(
+                            appModel,
+                            chessGame!,
+                            topWidget: Selector<AppModel, int>(
+                              selector: (_, m) => m.moveMetaList.length,
+                              builder: (_, __, ___) {
+                                final topPlayer = appModel.isBoardInverted
+                                    ? appModel.playerSide
+                                    : oppositePlayer(appModel.playerSide);
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 6),
+                                  child: CapturedPiecesRow(
+                                    appModel: appModel,
+                                    player: topPlayer,
+                                    pieceTheme: appModel.pieceTheme,
+                                    theme: theme,
+                                    flipped: appModel.isBoardInverted,
+                                  ),
+                                );
+                              },
+                            ),
+                            bottomWidget: Selector<AppModel, int>(
+                              selector: (_, m) => m.moveMetaList.length,
+                              builder: (_, __, ___) {
+                                final bottomPlayer = appModel.isBoardInverted
+                                    ? oppositePlayer(appModel.playerSide)
+                                    : appModel.playerSide;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: CapturedPiecesRow(
+                                    appModel: appModel,
+                                    player: bottomPlayer,
+                                    pieceTheme: appModel.pieceTheme,
+                                    theme: theme,
+                                    flipped: appModel.isBoardInverted,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ),

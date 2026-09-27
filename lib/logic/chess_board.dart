@@ -167,6 +167,107 @@ class ChessBoard {
     return player == Player.player1 ? player1Queens : player2Queens;
   }
 
+  /// Returns a sorted list of piece types that have been captured from [player]'s side.
+  /// Sorted by descending material value for stable, canonical display order.
+  /// If a promoted piece (e.g. queen, rook, bishop, knight) is captured,
+  /// it is displayed as that promoted piece type instead of a pawn.
+  List<ChessPieceType> capturedPiecesFor(Player player) {
+    const Map<ChessPieceType, int> initial = {
+      ChessPieceType.queen: 1,
+      ChessPieceType.rook: 2,
+      ChessPieceType.bishop: 2,
+      ChessPieceType.knight: 2,
+      ChessPieceType.pawn: 8,
+    };
+
+    final alive = piecesForPlayer(player);
+    final Map<ChessPieceType, int> aliveStandard = {};
+    final List<ChessPiece> alivePromoted = [];
+
+    for (final p in alive) {
+      if (p.type == ChessPieceType.king || p.type == ChessPieceType.promotion) {
+        continue;
+      }
+      if (p.id % 2 != 0) {
+        // ID is odd: started as a pawn
+        if (p.type == ChessPieceType.pawn) {
+          aliveStandard[ChessPieceType.pawn] =
+              (aliveStandard[ChessPieceType.pawn] ?? 0) + 1;
+        } else {
+          // Pawn that got promoted and is still alive
+          alivePromoted.add(p);
+        }
+      } else {
+        // Started as standard back-rank piece
+        aliveStandard[p.type] = (aliveStandard[p.type] ?? 0) + 1;
+      }
+    }
+
+    // Determine how many pawns promoted in total for this player across the game history
+    final Map<ChessPieceType, int> totalPromoted = {};
+    for (final mso in moveStack) {
+      if (mso.promotion &&
+          mso.movedPiece != null &&
+          mso.movedPiece!.player == player) {
+        final promoType = mso.promotionType;
+        if (promoType != null &&
+            promoType != ChessPieceType.promotion &&
+            promoType != ChessPieceType.pawn) {
+          totalPromoted[promoType] = (totalPromoted[promoType] ?? 0) + 1;
+        }
+      }
+    }
+
+    // Promoted pieces that were captured = total promoted minus currently alive promoted
+    final Map<ChessPieceType, int> capturedPromoted = {};
+    for (final entry in totalPromoted.entries) {
+      final aliveCount = alivePromoted.where((p) => p.type == entry.key).length;
+      final capturedCount = entry.value - aliveCount;
+      if (capturedCount > 0) {
+        capturedPromoted[entry.key] = capturedCount;
+      }
+    }
+
+    // Calculate total pawns promoted
+    int totalPromotedCount = 0;
+    for (final count in totalPromoted.values) {
+      totalPromotedCount += count;
+    }
+
+    final List<ChessPieceType> captured = [];
+    for (final type in [
+      ChessPieceType.queen,
+      ChessPieceType.rook,
+      ChessPieceType.bishop,
+      ChessPieceType.knight,
+      ChessPieceType.pawn,
+    ]) {
+      if (type == ChessPieceType.pawn) {
+        // Pawns captured as pawns = 8 - (alive standard pawns + total promoted pawns)
+        final alivePawns = aliveStandard[ChessPieceType.pawn] ?? 0;
+        final gonePawns = 8 - alivePawns - totalPromotedCount;
+        for (int i = 0; i < gonePawns; i++) {
+          captured.add(ChessPieceType.pawn);
+        }
+      } else {
+        // Initial non-pawn pieces captured
+        final initCount = initial[type] ?? 0;
+        final aliveCount = aliveStandard[type] ?? 0;
+        final goneStandard = (initCount - aliveCount).clamp(0, initCount);
+        for (int i = 0; i < goneStandard; i++) {
+          captured.add(type);
+        }
+        // Promoted pieces captured as this type
+        final promoCaptured = capturedPromoted[type] ?? 0;
+        for (int i = 0; i < promoCaptured; i++) {
+          captured.add(type);
+        }
+      }
+    }
+
+    return captured;
+  }
+
   // ──────────────────────────────────────────────
   // Push / Pop (make / unmake move)
   // ──────────────────────────────────────────────
