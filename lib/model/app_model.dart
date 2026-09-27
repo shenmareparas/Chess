@@ -47,6 +47,7 @@ class AppModel extends ChangeNotifier {
   bool get enableRotation => prefs.enableRotation;
   bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
+  bool get showCapturedPieces => prefs.showCapturedPieces;
   int get timerIncrement => prefs.timerIncrement;
   String get timerMode => prefs.timerMode;
   AppTheme get theme => prefs.theme;
@@ -146,6 +147,14 @@ class AppModel extends ChangeNotifier {
     } else {
       return enableRotation && turn == Player.player2;
     }
+  }
+
+  /// Whether pieces should be visually rotated 180 degrees (in 2P mode on Player 2's turn).
+  bool get isPieceRotated {
+    return enablePieceRotation &&
+        !playingWithAI &&
+        playerCount == 2 &&
+        turn == Player.player2;
   }
 
   AppModel({UserPreferences? prefs}) : prefs = prefs ?? UserPreferences() {
@@ -529,6 +538,11 @@ class AppModel extends ChangeNotifier {
   void setEnablePieceRotation(bool enable) {
     haptic.light();
     prefs.setEnablePieceRotation(enable);
+  }
+
+  void setShowCapturedPieces(bool show) {
+    haptic.light();
+    prefs.setShowCapturedPieces(show);
   }
 
   void setAllowUndoRedo(bool allow) {

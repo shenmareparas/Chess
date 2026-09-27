@@ -165,5 +165,26 @@ void main() {
       expect(appModel.isExiting, isTrue);
       expect(await GameStateStorage.hasSavedGame(), isTrue);
     });
+
+    test('showCapturedPieces defaults to true and persists changes', () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      expect(prefs.showCapturedPieces, isTrue);
+
+      final appModel = AppModel(prefs: prefs);
+      expect(appModel.showCapturedPieces, isTrue);
+
+      appModel.setShowCapturedPieces(false);
+      expect(appModel.showCapturedPieces, isFalse);
+      expect(prefs.showCapturedPieces, isFalse);
+
+      final reloadedPrefs = UserPreferences();
+      await reloadedPrefs.load();
+      expect(reloadedPrefs.showCapturedPieces, isFalse);
+
+      await appModel.resetSettingsToDefaults();
+      expect(appModel.showCapturedPieces, isTrue);
+      expect(prefs.showCapturedPieces, isTrue);
+    });
   });
 }

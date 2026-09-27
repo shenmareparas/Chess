@@ -67,6 +67,13 @@ class Toggles extends StatelessWidget {
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
+            'Show Captured Pieces',
+            icon: Icons.view_sidebar_outlined,
+            toggle: appModel.showCapturedPieces,
+            setFunc: appModel.setShowCapturedPieces,
+          ),
+          Divider(height: 1, color: themeColor, thickness: 1),
+          Toggle(
             'Sound',
             icon: Icons.volume_up_rounded,
             toggle: appModel.soundEnabled,

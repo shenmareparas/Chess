@@ -5,7 +5,6 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 
 import '../model/app_model.dart';
-import '../model/player.dart';
 import 'chess_board.dart';
 import 'chess_piece.dart';
 import 'chess_piece_sprite.dart';
@@ -286,10 +285,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     if (appModel.enableRotation) {
       return -currentRotation;
     }
-    if (appModel.enablePieceRotation &&
-        !appModel.playingWithAI &&
-        appModel.playerCount == 2 &&
-        appModel.turn == Player.player2) {
+    if (appModel.isPieceRotated) {
       return math.pi;
     }
     return 0;

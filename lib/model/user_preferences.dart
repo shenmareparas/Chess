@@ -32,6 +32,7 @@ class UserPreferences {
   bool enableRotation = true;
   bool enablePieceRotation = true;
   bool hapticEnabled = false;
+  bool showCapturedPieces = true;
   bool hasRatedApp = false;
   int timerIncrement = 0;
   String timerMode = 'increment';
@@ -67,6 +68,7 @@ class UserPreferences {
     enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
+    showCapturedPieces = _prefs!.getBool('showCapturedPieces') ?? true;
     hasRatedApp = _prefs!.getBool('hasRatedApp') ?? false;
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
     timerMode = _prefs!.getString('timerMode') ?? 'increment';
@@ -143,6 +145,13 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setShowCapturedPieces(bool show) async {
+    showCapturedPieces = show;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setBool('showCapturedPieces', show);
+    onChanged?.call();
+  }
+
   Future<void> setHasRatedApp(bool rated) async {
     hasRatedApp = rated;
     _prefs ??= await SharedPreferences.getInstance();
@@ -175,6 +184,7 @@ class UserPreferences {
     enablePieceRotation = true;
     allowUndoRedo = true;
     hapticEnabled = false;
+    showCapturedPieces = true;
     timerIncrement = 0;
     timerMode = 'increment';
 
@@ -189,6 +199,7 @@ class UserPreferences {
     await _prefs!.setBool('enablePieceRotation', enablePieceRotation);
     await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
     await _prefs!.setBool('hapticEnabled', hapticEnabled);
+    await _prefs!.setBool('showCapturedPieces', showCapturedPieces);
     await _prefs!.setInt('timerIncrement', timerIncrement);
     await _prefs!.setString('timerMode', timerMode);
     onChanged?.call();

@@ -13,6 +13,7 @@ class CapturedPiecesRow extends StatelessWidget {
   final String pieceTheme;
   final AppTheme theme;
   final bool flipped;
+  final bool rotatePieces;
 
   const CapturedPiecesRow({
     required this.appModel,
@@ -20,6 +21,7 @@ class CapturedPiecesRow extends StatelessWidget {
     required this.pieceTheme,
     required this.theme,
     this.flipped = false,
+    this.rotatePieces = false,
     super.key,
   });
 
@@ -85,6 +87,7 @@ class CapturedPiecesRow extends StatelessWidget {
                         player: player,
                         pieceTheme: pieceTheme,
                         theme: theme,
+                        rotate: rotatePieces,
                       ))
                   .toList(),
             ),
@@ -101,6 +104,7 @@ class _PieceGroupTombstone extends StatelessWidget {
   final Player player;
   final String pieceTheme;
   final AppTheme theme;
+  final bool rotate;
 
   const _PieceGroupTombstone({
     required this.pieceType,
@@ -108,6 +112,7 @@ class _PieceGroupTombstone extends StatelessWidget {
     required this.player,
     required this.pieceTheme,
     required this.theme,
+    this.rotate = false,
   });
 
   @override
@@ -120,52 +125,57 @@ class _PieceGroupTombstone extends StatelessWidget {
 
     // Black pieces receive a subtle soft ambient glow so their dark silhouettes
     // are crisp and unmistakably distinct against any dark theme background.
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            decoration: isWhite
-                ? null
-                : BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.lightTile.withValues(alpha: 0.28),
-                        blurRadius: 6,
-                        spreadRadius: 1,
-                      ),
-                    ],
+    return AnimatedRotation(
+      turns: rotate ? 0.5 : 0,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              decoration: isWhite
+                  ? null
+                  : BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.lightTile.withValues(alpha: 0.28),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+              child: Image.asset(
+                imagePath,
+                width: 24,
+                height: 24,
+                errorBuilder: (_, __, ___) =>
+                    const SizedBox(width: 24, height: 24),
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isWhite
+                    ? theme.lightTile
+                    : theme.lightTile.withValues(alpha: 0.9),
+                shadows: const [
+                  Shadow(
+                    color: Color(0x99000000),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
                   ),
-            child: Image.asset(
-              imagePath,
-              width: 24,
-              height: 24,
-              errorBuilder: (_, __, ___) =>
-                  const SizedBox(width: 24, height: 24),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 3),
-          Text(
-            '$count',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: isWhite
-                  ? theme.lightTile
-                  : theme.lightTile.withValues(alpha: 0.9),
-              shadows: const [
-                Shadow(
-                  color: Color(0x99000000),
-                  offset: Offset(0, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -186,45 +186,70 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Center(
-                          child: ChessBoardWidget(
-                            appModel,
-                            chessGame!,
-                            topWidget: Selector<AppModel, int>(
-                              selector: (_, m) => m.moveMetaList.length,
-                              builder: (_, __, ___) {
-                                final topPlayer = appModel.isBoardInverted
-                                    ? appModel.playerSide
-                                    : oppositePlayer(appModel.playerSide);
-                                return Padding(
-                                  padding: const EdgeInsets.only(bottom: 6),
-                                  child: CapturedPiecesRow(
-                                    appModel: appModel,
-                                    player: topPlayer,
-                                    pieceTheme: appModel.pieceTheme,
-                                    theme: theme,
-                                    flipped: appModel.isBoardInverted,
-                                  ),
-                                );
-                              },
-                            ),
-                            bottomWidget: Selector<AppModel, int>(
-                              selector: (_, m) => m.moveMetaList.length,
-                              builder: (_, __, ___) {
-                                final bottomPlayer = appModel.isBoardInverted
-                                    ? oppositePlayer(appModel.playerSide)
-                                    : appModel.playerSide;
-                                return Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: CapturedPiecesRow(
-                                    appModel: appModel,
-                                    player: bottomPlayer,
-                                    pieceTheme: appModel.pieceTheme,
-                                    theme: theme,
-                                    flipped: appModel.isBoardInverted,
-                                  ),
-                                );
-                              },
-                            ),
+                          child: Selector<AppModel, bool>(
+                            selector: (_, m) => m.showCapturedPieces,
+                            builder: (_, showCapturedPieces, ___) {
+                              return ChessBoardWidget(
+                                appModel,
+                                chessGame!,
+                                topWidget: showCapturedPieces
+                                    ? Selector<AppModel, (int, bool)>(
+                                        selector: (_, m) => (
+                                          m.moveMetaList.length,
+                                          m.isPieceRotated,
+                                        ),
+                                        builder: (_, data, ___) {
+                                          final isPieceRotated = data.$2;
+                                          final topPlayer =
+                                              appModel.isBoardInverted
+                                                  ? appModel.playerSide
+                                                  : oppositePlayer(
+                                                      appModel.playerSide);
+                                          return Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 6),
+                                            child: CapturedPiecesRow(
+                                              appModel: appModel,
+                                              player: topPlayer,
+                                              pieceTheme: appModel.pieceTheme,
+                                              theme: theme,
+                                              flipped: appModel.isBoardInverted,
+                                              rotatePieces: isPieceRotated,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : null,
+                                bottomWidget: showCapturedPieces
+                                    ? Selector<AppModel, (int, bool)>(
+                                        selector: (_, m) => (
+                                          m.moveMetaList.length,
+                                          m.isPieceRotated,
+                                        ),
+                                        builder: (_, data, ___) {
+                                          final isPieceRotated = data.$2;
+                                          final bottomPlayer =
+                                              appModel.isBoardInverted
+                                                  ? oppositePlayer(
+                                                      appModel.playerSide)
+                                                  : appModel.playerSide;
+                                          return Padding(
+                                            padding:
+                                                const EdgeInsets.only(top: 6),
+                                            child: CapturedPiecesRow(
+                                              appModel: appModel,
+                                              player: bottomPlayer,
+                                              pieceTheme: appModel.pieceTheme,
+                                              theme: theme,
+                                              flipped: appModel.isBoardInverted,
+                                              rotatePieces: isPieceRotated,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : null,
+                              );
+                            },
                           ),
                         ),
                       ),
