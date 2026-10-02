@@ -124,7 +124,7 @@ class GameStatus extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _PulseDot(color: statusTheme.dotColor),
+                RepaintBoundary(child: _PulseDot(color: statusTheme.dotColor)),
                 const SizedBox(width: 8),
                 Text(
                   statusText,
@@ -283,24 +283,21 @@ class _PulseDotState extends State<_PulseDot>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) => Opacity(
-        opacity: _animation.value,
-        child: Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: widget.color,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.5),
-                blurRadius: 6,
-                spreadRadius: 2,
-              ),
-            ],
-          ),
+    return FadeTransition(
+      opacity: _animation,
+      child: Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(
+          color: widget.color,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: widget.color.withValues(alpha: 0.5),
+              blurRadius: 6,
+              spreadRadius: 2,
+            ),
+          ],
         ),
       ),
     );

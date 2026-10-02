@@ -196,7 +196,6 @@ lib/
 │   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
 │   ├── rating_service.dart        # Google Play Store / App Store rating prompt (in_app_review)
 │   └── move_calculation/
-│       ├── piece_square_tables.dart   # squareValue() for incremental eval (undo/pop correctness)
 │       └── move_classes/
 │           ├── move.dart              # Move (from, to, promotionType)
 │           ├── move_meta.dart         # Move metadata (isCheck, isCheckmate, isStalemate, promotion)

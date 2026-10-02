@@ -132,7 +132,9 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             _hasPlayedConfetti = true;
           }
         } else {
-          _confettiController.stop();
+          if (_hasPlayedConfetti) {
+            _confettiController.stop();
+          }
           if (!appModel.gameOver) {
             _hasPlayedConfetti = false;
           }
@@ -193,10 +195,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                 appModel,
                                 chessGame!,
                                 topWidget: showCapturedPieces
-                                    ? Selector<AppModel, (int, bool)>(
+                                    ? Selector<AppModel, (int, bool, int?)>(
                                         selector: (_, m) => (
                                           m.moveMetaList.length,
                                           m.isPieceRotated,
+                                          m.historyViewIndex,
                                         ),
                                         builder: (_, data, ___) {
                                           final isPieceRotated = data.$2;
@@ -221,10 +224,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                       )
                                     : null,
                                 bottomWidget: showCapturedPieces
-                                    ? Selector<AppModel, (int, bool)>(
+                                    ? Selector<AppModel, (int, bool, int?)>(
                                         selector: (_, m) => (
                                           m.moveMetaList.length,
                                           m.isPieceRotated,
+                                          m.historyViewIndex,
                                         ),
                                         builder: (_, data, ___) {
                                           final isPieceRotated = data.$2;
@@ -407,8 +411,8 @@ class _ChessBackground extends StatelessWidget {
             ),
           ),
 
-          // Glow blobs — RepaintBoundary keeps the expensive boxShadow on its
-          // own GPU layer so the Selector's infrequent rebuilds don't cause jank.
+          // Glow blobs — RepaintBoundary keeps the gradient layer isolated
+          // so the Selector's infrequent rebuilds don't cause jank.
           Positioned(
             top: 150,
             right: -50,
@@ -418,13 +422,12 @@ class _ChessBackground extends StatelessWidget {
                 height: 280,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.lightTile.withValues(alpha: 0.05),
-                      blurRadius: 120,
-                      spreadRadius: 30,
-                    ),
-                  ],
+                  gradient: RadialGradient(
+                    colors: [
+                      theme.lightTile.withValues(alpha: 0.08),
+                      theme.lightTile.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -439,13 +442,12 @@ class _ChessBackground extends StatelessWidget {
                 height: 250,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.darkTile.withValues(alpha: 0.04),
-                      blurRadius: 100,
-                      spreadRadius: 20,
-                    ),
-                  ],
+                  gradient: RadialGradient(
+                    colors: [
+                      theme.darkTile.withValues(alpha: 0.07),
+                      theme.darkTile.withValues(alpha: 0.0),
+                    ],
+                  ),
                 ),
               ),
             ),

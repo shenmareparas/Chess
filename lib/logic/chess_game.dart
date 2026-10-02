@@ -267,8 +267,9 @@ class ChessGame extends FlameGame with TapCallbacks {
   }
 
   int _vector2ToTile(Vector2 vector2) {
-    return (vector2.y / (tileSize ?? 0)).floor() * 8 +
-        (vector2.x / (tileSize ?? 0)).floor();
+    final ts = tileSize;
+    if (ts == null || ts == 0) return -1;
+    return (vector2.y / ts).floor() * 8 + (vector2.x / ts).floor();
   }
 
   void _drawBoard(Canvas canvas) {

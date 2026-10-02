@@ -6,11 +6,43 @@ import '../model/player.dart';
 /// Extracted from AppModel to follow single-responsibility principle.
 class AudioService {
   bool _enabled;
+  AudioPool? _movePool;
+  AudioPool? _winPool;
+  AudioPool? _losePool;
+  AudioPool? _tiePool;
 
   AudioService({bool enabled = true}) : _enabled = enabled;
 
   Future<void> initialize() async {
-    // Assets are preloaded in main.dart via FlameAudio.audioCache.loadAll
+    try {
+      _movePool = await FlameAudio.createPool(
+        'piece_moved.mp3',
+        maxPlayers: 1,
+      );
+      _winPool = await FlameAudio.createPool(
+        'win.wav',
+        maxPlayers: 1,
+      );
+      _losePool = await FlameAudio.createPool(
+        'lose.wav',
+        maxPlayers: 1,
+      );
+      _tiePool = await FlameAudio.createPool(
+        'tie.wav',
+        maxPlayers: 1,
+      );
+    } catch (_) {}
+  }
+
+  void dispose() {
+    _movePool?.dispose();
+    _movePool = null;
+    _winPool?.dispose();
+    _winPool = null;
+    _losePool?.dispose();
+    _losePool = null;
+    _tiePool?.dispose();
+    _tiePool = null;
   }
 
   bool get enabled => _enabled;
@@ -18,7 +50,35 @@ class AudioService {
 
   void playMovedSound() {
     if (!_enabled) return;
-    FlameAudio.play('piece_moved.mp3', volume: 1.0);
+    if (_movePool != null) {
+      _movePool!.start(volume: 1.0);
+    } else {
+      FlameAudio.play('piece_moved.mp3', volume: 1.0);
+    }
+  }
+
+  void _playWin() {
+    if (_winPool != null) {
+      _winPool!.start(volume: 1.0);
+    } else {
+      FlameAudio.play('win.wav', volume: 1.0);
+    }
+  }
+
+  void _playLose() {
+    if (_losePool != null) {
+      _losePool!.start(volume: 1.0);
+    } else {
+      FlameAudio.play('lose.wav', volume: 1.0);
+    }
+  }
+
+  void _playTie() {
+    if (_tiePool != null) {
+      _tiePool!.start(volume: 1.0);
+    } else {
+      FlameAudio.play('tie.wav', volume: 1.0);
+    }
   }
 
   void playGameEndSound({
@@ -32,7 +92,7 @@ class AudioService {
     if (!_enabled) return;
 
     if (stalemate) {
-      FlameAudio.play('tie.wav', volume: 1.0);
+      _playTie();
       return;
     }
 
@@ -49,12 +109,12 @@ class AudioService {
 
     if (playingWithAI) {
       if (winner == playerSide) {
-        FlameAudio.play('win.wav', volume: 1.0);
+        _playWin();
       } else {
-        FlameAudio.play('lose.wav', volume: 1.0);
+        _playLose();
       }
     } else {
-      FlameAudio.play('win.wav', volume: 1.0);
+      _playWin();
     }
   }
 

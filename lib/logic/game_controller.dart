@@ -127,7 +127,12 @@ class GameController {
 
   void _aiMove() async {
     if (appModel.gameOver) return;
-    await Future.delayed(const Duration(milliseconds: 500));
+    final int delayMs = appModel.aiDifficulty == 1
+        ? 400
+        : appModel.aiDifficulty == 2
+            ? 450
+            : 500;
+    await Future.delayed(Duration(milliseconds: delayMs));
     if (appModel.gameOver) return;
 
     final int difficulty = appModel.aiDifficulty;

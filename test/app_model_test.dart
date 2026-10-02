@@ -1,5 +1,7 @@
+import 'package:en_passant/logic/chess_piece.dart';
 import 'package:en_passant/logic/game_controller.dart';
 import 'package:en_passant/logic/game_state_storage.dart';
+import 'package:en_passant/logic/move_calculation/move_classes/move.dart';
 import 'package:en_passant/model/app_model.dart';
 import 'package:en_passant/model/player.dart';
 import 'package:en_passant/model/user_preferences.dart';
@@ -185,6 +187,45 @@ void main() {
       await appModel.resetSettingsToDefaults();
       expect(appModel.showCapturedPieces, isTrue);
       expect(prefs.showCapturedPieces, isTrue);
+    });
+
+    test('captured pieces update dynamically during history navigation',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+
+      // Play e2e4 (48 -> 32)
+      final meta1 = controller.board.push(Move(48, 32));
+      appModel.pushMoveMeta(meta1);
+
+      // Play d7d5 (11 -> 27)
+      final meta2 = controller.board.push(Move(11, 27));
+      appModel.pushMoveMeta(meta2);
+
+      // White captures Black's pawn: e4xd5 (32 -> 27)
+      final meta3 = controller.board.push(Move(32, 27));
+      appModel.pushMoveMeta(meta3);
+
+      // Verify captured pieces at live state: Player 2 lost 1 pawn
+      expect(appModel.capturedPiecesFor(Player.player2), [ChessPieceType.pawn]);
+      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
+
+      // Rewind history to move index 1 (before the capture on move 2)
+      appModel.setHistoryViewIndex(1);
+
+      // Before the capture, Player 2 had NO captured pieces
+      expect(appModel.capturedPiecesFor(Player.player2), isEmpty);
+      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
+
+      // Return to live game
+      appModel.setHistoryViewIndex(null);
+
+      // Capture is restored
+      expect(appModel.capturedPiecesFor(Player.player2), [ChessPieceType.pawn]);
+      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
     });
   });
 }

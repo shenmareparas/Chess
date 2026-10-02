@@ -152,7 +152,6 @@ class _ChessState extends State<Chess> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    _updateOrientation();
     return CupertinoApp(
       debugShowCheckedModeBanner: false,
       title: 'Chess',

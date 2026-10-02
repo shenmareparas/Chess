@@ -53,14 +53,22 @@ class ChessPieceSprite {
     }
   }
 
-  void initSprite(ChessPiece piece) async {
+  void initSprite(ChessPiece piece) {
     String color = piece.player == Player.player1 ? 'white' : 'black';
     String pieceName = pieceTypeToString(piece.type);
     if (piece.type == ChessPieceType.promotion) {
       pieceName = 'pawn';
     }
-    sprite = Sprite(await Flame.images.load(
-        'pieces/${formatPieceTheme(pieceTheme ?? "")}/${pieceName}_$color.png'));
+    final imagePath =
+        'pieces/${formatPieceTheme(pieceTheme ?? "")}/${pieceName}_$color.png';
+    try {
+      final img = Flame.images.fromCache(imagePath);
+      sprite = Sprite(img);
+    } catch (_) {
+      Flame.images.load(imagePath).then((img) {
+        sprite = Sprite(img);
+      });
+    }
   }
 
   void initSpritePosition(double tileSize, AppModel appModel) {

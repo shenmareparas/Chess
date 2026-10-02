@@ -11,11 +11,14 @@ const PIECE_THEMES = [
   'Fairy Tale'
 ];
 
-final List<String> sortedPieceThemes = () {
-  var list = List<String>.from(PIECE_THEMES);
-  list.sort();
-  return list;
-}();
+const List<String> sortedPieceThemes = [
+  '8-Bit',
+  'Angular',
+  'Classic',
+  'Fairy Tale',
+  'Letters',
+  'Old School',
+];
 
 /// Manages user preferences backed by SharedPreferences.
 /// Extracted from AppModel to follow single-responsibility principle.

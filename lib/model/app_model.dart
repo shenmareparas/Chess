@@ -691,6 +691,7 @@ class AppModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    audio.dispose();
     gameController?.dispose();
     StockfishService.instance.dispose();
     super.dispose();

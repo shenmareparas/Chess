@@ -1,33 +1,10 @@
-import 'dart:math' as math;
-
 import '../model/player.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/direction.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
 import 'move_calculation/move_classes/move_stack_object.dart';
-import 'move_calculation/piece_square_tables.dart';
 import 'shared_functions.dart';
-
-// Zobrist hashing constants
-// 12 piece types (6 types x 2 colors) x 64 squares + 1 side-to-move
-final List<List<int>> _zobristTable = _initZobristTable();
-final int _zobristSideToMove = math.Random(9999).nextInt(0x7FFFFFFF);
-
-const _pieceTypeIndex = {
-  ChessPieceType.pawn: 0,
-  ChessPieceType.knight: 1,
-  ChessPieceType.bishop: 2,
-  ChessPieceType.rook: 3,
-  ChessPieceType.queen: 4,
-  ChessPieceType.king: 5,
-};
-
-List<List<int>> _initZobristTable() {
-  var rng = math.Random(42);
-  return List.generate(
-      12, (_) => List.generate(64, (_) => rng.nextInt(0x7FFFFFFF)));
-}
 
 const KING_ROW_PIECES = [
   ChessPieceType.rook,
@@ -82,47 +59,24 @@ class ChessBoard {
   bool player1KingInCheck = false;
   bool player2KingInCheck = false;
   int moveCount = 0;
-  int zobristHash = 0;
 
-  // Incremental evaluation state
-  int incrementalValue = 0;
-  bool inEndGameCached = false;
+  // Cached captured pieces (invalidated on push/pop)
+  List<ChessPieceType>? _capturedP1Cache;
+  List<ChessPieceType>? _capturedP2Cache;
+
+  void _invalidateCapturedCache() {
+    _capturedP1Cache = null;
+    _capturedP2Cache = null;
+  }
 
   ChessBoard() {
     _addPiecesForPlayer(Player.player1);
     _addPiecesForPlayer(Player.player2);
-    _initZobristHash();
-    _initIncrementalValue();
   }
 
   /// Creates an empty board with no pieces.
   /// Used by [checkmateIsolateEntry] to reconstruct state from a serialized snapshot.
   ChessBoard.blank();
-
-  // ──────────────────────────────────────────────
-  // Initialization
-  // ──────────────────────────────────────────────
-
-  void _initZobristHash() {
-    zobristHash = 0;
-    for (var piece in player1Pieces.followedBy(player2Pieces)) {
-      zobristHash ^= _zobristPieceValue(piece);
-    }
-  }
-
-  void _initIncrementalValue() {
-    incrementalValue = 0;
-    for (var piece in player1Pieces.followedBy(player2Pieces)) {
-      incrementalValue += piece.value + squareValue(piece, false);
-    }
-    inEndGameCached = _computeInEndGame();
-  }
-
-  bool _computeInEndGame() {
-    return (player1Queens.isEmpty && player2Queens.isEmpty) ||
-        player1Pieces.length <= 3 ||
-        player2Pieces.length <= 3;
-  }
 
   void _addPiecesForPlayer(Player player) {
     var kingRowOffset = player == Player.player1 ? 56 : 0;
@@ -172,6 +126,13 @@ class ChessBoard {
   /// If a promoted piece (e.g. queen, rook, bishop, knight) is captured,
   /// it is displayed as that promoted piece type instead of a pawn.
   List<ChessPieceType> capturedPiecesFor(Player player) {
+    if (player == Player.player1 && _capturedP1Cache != null) {
+      return _capturedP1Cache!;
+    }
+    if (player == Player.player2 && _capturedP2Cache != null) {
+      return _capturedP2Cache!;
+    }
+
     const Map<ChessPieceType, int> initial = {
       ChessPieceType.queen: 1,
       ChessPieceType.rook: 2,
@@ -265,6 +226,12 @@ class ChessBoard {
       }
     }
 
+    if (player == Player.player1) {
+      _capturedP1Cache = captured;
+    } else {
+      _capturedP2Cache = captured;
+    }
+
     return captured;
   }
 
@@ -275,17 +242,13 @@ class ChessBoard {
   MoveMeta push(Move move,
       {bool getMeta = false,
       ChessPieceType promotionType = ChessPieceType.promotion}) {
+    _invalidateCapturedCache();
     var mso =
         MoveStackObject(move, tiles[move.from], tiles[move.to], enPassantPiece);
-    mso.previousHash = zobristHash;
-    mso.previousBoardValue = incrementalValue;
-    mso.previousInEndGame = inEndGameCached;
     var meta = MoveMeta(move, mso.movedPiece?.player, mso.movedPiece?.type);
     if (getMeta) {
       _checkMoveAmbiguity(move, meta);
     }
-    // Toggle side to move
-    zobristHash ^= _zobristSideToMove;
     if (_castled(mso.movedPiece, mso.takenPiece)) {
       _castle(mso, meta);
     } else {
@@ -309,8 +272,6 @@ class ChessBoard {
     }
     moveStack.add(mso);
     moveCount++;
-    // Update endgame flag (board value is tracked incrementally)
-    _updateEndGameFlag();
     return meta;
   }
 
@@ -320,10 +281,8 @@ class ChessBoard {
   }
 
   MoveStackObject pop() {
+    _invalidateCapturedCache();
     var mso = moveStack.removeLast();
-    zobristHash = mso.previousHash;
-    incrementalValue = mso.previousBoardValue;
-    inEndGameCached = mso.previousInEndGame;
     enPassantPiece = mso.enPassantPiece;
     if (mso.castled) {
       _undoCastle(mso);
@@ -460,24 +419,10 @@ class ChessBoard {
   // ──────────────────────────────────────────────
 
   void _standardMove(MoveStackObject mso, MoveMeta meta) {
-    var piece = mso.movedPiece;
-    if (piece != null) {
-      zobristHash ^= _zobristPieceAt(piece, mso.move.from);
-      zobristHash ^= _zobristPieceAt(piece, mso.move.to);
-      incrementalValue -= squareValue(piece, inEndGameCached);
-    }
-    if (mso.takenPiece != null) {
-      zobristHash ^= _zobristPieceValue(mso.takenPiece!);
-    }
     _setTile(mso.move.to, mso.movedPiece);
     _setTile(mso.move.from, null);
-    if (piece != null) {
-      incrementalValue += squareValue(piece, inEndGameCached);
-    }
     mso.movedPiece?.moveCount++;
     if (mso.takenPiece != null) {
-      incrementalValue -=
-          mso.takenPiece!.value + squareValue(mso.takenPiece!, inEndGameCached);
       _removePiece(mso.takenPiece);
       meta.took = true;
     }
@@ -500,24 +445,12 @@ class ChessBoard {
     var rook = mso.movedPiece?.type == ChessPieceType.rook
         ? mso.movedPiece
         : mso.takenPiece;
-    if (king != null) {
-      incrementalValue -= squareValue(king, inEndGameCached);
-    }
-    if (rook != null) {
-      incrementalValue -= squareValue(rook, inEndGameCached);
-    }
     _setTile(king?.tile, null);
     _setTile(rook?.tile, null);
     var kingCol = tileToCol(rook?.tile ?? 0) == 0 ? 2 : 6;
     var rookCol = tileToCol(rook?.tile ?? 0) == 0 ? 3 : 5;
     _setTile(tileToRow(king?.tile ?? 0) * 8 + kingCol, king);
     _setTile(tileToRow(rook?.tile ?? 0) * 8 + rookCol, rook);
-    if (king != null) {
-      incrementalValue += squareValue(king, inEndGameCached);
-    }
-    if (rook != null) {
-      incrementalValue += squareValue(rook, inEndGameCached);
-    }
     tileToCol(rook?.tile ?? 0) == 3
         ? meta.queenCastle = true
         : meta.kingCastle = true;
@@ -543,16 +476,9 @@ class ChessBoard {
   }
 
   void _promote(MoveStackObject mso, MoveMeta meta) {
-    var piece = mso.movedPiece;
-    if (piece != null) {
-      incrementalValue -= piece.value + squareValue(piece, inEndGameCached);
-    }
     mso.movedPiece?.type = mso.promotionType ?? ChessPieceType.promotion;
     if (mso.promotionType != ChessPieceType.promotion) {
       addPromotedPiece(mso);
-    }
-    if (piece != null) {
-      incrementalValue += piece.value + squareValue(piece, inEndGameCached);
     }
     meta.promotion = true;
     mso.promotion = true;
@@ -598,8 +524,6 @@ class ChessBoard {
     var tile = (mso.movedPiece?.tile ?? 0) + offset;
     var takenPiece = tiles[tile];
     if (takenPiece != null && takenPiece == enPassantPiece) {
-      incrementalValue -=
-          takenPiece.value + squareValue(takenPiece, inEndGameCached);
       _removePiece(takenPiece);
       _setTile(takenPiece.tile, null);
       mso.enPassant = true;
@@ -838,28 +762,6 @@ class ChessBoard {
         movedPiece?.type == ChessPieceType.pawn &&
         (tileToRow(movedPiece?.tile ?? 0) == 3 ||
             tileToRow(movedPiece?.tile ?? 0) == 4);
-  }
-
-  void _updateEndGameFlag() {
-    inEndGameCached = _computeInEndGame();
-  }
-
-  // ──────────────────────────────────────────────
-  // Private: Zobrist Helpers
-  // ──────────────────────────────────────────────
-
-  static int _zobristIndex(ChessPiece piece) {
-    int base = _pieceTypeIndex[piece.type] ?? 0;
-    if (piece.player == Player.player2) base += 6;
-    return base;
-  }
-
-  static int _zobristPieceValue(ChessPiece piece) {
-    return _zobristTable[_zobristIndex(piece)][piece.tile];
-  }
-
-  static int _zobristPieceAt(ChessPiece piece, int tile) {
-    return _zobristTable[_zobristIndex(piece)][tile];
   }
 
   static bool _inBounds(int row, int col) {

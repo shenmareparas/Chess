@@ -22,7 +22,7 @@ class MovesUndoRedoRow extends StatelessWidget {
             children: [
               appModel.showMoveHistory
                   ? Expanded(child: MoveList(appModel))
-                  : Container(),
+                  : const SizedBox.shrink(),
               if (appModel.showMoveHistory &&
                   (showUndoRedo || showResumeButton))
                 const SizedBox(width: 10),
@@ -80,12 +80,12 @@ class MovesUndoRedoRow extends StatelessWidget {
               else if (appModel.allowUndoRedo)
                 Expanded(child: UndoRedoButtons(appModel))
               else
-                Container(),
+                const SizedBox.shrink(),
             ],
           ),
           appModel.showMoveHistory || appModel.allowUndoRedo || showResumeButton
-              ? SizedBox(height: 10)
-              : Container(),
+              ? const SizedBox(height: 10)
+              : const SizedBox.shrink(),
         ],
       ),
     );

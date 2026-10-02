@@ -25,9 +25,9 @@ dependencies:
     sdk: flutter
   provider: ^6.0.5
   flame: ^1.7.3
-  flame_audio:
-  shared_preferences:
-  async:
+  flame_audio: ^2.12.2
+  shared_preferences: ^2.5.5
+  async: ^2.13.1
   confetti: ^0.8.0
   google_mobile_ads: ^9.0.0
   games_services: ^5.1.0
