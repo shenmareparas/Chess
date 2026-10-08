@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import '../model/app_model.dart';
 import '../model/player.dart';
 
+import 'ad_service.dart';
 import 'checkmate_isolate.dart';
 import 'checkmate_worker.dart';
 import 'chess_board.dart';
@@ -321,6 +322,11 @@ class GameController {
       appModel.undoEndGame(silent: true);
     } else if (updateMetaList) {
       appModel.pushMoveMeta(meta, silent: true);
+      // Preload exit interstitial ad on the first move so it is ready if the user exits later,
+      // without firing an ad request immediately on app startup.
+      if (appModel.moveMetaList.length == 1) {
+        AdService.instance.preloadExitInterstitialAd();
+      }
     }
     if (changeTurn) {
       if (!undoing && appModel.timerMode == 'increment') {

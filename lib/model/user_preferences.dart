@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../logic/timer_service.dart';
 import 'app_themes.dart';
 
 const PIECE_THEMES = [
@@ -34,11 +35,13 @@ class UserPreferences {
   bool showNotation = false;
   bool enableRotation = true;
   bool enablePieceRotation = true;
-  bool hapticEnabled = false;
+  bool hapticEnabled = true;
   bool showCapturedPieces = true;
   bool hasRatedApp = false;
+  bool dailyPracticeNotification = true;
+  int? reminderHour;
   int timerIncrement = 0;
-  String timerMode = 'increment';
+  String timerMode = TimerModes.increment;
 
   List<String> get pieceThemes => sortedPieceThemes;
 
@@ -70,11 +73,21 @@ class UserPreferences {
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
     enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
-    hapticEnabled = _prefs!.getBool('hapticEnabled') ?? false;
+    hapticEnabled = _prefs!.getBool('hapticEnabled') ?? true;
     showCapturedPieces = _prefs!.getBool('showCapturedPieces') ?? true;
+    dailyPracticeNotification =
+        _prefs!.getBool('dailyPracticeNotification') ?? true;
+    reminderHour = _prefs!.getInt('daily_reminder_hour');
     hasRatedApp = _prefs!.getBool('hasRatedApp') ?? false;
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
-    timerMode = _prefs!.getString('timerMode') ?? 'increment';
+    timerMode = _prefs!.getString('timerMode') ?? TimerModes.increment;
+    onChanged?.call();
+  }
+
+  Future<void> setDailyPracticeNotification(bool enabled) async {
+    dailyPracticeNotification = enabled;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setBool('dailyPracticeNotification', enabled);
     onChanged?.call();
   }
 
@@ -186,25 +199,29 @@ class UserPreferences {
     enableRotation = true;
     enablePieceRotation = true;
     allowUndoRedo = true;
-    hapticEnabled = false;
+    hapticEnabled = true;
     showCapturedPieces = true;
+    dailyPracticeNotification = true;
     timerIncrement = 0;
-    timerMode = 'increment';
+    timerMode = TimerModes.increment;
 
     _prefs ??= await SharedPreferences.getInstance();
-    await _prefs!.setString('themeName', themeName);
-    await _prefs!.setString('pieceTheme', pieceTheme);
-    await _prefs!.setBool('showMoveHistory', showMoveHistory);
-    await _prefs!.setBool('soundEnabled', soundEnabled);
-    await _prefs!.setBool('showHints', showHints);
-    await _prefs!.setBool('showNotation', showNotation);
-    await _prefs!.setBool('enableRotation', enableRotation);
-    await _prefs!.setBool('enablePieceRotation', enablePieceRotation);
-    await _prefs!.setBool('allowUndoRedo', allowUndoRedo);
-    await _prefs!.setBool('hapticEnabled', hapticEnabled);
-    await _prefs!.setBool('showCapturedPieces', showCapturedPieces);
-    await _prefs!.setInt('timerIncrement', timerIncrement);
-    await _prefs!.setString('timerMode', timerMode);
+    await Future.wait([
+      _prefs!.setString('themeName', themeName),
+      _prefs!.setString('pieceTheme', pieceTheme),
+      _prefs!.setBool('showMoveHistory', showMoveHistory),
+      _prefs!.setBool('soundEnabled', soundEnabled),
+      _prefs!.setBool('showHints', showHints),
+      _prefs!.setBool('showNotation', showNotation),
+      _prefs!.setBool('enableRotation', enableRotation),
+      _prefs!.setBool('enablePieceRotation', enablePieceRotation),
+      _prefs!.setBool('allowUndoRedo', allowUndoRedo),
+      _prefs!.setBool('hapticEnabled', hapticEnabled),
+      _prefs!.setBool('showCapturedPieces', showCapturedPieces),
+      _prefs!.setBool('dailyPracticeNotification', dailyPracticeNotification),
+      _prefs!.setInt('timerIncrement', timerIncrement),
+      _prefs!.setString('timerMode', timerMode),
+    ]);
     onChanged?.call();
   }
 }

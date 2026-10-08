@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../../logic/ad_service.dart';
 import '../../../../../model/app_model.dart';
@@ -29,36 +30,47 @@ class UndoRedoButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Stack(
-            alignment: Alignment.topRight,
-            children: [
-              RoundedIconButton(
-                CupertinoIcons.arrow_counterclockwise,
-                // Always provide a callback so tapping when out of undos
-                // opens the ad dialog rather than doing nothing.
-                onPressed: _undoEnabled ? () => _handleUndo(context) : null,
+    return Selector<AppModel, (int?, int, int, int, bool)>(
+      selector: (_, m) => (
+        m.historyViewIndex,
+        m.availableUndos,
+        m.gameController?.board.moveStack.length ?? 0,
+        m.gameController?.board.redoStack.length ?? 0,
+        m.gameOver,
+      ),
+      builder: (context, _, __) {
+        return Row(
+          children: [
+            Expanded(
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  RoundedIconButton(
+                    CupertinoIcons.arrow_counterclockwise,
+                    // Always provide a callback so tapping when out of undos
+                    // opens the ad dialog rather than doing nothing.
+                    onPressed: _undoEnabled ? () => _handleUndo(context) : null,
+                  ),
+                  // Undo bank badge — shows remaining free undos.
+                  if (_undoEnabled)
+                    Positioned(
+                      top: 6,
+                      right: 10,
+                      child: _UndoBadge(count: appModel.availableUndos),
+                    ),
+                ],
               ),
-              // Undo bank badge — shows remaining free undos.
-              if (_undoEnabled)
-                Positioned(
-                  top: 6,
-                  right: 10,
-                  child: _UndoBadge(count: appModel.availableUndos),
-                ),
-            ],
-          ),
-        ),
-        SizedBox(width: 10),
-        Expanded(
-          child: RoundedIconButton(
-            CupertinoIcons.arrow_clockwise,
-            onPressed: _redoEnabled ? () => _redo() : null,
-          ),
-        ),
-      ],
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: RoundedIconButton(
+                CupertinoIcons.arrow_clockwise,
+                onPressed: _redoEnabled ? () => _redo() : null,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

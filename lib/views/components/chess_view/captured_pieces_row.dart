@@ -125,10 +125,8 @@ class _PieceGroupTombstone extends StatelessWidget {
 
     // Black pieces receive a subtle soft ambient glow so their dark silhouettes
     // are crisp and unmistakably distinct against any dark theme background.
-    return AnimatedRotation(
-      turns: rotate ? 0.5 : 0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
+    return RotatedBox(
+      quarterTurns: rotate ? 2 : 0,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: Row(

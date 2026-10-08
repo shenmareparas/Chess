@@ -1,9 +1,11 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../logic/ad_service.dart';
 import '../../../../logic/rating_service.dart';
 import '../../../../model/app_model.dart';
+import '../../../../model/app_themes.dart';
 import '../../../chess_view.dart';
 import '../../shared/glass_panel.dart';
 
@@ -143,8 +145,6 @@ class RestartExitButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = appModel.theme;
-
     return Row(
       children: [
         // Restart Button
@@ -152,30 +152,33 @@ class RestartExitButtons extends StatelessWidget {
           child: CupertinoButton(
             padding: EdgeInsets.zero,
             onPressed: () => _showRestartConfirmation(context),
-            child: GlassPanel(
-              padding: EdgeInsets.zero,
-              borderRadius: 14,
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.restart_alt_rounded,
-                      color: theme.lightTile,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Restart',
-                      style: TextStyle(
+            child: Selector<AppModel, AppTheme>(
+              selector: (_, m) => m.theme,
+              builder: (_, theme, __) => GlassPanel(
+                padding: EdgeInsets.zero,
+                borderRadius: 14,
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.restart_alt_rounded,
                         color: theme.lightTile,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
+                        size: 20,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Text(
+                        'Restart',
+                        style: TextStyle(
+                          color: theme.lightTile,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -197,7 +200,7 @@ class RestartExitButtons extends StatelessWidget {
                   );
                 }
 
-                if (appModel.userWon && !appModel.prefs.hasRatedApp) {
+                if (appModel.userWon && !appModel.hasRatedApp) {
                   RatingService.instance.showRatingPrompt(
                     context,
                     prefs: appModel.prefs,

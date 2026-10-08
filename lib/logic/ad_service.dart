@@ -39,23 +39,30 @@ class AdService {
   // ── State ──
 
   RewardedInterstitialAd? _rewardedInterstitialAd;
+  DateTime? _rewardedLoadedAt;
+
   InterstitialAd? _exitInterstitialAd;
+  DateTime? _exitInterstitialLoadedAt;
 
   bool _isLoadingRewarded = false;
   bool _isLoadingInterstitial = false;
   bool _isInitialized = false;
 
+  /// AdMob ads typically expire after 60 minutes.
+  /// Discard and reload if older than 50 minutes to avoid stale blank impressions.
+  static const Duration _adTtl = Duration(minutes: 50);
+
   // ── Initialization ──
 
-  /// Initializes the Mobile Ads SDK and pre-loads initial ads.
+  /// Initializes the Mobile Ads SDK.
   /// Must be called once in [main()] after [WidgetsFlutterBinding.ensureInitialized()].
+  /// Ads are loaded lazily on demand when gameplay begins or free undos run low,
+  /// avoiding thousands of wasted ad requests on app launch.
   Future<void> initialize() async {
     if (_isInitialized) return;
     try {
       await MobileAds.instance.initialize();
       _isInitialized = true;
-      _loadRewardedAd();
-      _loadExitInterstitialAd();
     } catch (e) {
       debugPrint('[AdService] MobileAds initialization error: $e');
     }
@@ -63,8 +70,32 @@ class AdService {
 
   // ── Ad Loading ──
 
+  /// Preloads a rewarded interstitial ad lazily when the user is likely to need one
+  /// (e.g. after using their free undo or opening the chess board).
+  void preloadRewardedAd() {
+    _loadRewardedAd();
+  }
+
+  /// Preloads an exit interstitial ad lazily during match play
+  /// (e.g. once the first move is made), rather than on app launch.
+  void preloadExitInterstitialAd() {
+    _loadExitInterstitialAd();
+  }
+
   void _loadRewardedAd() {
-    if (_isLoadingRewarded || _rewardedInterstitialAd != null) return;
+    if (!_isInitialized) return;
+
+    // Check if current ad is still fresh
+    if (_rewardedInterstitialAd != null) {
+      if (_rewardedLoadedAt != null &&
+          DateTime.now().difference(_rewardedLoadedAt!) < _adTtl) {
+        return;
+      }
+      _rewardedInterstitialAd?.dispose();
+      _rewardedInterstitialAd = null;
+    }
+
+    if (_isLoadingRewarded) return;
     _isLoadingRewarded = true;
 
     RewardedInterstitialAd.load(
@@ -73,12 +104,14 @@ class AdService {
       rewardedInterstitialAdLoadCallback: RewardedInterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _rewardedInterstitialAd = ad;
+          _rewardedLoadedAt = DateTime.now();
           _isLoadingRewarded = false;
           debugPrint('[AdService] Rewarded interstitial ad loaded.');
         },
         onAdFailedToLoad: (error) {
           _isLoadingRewarded = false;
           _rewardedInterstitialAd = null;
+          _rewardedLoadedAt = null;
           debugPrint(
               '[AdService] Failed to load rewarded interstitial ad: $error');
         },
@@ -87,7 +120,19 @@ class AdService {
   }
 
   void _loadExitInterstitialAd() {
-    if (_isLoadingInterstitial || _exitInterstitialAd != null) return;
+    if (!_isInitialized) return;
+
+    // Check if current ad is still fresh
+    if (_exitInterstitialAd != null) {
+      if (_exitInterstitialLoadedAt != null &&
+          DateTime.now().difference(_exitInterstitialLoadedAt!) < _adTtl) {
+        return;
+      }
+      _exitInterstitialAd?.dispose();
+      _exitInterstitialAd = null;
+    }
+
+    if (_isLoadingInterstitial) return;
     _isLoadingInterstitial = true;
 
     InterstitialAd.load(
@@ -96,12 +141,14 @@ class AdService {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           _exitInterstitialAd = ad;
+          _exitInterstitialLoadedAt = DateTime.now();
           _isLoadingInterstitial = false;
           debugPrint('[AdService] Exit interstitial ad loaded.');
         },
         onAdFailedToLoad: (error) {
           _isLoadingInterstitial = false;
           _exitInterstitialAd = null;
+          _exitInterstitialLoadedAt = null;
           debugPrint('[AdService] Failed to load exit interstitial ad: $error');
         },
       ),
@@ -199,9 +246,17 @@ class AdService {
     ad.show();
   }
 
-  /// Whether a rewarded ad is currently preloaded and ready to show.
-  bool get isAdLoaded => _rewardedInterstitialAd != null;
+  /// Whether a rewarded ad is currently preloaded, non-expired, and ready to show.
+  bool get isAdLoaded {
+    if (_rewardedInterstitialAd == null) return false;
+    if (_rewardedLoadedAt == null) return false;
+    return DateTime.now().difference(_rewardedLoadedAt!) < _adTtl;
+  }
 
-  /// Whether an exit interstitial ad is currently preloaded and ready to show.
-  bool get isExitAdLoaded => _exitInterstitialAd != null;
+  /// Whether an exit interstitial ad is currently preloaded, non-expired, and ready to show.
+  bool get isExitAdLoaded {
+    if (_exitInterstitialAd == null) return false;
+    if (_exitInterstitialLoadedAt == null) return false;
+    return DateTime.now().difference(_exitInterstitialLoadedAt!) < _adTtl;
+  }
 }

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 
+import '../logic/ad_service.dart';
 import '../logic/audio_service.dart';
 import '../logic/chess_piece.dart';
 import '../logic/game_controller.dart';
@@ -10,6 +11,7 @@ import '../logic/game_state_storage.dart';
 import '../logic/haptic_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/move_calculation/move_classes/move_stack_object.dart';
+import '../logic/notification_service.dart';
 import '../logic/play_games_service.dart';
 import '../logic/shared_functions.dart';
 import '../logic/stockfish_service.dart';
@@ -48,12 +50,15 @@ class AppModel extends ChangeNotifier {
   bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
   bool get showCapturedPieces => prefs.showCapturedPieces;
+  bool get dailyPracticeNotification => prefs.dailyPracticeNotification;
   int get timerIncrement => prefs.timerIncrement;
   String get timerMode => prefs.timerMode;
   AppTheme get theme => prefs.theme;
   int get themeIndex => prefs.themeIndex;
   int get pieceThemeIndex => prefs.pieceThemeIndex;
   List<String> get pieceThemes => prefs.pieceThemes;
+
+  bool get hasRatedApp => prefs.hasRatedApp;
 
   ValueNotifier<Duration> get player1TimeLeft => timerService.player1TimeLeft;
   set player1TimeLeft(ValueNotifier<Duration> val) =>
@@ -125,6 +130,11 @@ class AppModel extends ChangeNotifier {
   void decrementUndo() {
     if (_availableUndos > 0) {
       _availableUndos--;
+      // Preload rewarded ad lazily as soon as the user exhausts their free undo,
+      // so it is prepared ahead of time if they request an extra undo later.
+      if (_availableUndos == 0) {
+        AdService.instance.preloadRewardedAd();
+      }
       notifyListeners();
     }
   }
@@ -152,6 +162,7 @@ class AppModel extends ChangeNotifier {
   /// Whether pieces should be visually rotated 180 degrees (in 2P mode on Player 2's turn).
   bool get isPieceRotated {
     return enablePieceRotation &&
+        !enableRotation &&
         !playingWithAI &&
         playerCount == 2 &&
         turn == Player.player2;
@@ -221,6 +232,9 @@ class AppModel extends ChangeNotifier {
 
     // Play Games: track game start and unlock milestone achievements
     PlayGamesService.instance.onGameStarted();
+
+    // Record user play time to adapt daily practice reminder timing
+    NotificationService.instance.recordGamePlayTime();
 
     // Disable animation on load, then enable it after the board is rendered.
     animateBoardRotation = false;
@@ -545,6 +559,17 @@ class AppModel extends ChangeNotifier {
     prefs.setShowCapturedPieces(show);
   }
 
+  void setDailyPracticeNotification(bool enabled) {
+    haptic.light();
+    prefs.setDailyPracticeNotification(enabled);
+    if (enabled) {
+      NotificationService.instance.scheduleAdaptiveDailyReminder();
+    } else {
+      NotificationService.instance.cancelDailyReminder();
+    }
+    notifyListeners();
+  }
+
   void setAllowUndoRedo(bool allow) {
     haptic.light();
     prefs.setAllowUndoRedo(allow);
@@ -572,6 +597,7 @@ class AppModel extends ChangeNotifier {
     await prefs.resetToDefaults();
     audio.enabled = prefs.soundEnabled;
     haptic.enabled = prefs.hapticEnabled;
+    NotificationService.instance.scheduleAdaptiveDailyReminder();
     notifyListeners();
   }
 

@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 
 import 'logic/ad_service.dart';
 import 'logic/in_app_update_service.dart';
+import 'logic/notification_service.dart';
 import 'logic/play_games_service.dart';
 import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
@@ -51,6 +52,25 @@ void main() async {
 
   // Check for Google Play Store updates on Android
   InAppUpdateService.instance.checkForUpdate();
+
+  // Initialize notifications and schedule daily practice reminder in the background.
+  // If the OS denies permission, turn the setting OFF so the UI stays consistent.
+  // The user can re-enable via the Settings toggle, which shows a guidance dialog.
+  Future.microtask(() async {
+    await NotificationService.instance.initialize();
+    if (prefs.dailyPracticeNotification) {
+      var granted = await NotificationService.instance.arePermissionsGranted();
+      if (!granted) {
+        granted = await NotificationService.instance.requestPermissions();
+      }
+      if (granted) {
+        await NotificationService.instance.scheduleAdaptiveDailyReminder();
+      } else {
+        // Permission denied — reflect that in the setting.
+        appModel.setDailyPracticeNotification(false);
+      }
+    }
+  });
 }
 
 /// Preloads logo.png into Flutter's image cache (single small image — fast).

@@ -6,7 +6,7 @@ import 'move_calculation/move_classes/move_meta.dart';
 import 'move_calculation/move_classes/move_stack_object.dart';
 import 'shared_functions.dart';
 
-const KING_ROW_PIECES = [
+const _kingRowPieces = [
   ChessPieceType.rook,
   ChessPieceType.knight,
   ChessPieceType.bishop,
@@ -18,9 +18,9 @@ const KING_ROW_PIECES = [
 ];
 
 // Move direction constants
-const _PAWN_DIAGONALS_1 = [DOWN_LEFT, DOWN_RIGHT];
-const _PAWN_DIAGONALS_2 = [UP_LEFT, UP_RIGHT];
-const _KNIGHT_MOVES = [
+const _pawnDiagonals1 = [DOWN_LEFT, DOWN_RIGHT];
+const _pawnDiagonals2 = [UP_LEFT, UP_RIGHT];
+const _knightMovesList = [
   Direction(1, 2),
   Direction(-1, 2),
   Direction(1, -2),
@@ -30,9 +30,9 @@ const _KNIGHT_MOVES = [
   Direction(2, -1),
   Direction(-2, -1)
 ];
-const _BISHOP_MOVES = [UP_RIGHT, DOWN_RIGHT, DOWN_LEFT, UP_LEFT];
-const _ROOK_MOVES = [UP, RIGHT, DOWN, LEFT];
-const _KING_QUEEN_MOVES = [
+const _bishopMovesList = [UP_RIGHT, DOWN_RIGHT, DOWN_LEFT, UP_LEFT];
+const _rookMovesList = [UP, RIGHT, DOWN, LEFT];
+const _kingQueenMovesList = [
   UP,
   UP_RIGHT,
   RIGHT,
@@ -82,7 +82,7 @@ class ChessBoard {
     var kingRowOffset = player == Player.player1 ? 56 : 0;
     var pawnRowOffset = player == Player.player1 ? -8 : 8;
     var index = 0;
-    for (var pieceType in KING_ROW_PIECES) {
+    for (var pieceType in _kingRowPieces) {
       var id = player == Player.player1 ? index * 2 : index * 2 + 16;
       var piece = ChessPiece(id, pieceType, player, kingRowOffset + index);
       var pawn = ChessPiece(id + 1, ChessPieceType.pawn, player,
@@ -353,9 +353,8 @@ class ChessBoard {
   bool _pieceAttacksTile(ChessPiece piece, int targetTile) {
     switch (piece.type) {
       case ChessPieceType.pawn:
-        final diagonals = piece.player == Player.player1
-            ? _PAWN_DIAGONALS_1
-            : _PAWN_DIAGONALS_2;
+        final diagonals =
+            piece.player == Player.player1 ? _pawnDiagonals1 : _pawnDiagonals2;
         for (final d in diagonals) {
           final r = tileToRow(piece.tile) + d.up;
           final c = tileToCol(piece.tile) + d.right;
@@ -363,20 +362,20 @@ class ChessBoard {
         }
         return false;
       case ChessPieceType.knight:
-        for (final d in _KNIGHT_MOVES) {
+        for (final d in _knightMovesList) {
           final r = tileToRow(piece.tile) + d.up;
           final c = tileToCol(piece.tile) + d.right;
           if (_inBounds(r, c) && _rowColToTile(r, c) == targetTile) return true;
         }
         return false;
       case ChessPieceType.bishop:
-        return _slidingAttacks(piece, _BISHOP_MOVES, targetTile);
+        return _slidingAttacks(piece, _bishopMovesList, targetTile);
       case ChessPieceType.rook:
-        return _slidingAttacks(piece, _ROOK_MOVES, targetTile);
+        return _slidingAttacks(piece, _rookMovesList, targetTile);
       case ChessPieceType.queen:
-        return _slidingAttacks(piece, _KING_QUEEN_MOVES, targetTile);
+        return _slidingAttacks(piece, _kingQueenMovesList, targetTile);
       case ChessPieceType.king:
-        for (final d in _KING_QUEEN_MOVES) {
+        for (final d in _kingQueenMovesList) {
           final r = tileToRow(piece.tile) + d.up;
           final c = tileToCol(piece.tile) + d.right;
           if (_inBounds(r, c) && _rowColToTile(r, c) == targetTile) return true;
@@ -554,7 +553,7 @@ class ChessBoard {
   List<int> _pawnDiagonalAttacks(ChessPiece pawn) {
     List<int> moves = [];
     var diagonals =
-        pawn.player == Player.player1 ? _PAWN_DIAGONALS_1 : _PAWN_DIAGONALS_2;
+        pawn.player == Player.player1 ? _pawnDiagonals1 : _pawnDiagonals2;
     for (var diagonal in diagonals) {
       var row = tileToRow(pawn.tile) + diagonal.up;
       var col = tileToCol(pawn.tile) + diagonal.right;
@@ -579,25 +578,25 @@ class ChessBoard {
   }
 
   List<int> _knightMoves(ChessPiece knight) {
-    return _movesFromDirections(knight, _KNIGHT_MOVES, false);
+    return _movesFromDirections(knight, _knightMovesList, false);
   }
 
   List<int> _bishopMoves(ChessPiece bishop) {
-    return _movesFromDirections(bishop, _BISHOP_MOVES, true);
+    return _movesFromDirections(bishop, _bishopMovesList, true);
   }
 
   List<int> _rookMoves(ChessPiece rook, bool legal) {
-    var moves = _movesFromDirections(rook, _ROOK_MOVES, true);
+    var moves = _movesFromDirections(rook, _rookMovesList, true);
     moves.addAll(_rookCastleMove(rook, legal));
     return moves;
   }
 
   List<int> _queenMoves(ChessPiece queen) {
-    return _movesFromDirections(queen, _KING_QUEEN_MOVES, true);
+    return _movesFromDirections(queen, _kingQueenMovesList, true);
   }
 
   List<int> _kingMoves(ChessPiece king, bool legal) {
-    var moves = _movesFromDirections(king, _KING_QUEEN_MOVES, false);
+    var moves = _movesFromDirections(king, _kingQueenMovesList, false);
     moves.addAll(_kingCastleMoves(king, legal));
     return moves;
   }

@@ -45,6 +45,11 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Static AI Random Instance**: `GameController` holds a `static final _random = math.Random()` shared across all AI moves, avoiding 3 PRNG re-seedings per move at difficulty levels 1 & 2.
     -   **Cancellable Notation Fade Timer**: `_NotationOverlay.didUpdateWidget` uses a tracked `Timer? _fadeTimer` (cancelled in `dispose()` and before each new schedule in `didUpdateWidget`) instead of a bare `Future.delayed`, preventing stacked setState callbacks from rapid board rotations within the 600 ms window.
     -   **Lifecycle-Guarded Exit & Save Synchronization**: Cancels in-flight 400ms debounced save timers (`_saveDebounceTimer`) upon match exit or checkmate, guards against auto-saving during OS lifecycle transitions (`isExiting` flag prevents exit interstitial ads from triggering saves), and ignores completed games in storage to ensure a clean home screen state.
+    -   **Root Scaffold Rebuild Isolation**: Replaces blanket `Consumer<AppModel>` widgets in `ChessView` with a narrow `Selector` on `gameController`, completely isolating the top-level layout tree (`SafeArea`, `Column`, `TopBar`, board container, controls) from 100ms clock updates, turn changes, or move events.
+    -   **Pure Build Function & Reactive Side-Effects**: Pawn promotion dialog prompts and win confetti animation triggers are handled outside the build lifecycle via dedicated `State` listeners and post-frame queues rather than mutating ViewModel flags during widget building.
+    -   **Backdrop Blur Compositing Isolation**: `TimerWidget`'s iOS `BackdropFilter` is wrapped in a dedicated `RepaintBoundary` to prevent redundant compositing buffer read-backs during 10 Hz clock updates.
+    -   **Parallel SharedPreferences Reset**: Uses `Future.wait([...])` to write factory-reset preferences in parallel rather than issuing 14 sequential method channel requests.
+    -   **AdMob Impression Ratio & TTL Optimization**: Replaced eager ad preloading on launch with an on-demand strategy (exit interstitials preload on the 1st match move; rewarded ads preload when available undos reach 0) and enforced a 50-minute TTL to purge expired AdMob tokens and maximize impression-to-request health.
 
 ### 🎯 Gameplay Features
 
@@ -57,7 +62,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Captured Pieces Display**: Shows dead pieces count-grouped (e.g. Pawn 4, Knight 2) inside theme-tinted frosted glass pills directly above and below the board. Features an ambient silhouette glow for black pieces on dark backgrounds, automatically counts captured promoted pieces under their promoted type, and dynamically flips alignment on board rotation. Can be toggled on/off in Settings (default: on).
 -   **Alternating Board Notation**: Algebraic coordinates on the board borders dynamically use the alternating background tile color (e.g. dark text on light tiles, light text on dark tiles) for crisp legibility.
 -   **Sound Effects**: Audio feedback for piece movements using a pooled `AudioPool` for rapid playback
--   **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates
+-   **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates (default: on)
+-   **Daily Practice Notifications**: Adaptively schedules daily reminder notifications at the player's most frequent playing hour, with built-in permission handling and blocked-notification recovery (default: on)
 -   **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
 -   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
 -   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates)
@@ -103,6 +109,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
 -   **[Fluttertoast](https://pub.dev/packages/fluttertoast)** — Native platform toast notifications (developer Easter egg countdown)
+-   **[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)** — Local scheduled reminders for daily practice
 -   **[in_app_purchase](https://pub.dev/packages/in_app_purchase)** — In-app purchases / monetization
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
 -   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
@@ -172,7 +179,7 @@ To design, preview, and bulk-export Google Play Store screenshots:
 
 ```
 lib/
-├── main.dart                       # App entry point; preloads assets, initializes AdMob & Play Games
+├── main.dart                       # App entry point; preloads assets, initializes AdMob, notifications & Play Games
 ├── model/
 │   ├── app_model.dart             # Central state/ViewModel; delegates to services/prefs
 │   ├── game_state.dart            # Pure Model holding active game outcome/ply state
@@ -191,6 +198,7 @@ lib/
 │   ├── timer_service.dart         # Per-player countdown timers with pause/resume support
 │   ├── audio_service.dart         # Pooled piece-move sounds and game-end audio
 │   ├── haptic_service.dart        # Centralized haptic feedback (selection/light/medium/heavy/vibrate)
+│   ├── notification_service.dart  # Daily practice notification scheduling & permission handling
 │   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo")
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
 │   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
@@ -208,6 +216,7 @@ lib/
     └── components/
         ├── chess_view/
         │   ├── chess_board_widget.dart         # Flutter↔Flame GameWidget bridge
+        │   ├── captured_pieces_row.dart        # Frosted glass dead pieces display with ambient glow
         │   ├── promotion_dialog.dart           # Non-dismissible glassmorphic promotion picker
         │   ├── promotion_option.dart           # Individual promotion piece option
         │   ├── game_info_and_controls.dart     # Bottom panel layout
@@ -273,9 +282,12 @@ The app stores user preferences locally using SharedPreferences:
 -   Sound enabled (`soundEnabled`)
 -   Hint display settings (`showHints`)
 -   Board notation visibility (`showNotation`)
+-   Show captured pieces (`showCapturedPieces`, default: `true`)
 -   Board rotation preference (`enableRotation`)
+-   Piece rotation preference (`enablePieceRotation`)
 -   Undo/Redo availability (`allowUndoRedo`)
--   Haptic feedback (`hapticEnabled`)
+-   Haptic feedback (`hapticEnabled`, default: `true`)
+-   Daily practice notification (`dailyPracticeNotification`, default: `true`)
 
 Defaults are defined in `lib/model/user_preferences.dart`. Game state (board position, move history, timers, undo bank) is persisted separately in `lib/logic/game_state_storage.dart` and restored on app resume.
 

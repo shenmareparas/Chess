@@ -34,7 +34,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   late ConfettiController _confettiController;
   bool _hasPlayedConfetti = false;
   // Confetti colors only change with the theme. Cache to avoid recomputing
-  // (via HSVColor transforms) on every Consumer<AppModel> rebuild.
+  // (via HSVColor transforms) on every listener notification.
   List<Color>? _cachedConfettiColors;
   String? _cachedConfettiThemeName;
 
@@ -46,6 +46,10 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _confettiController =
         ConfettiController(duration: const Duration(seconds: 5));
+
+    // Listen for model changes to handle side-effects OUTSIDE of build().
+    // Promotion dialogs and confetti must never be triggered from build().
+    appModel.addListener(_onAppModelChanged);
 
     // Defer game initialization to after the page transition completes.
     // This prevents heavy work (sprite creation, board setup) from
@@ -65,15 +69,47 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
       setState(() {
         chessGame = ChessGame(appModel.gameController!, appModel);
       });
-      // Defer notifying listeners if needed to let the flame engine setup
+      // Defer notifying listeners if needed to let the flame engine setup.
       Future.delayed(Duration(milliseconds: 50), () {
         if (mounted) appModel.update();
       });
     }
   }
 
+  /// Handles side-effects that must NOT run inside [build]:
+  /// - Pawn promotion dialog (sets `promotionRequested = false` safely)
+  /// - Win confetti (plays / stops the controller)
+  void _onAppModelChanged() {
+    if (!mounted) return;
+
+    // ── Promotion dialog ──────────────────────────────────────────────────
+    if (appModel.promotionRequested) {
+      appModel.promotionRequested = false;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _showPromotionDialog(appModel));
+    }
+
+    // ── Confetti ──────────────────────────────────────────────────────────
+    if (appModel.gameOver &&
+        appModel.userWon &&
+        appModel.historyViewIndex == null) {
+      if (!_hasPlayedConfetti) {
+        _confettiController.play();
+        _hasPlayedConfetti = true;
+      }
+    } else {
+      if (_hasPlayedConfetti) {
+        _confettiController.stop();
+      }
+      if (!appModel.gameOver) {
+        _hasPlayedConfetti = false;
+      }
+    }
+  }
+
   @override
   void dispose() {
+    appModel.removeListener(_onAppModelChanged);
     WidgetsBinding.instance.removeObserver(this);
     _confettiController.dispose();
     super.dispose();
@@ -97,48 +133,35 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppModel>(
-      builder: (context, appModel, child) {
+    // Narrow selector: only rebuild the top-level scaffold when the "ready"
+    // state changes (null → non-null gameController) or when the game is
+    // reset (controller identity changes). Timer ticks, moves, and other
+    // frequent notifications do NOT trigger a full rebuild here.
+    return Selector<AppModel, (bool, Object?)>(
+      selector: (_, m) => (m.gameController != null, m.gameController),
+      builder: (context, readyData, child) {
+        final isReady = readyData.$1;
         final theme = appModel.theme;
-        // Show themed background while game initializes
-        if (appModel.gameController == null || chessGame == null) {
+
+        // Show themed background while game initializes.
+        if (!isReady || chessGame == null) {
           return Container(
             decoration: BoxDecoration(gradient: theme.background),
           );
         }
 
-        if (chessGame != null &&
-            appModel.gameController != null &&
-            chessGame!.controller != appModel.gameController) {
+        // Game was reset — re-init Flame. Schedule after the current frame.
+        if (chessGame!.controller != appModel.gameController) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _initFlameGame();
+            if (mounted) _initFlameGame();
           });
           return Container(
             decoration: BoxDecoration(gradient: theme.background),
           );
         }
 
-        if (appModel.promotionRequested) {
-          appModel.promotionRequested = false;
-          WidgetsBinding.instance
-              .addPostFrameCallback((_) => _showPromotionDialog(appModel));
-        }
-
-        if (appModel.gameOver &&
-            appModel.userWon &&
-            appModel.historyViewIndex == null) {
-          if (!_hasPlayedConfetti) {
-            _confettiController.play();
-            _hasPlayedConfetti = true;
-          }
-        } else {
-          if (_hasPlayedConfetti) {
-            _confettiController.stop();
-          }
-          if (!appModel.gameOver) {
-            _hasPlayedConfetti = false;
-          }
-        }
+        // NOTE: promotion dialog and confetti are now handled by
+        // _onAppModelChanged() — never mutate state inside build().
 
         return PopScope(
           canPop: false,
@@ -154,7 +177,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 );
               }
 
-              if (appModel.userWon && !appModel.prefs.hasRatedApp) {
+              if (appModel.userWon && !appModel.hasRatedApp) {
                 RatingService.instance.showRatingPrompt(
                   context,
                   prefs: appModel.prefs,
@@ -188,9 +211,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Center(
-                          child: Selector<AppModel, bool>(
-                            selector: (_, m) => m.showCapturedPieces,
-                            builder: (_, showCapturedPieces, ___) {
+                          child: Selector<AppModel, (bool, bool)>(
+                            selector: (_, m) =>
+                                (m.showCapturedPieces, m.isBoardInverted),
+                            builder: (_, boardData, ___) {
+                              final showCapturedPieces = boardData.$1;
                               return ChessBoardWidget(
                                 appModel,
                                 chessGame!,
@@ -216,7 +241,12 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                               player: topPlayer,
                                               pieceTheme: appModel.pieceTheme,
                                               theme: theme,
-                                              flipped: appModel.isBoardInverted,
+                                              // Only reverse icon order when
+                                              // the pill itself spins 180°
+                                              // (piece-rotation mode).
+                                              // Board rotation keeps the pill
+                                              // upright — no order flip needed.
+                                              flipped: isPieceRotated,
                                               rotatePieces: isPieceRotated,
                                             ),
                                           );
@@ -245,7 +275,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                               player: bottomPlayer,
                                               pieceTheme: appModel.pieceTheme,
                                               theme: theme,
-                                              flipped: appModel.isBoardInverted,
+                                              flipped: isPieceRotated,
                                               rotatePieces: isPieceRotated,
                                             ),
                                           );

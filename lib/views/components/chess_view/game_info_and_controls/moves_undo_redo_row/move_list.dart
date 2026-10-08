@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
 import '../../../../../logic/chess_piece.dart';
 import '../../../../../logic/move_calculation/move_classes/move_meta.dart';
 import '../../../../../logic/shared_functions.dart';
 import '../../../../../model/app_model.dart';
+import '../../../../../model/app_themes.dart';
 import '../../../../../model/player.dart';
 import '../../../shared/glass_panel.dart';
 
@@ -92,179 +94,191 @@ class _MoveListState extends State<MoveList> {
 
   @override
   Widget build(BuildContext context) {
-    // Only schedule a scroll when the move list or selected history item
-    // actually changes — not on every parent rebuild (timer ticks, AI, etc.).
-    final moveCount = appModel.moveMetaList.length;
-    final historyIndex = appModel.historyViewIndex;
-    if (moveCount != _lastMoveCount || historyIndex != _lastHistoryIndex) {
-      _lastMoveCount = moveCount;
-      _lastHistoryIndex = historyIndex;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToSelected();
-      });
-    }
+    return Selector<AppModel, (int, int?, bool, AppTheme)>(
+      selector: (_, m) => (
+        m.moveMetaList.length,
+        m.historyViewIndex,
+        m.gameOver,
+        m.theme,
+      ),
+      builder: (context, data, _) {
+        final (moveCount, historyIndex, _, theme) = data;
+        // Only schedule a scroll when the move list or selected history item
+        // actually changes — not on every parent rebuild (timer ticks, AI, etc.).
+        if (moveCount != _lastMoveCount || historyIndex != _lastHistoryIndex) {
+          _lastMoveCount = moveCount;
+          _lastHistoryIndex = historyIndex;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToSelected();
+          });
+        }
 
-    final turns = <Widget>[];
-    final list = appModel.moveMetaList;
-    final theme = appModel.theme;
+        final turns = <Widget>[];
+        final list = appModel.moveMetaList;
 
-    int totalMoves = list.length;
-    int turnCount = (totalMoves / 2).ceil();
+        int totalMoves = list.length;
+        int turnCount = (totalMoves / 2).ceil();
 
-    for (int i = 0; i < turnCount; i++) {
-      final turnNum = i + 1;
-      final whiteMove = list[i * 2];
-      final blackMove = (i * 2 + 1 < totalMoves) ? list[i * 2 + 1] : null;
+        for (int i = 0; i < turnCount; i++) {
+          final turnNum = i + 1;
+          final whiteMove = list[i * 2];
+          final blackMove = (i * 2 + 1 < totalMoves) ? list[i * 2 + 1] : null;
 
-      final whiteMoveIndex = i * 2;
-      final blackMoveIndex = i * 2 + 1;
+          final whiteMoveIndex = i * 2;
+          final blackMoveIndex = i * 2 + 1;
 
-      final isWhiteSelected = (appModel.historyViewIndex == whiteMoveIndex) ||
-          (appModel.historyViewIndex == null &&
-              whiteMoveIndex == totalMoves - 1);
-      final isBlackSelected = (blackMove != null) &&
-          ((appModel.historyViewIndex == blackMoveIndex) ||
-              (appModel.historyViewIndex == null &&
-                  blackMoveIndex == totalMoves - 1));
+          final isWhiteSelected =
+              (appModel.historyViewIndex == whiteMoveIndex) ||
+                  (appModel.historyViewIndex == null &&
+                      whiteMoveIndex == totalMoves - 1);
+          final isBlackSelected = (blackMove != null) &&
+              ((appModel.historyViewIndex == blackMoveIndex) ||
+                  (appModel.historyViewIndex == null &&
+                      blackMoveIndex == totalMoves - 1));
 
-      final isBlockActive = isWhiteSelected || isBlackSelected;
+          final isBlockActive = isWhiteSelected || isBlackSelected;
 
-      turns.add(
-        Opacity(
-          opacity: isBlockActive ? 1.0 : 0.5,
-          child: GestureDetector(
-            onTap: () {
-              appModel.haptic.light();
-              appModel.selectHistoryTurn(i);
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0x662A2A2A),
-                borderRadius: BorderRadius.circular(12),
-                border: Border(
-                  left: BorderSide(
-                    color: isBlockActive
-                        ? theme.moveHint
-                        : CupertinoColors.transparent,
-                    width: 4,
+          turns.add(
+            Opacity(
+              opacity: isBlockActive ? 1.0 : 0.5,
+              child: GestureDetector(
+                onTap: () {
+                  appModel.haptic.light();
+                  appModel.selectHistoryTurn(i);
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0x662A2A2A),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border(
+                      left: BorderSide(
+                        color: isBlockActive
+                            ? theme.moveHint
+                            : CupertinoColors.transparent,
+                        width: 4,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$turnNum.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isBlockActive
+                              ? theme.moveHint
+                              : const Color(0xFF8D928C),
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        _moveToString(whiteMove),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isWhiteSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: isWhiteSelected
+                              ? theme.moveHint
+                              : const Color(0xFFE5E2E1),
+                          fontFamily: 'monospace',
+                          decoration: isWhiteSelected
+                              ? TextDecoration.underline
+                              : TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        blackMove != null ? _moveToString(blackMove) : '___',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isBlackSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: blackMove != null
+                              ? (isBlackSelected
+                                  ? theme.moveHint
+                                  : const Color(0xFFC3C8C2))
+                              : const Color(0xFF8D928C),
+                          fontStyle: blackMove != null
+                              ? FontStyle.normal
+                              : FontStyle.italic,
+                          fontFamily: 'monospace',
+                          decoration: isBlackSelected
+                              ? TextDecoration.underline
+                              : TextDecoration.none,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$turnNum.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isBlockActive
-                          ? theme.moveHint
-                          : const Color(0xFF8D928C),
-                      fontFamily: 'monospace',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    _moveToString(whiteMove),
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                          isWhiteSelected ? FontWeight.bold : FontWeight.w500,
-                      color: isWhiteSelected
-                          ? theme.moveHint
-                          : const Color(0xFFE5E2E1),
-                      fontFamily: 'monospace',
-                      decoration: isWhiteSelected
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    blackMove != null ? _moveToString(blackMove) : '___',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight:
-                          isBlackSelected ? FontWeight.bold : FontWeight.w500,
-                      color: blackMove != null
-                          ? (isBlackSelected
-                              ? theme.moveHint
-                              : const Color(0xFFC3C8C2))
-                          : const Color(0xFF8D928C),
-                      fontStyle: blackMove != null
-                          ? FontStyle.normal
-                          : FontStyle.italic,
-                      fontFamily: 'monospace',
-                      decoration: isBlackSelected
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                    ),
-                  ),
-                ],
+            ),
+          );
+        }
+
+        if (turns.isEmpty) {
+          turns.add(
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0x28201F1F),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0x14F5F5F0),
+                  width: 1.0,
+                ),
+              ),
+              child: Text(
+                'Waiting for first move',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: theme.lightTile.withValues(alpha: 0.6),
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          );
+        }
+
+        return GestureDetector(
+          onTapDown: (_) {
+            _holdTimer?.cancel();
+            _holdTimer = Timer(const Duration(seconds: 2), () {
+              _copyMovesToClipboard(context);
+            });
+          },
+          onTapUp: (_) {
+            _holdTimer?.cancel();
+          },
+          onTapCancel: () {
+            _holdTimer?.cancel();
+          },
+          child: GlassPanel(
+            padding: EdgeInsets.zero,
+            borderRadius: 14,
+            child: Container(
+              height: 56,
+              alignment: Alignment.centerLeft,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: turns,
+                ),
               ),
             ),
           ),
-        ),
-      );
-    }
-
-    if (turns.isEmpty) {
-      turns.add(
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0x28201F1F),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: const Color(0x14F5F5F0),
-              width: 1.0,
-            ),
-          ),
-          child: Text(
-            'Waiting for first move',
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.lightTile.withValues(alpha: 0.6),
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTapDown: (_) {
-        _holdTimer?.cancel();
-        _holdTimer = Timer(const Duration(seconds: 2), () {
-          _copyMovesToClipboard(context);
-        });
+        );
       },
-      onTapUp: (_) {
-        _holdTimer?.cancel();
-      },
-      onTapCancel: () {
-        _holdTimer?.cancel();
-      },
-      child: GlassPanel(
-        padding: EdgeInsets.zero,
-        borderRadius: 14,
-        child: Container(
-          height: 56,
-          alignment: Alignment.centerLeft,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            controller: scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: turns,
-            ),
-          ),
-        ),
-      ),
     );
   }
 
