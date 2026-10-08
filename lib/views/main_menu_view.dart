@@ -9,6 +9,7 @@ import 'components/main_menu_view/game_options.dart';
 import 'components/main_menu_view/main_menu_buttons.dart';
 import 'components/shared/bottom_padding.dart';
 import 'components/shared/glass_panel.dart';
+import 'piece_guide_view.dart';
 import 'settings_view.dart';
 
 class MainMenuView extends StatefulWidget {
@@ -125,52 +126,92 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
+                // Floating Help / Guide Button (Top Left)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  left: 20,
+                  child: Tooltip(
+                    message: 'Piece Guide',
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        appModel.haptic.light();
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => const PieceGuideView(),
+                          ),
+                        );
+                      },
+                      child: Builder(
+                        builder: (context) {
+                          final bgTop = theme.background?.colors.first ??
+                              const Color(0xFF0A0F0C);
+                          final isDarkBg =
+                              ThemeData.estimateBrightnessForColor(bgTop) ==
+                                  Brightness.dark;
+                          return Icon(
+                            Icons.help_outline_rounded,
+                            color: isDarkBg
+                                ? const Color(0xFFC3C8C2)
+                                : const Color(0xFF313030),
+                            size: 24,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+
                 // Floating Settings Button
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 10,
                   right: 20,
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      appModel.haptic.light();
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => SettingsView(),
-                        ),
-                      );
-                      Future.delayed(
-                        const Duration(milliseconds: 300),
-                        () => _resetScroll(),
-                      );
-                    },
-                    child: Builder(
-                      builder: (context) {
-                        final bgTop = theme.background?.colors.first ??
-                            const Color(0xFF0A0F0C);
-                        final isDarkBg =
-                            ThemeData.estimateBrightnessForColor(bgTop) ==
-                                Brightness.dark;
-                        return Icon(
-                          Icons.settings,
-                          color: isDarkBg
-                              ? const Color(0xFFC3C8C2)
-                              : const Color(0xFF313030),
-                          size: 24,
+                  child: Tooltip(
+                    message: 'Settings',
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        appModel.haptic.light();
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => SettingsView(),
+                          ),
+                        );
+                        Future.delayed(
+                          const Duration(milliseconds: 300),
+                          () => _resetScroll(),
                         );
                       },
+                      child: Builder(
+                        builder: (context) {
+                          final bgTop = theme.background?.colors.first ??
+                              const Color(0xFF0A0F0C);
+                          final isDarkBg =
+                              ThemeData.estimateBrightnessForColor(bgTop) ==
+                                  Brightness.dark;
+                          return Icon(
+                            Icons.settings,
+                            color: isDarkBg
+                                ? const Color(0xFFC3C8C2)
+                                : const Color(0xFF313030),
+                            size: 24,
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ),
 
                 // 4. Floating Bottom Action Buttons — also inside Consumer so
                 // the imagesReady spinner and hasSavedGame state update correctly.
-                Consumer<AppModel>(
-                  builder: (context, appModel, _) => Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Consumer<AppModel>(
+                    builder: (context, appModel, _) => Container(
                       color: Colors.transparent,
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                       child: Center(

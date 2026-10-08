@@ -152,7 +152,7 @@ class AppModel extends ChangeNotifier {
     if (_gameOverInvertedState != null && gameOver) {
       return _gameOverInvertedState!;
     }
-    if (playingWithAI) {
+    if (playingWithAI || historyViewIndex != null) {
       return playerSide == Player.player2;
     } else {
       return enableRotation && turn == Player.player2;
@@ -164,6 +164,7 @@ class AppModel extends ChangeNotifier {
     return enablePieceRotation &&
         !enableRotation &&
         !playingWithAI &&
+        historyViewIndex == null &&
         playerCount == 2 &&
         turn == Player.player2;
   }

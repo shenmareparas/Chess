@@ -53,10 +53,12 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🎯 Gameplay Features
 
--   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts. The active tile dynamically calculates its width from character measurements to ensure it always auto-scrolls perfectly to the center of the viewport.
+-   **Interactive Piece Guide**: Learn how every chess piece moves, captures, and promotes with an interactive guide accessible directly from the main menu. Features dynamic piece previews matching the user's active piece theme, live color toggle (White/Black), point values, detailed movement cards, and strategic tips.
+-   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). In offline 2-Player mode, board auto-rotation and piece auto-rotation are paused during history review so the player reviewing past positions isn't disoriented by sudden flips. Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts. The active tile dynamically calculates its width from character measurements to ensure it always auto-scrolls perfectly to the center of the viewport.
 -   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
 -   **Exit Match Interstitial Ads**: Displays a non-intrusive interstitial ad when leaving a chess match back to the main menu (with AdMob Console server-side frequency capping and instant offline fallback)
 -   **In-App Store Rating Prompt**: Seamlessly prompts for app rating/review on Google Play Store or App Store using `in_app_review` after a human victory upon returning to the main menu (guarded by `hasRatedApp` user preference)
+-   **Accessible Tooltips**: Action buttons across Main Menu, Game View, and Settings (Settings, Back, Reset, Close, Piece Guide) feature accessible tooltips.
 -   **Move Hints & Highlights**: Visual indicators and highlights for valid moves and selected tiles
 -   **Edge-to-Edge Flat Board Layout**: Stretches right to the borders of the screen with flat, border-aligned sharp corners (no rounded corners or shadows).
 -   **Captured Pieces Display**: Shows dead pieces count-grouped (e.g. Pawn 4, Knight 2) inside theme-tinted frosted glass pills directly above and below the board. Features an ambient silhouette glow for black pieces on dark backgrounds, automatically counts captured promoted pieces under their promoted type, and dynamically flips alignment on board rotation. Can be toggled on/off in Settings (default: on).
@@ -212,14 +214,18 @@ lib/
 └── views/
     ├── main_menu_view.dart        # Main menu: game mode, difficulty, time, side selection
     ├── chess_view.dart            # Game screen: board, timers, controls, confetti, exit dialog
+    ├── piece_guide_view.dart      # Interactive piece movement & strategy guide
     ├── settings_view.dart         # Settings: theme pickers, toggles, achievements tile, reset
     └── components/
         ├── chess_view/
-        │   ├── chess_board_widget.dart         # Flutter↔Flame GameWidget bridge
-        │   ├── captured_pieces_row.dart        # Frosted glass dead pieces display with ambient glow
-        │   ├── promotion_dialog.dart           # Non-dismissible glassmorphic promotion picker
-        │   ├── promotion_option.dart           # Individual promotion piece option
-        │   ├── game_info_and_controls.dart     # Bottom panel layout
+            ├── chess_board_widget.dart         # Flutter↔Flame GameWidget bridge
+            ├── captured_pieces_row.dart        # Frosted glass dead pieces display with ambient glow
+            ├── promotion_dialog.dart           # Non-dismissible glassmorphic promotion picker
+            ├── promotion_option.dart           # Individual promotion piece option
+            ├── piece_guide/
+            │   ├── piece_descriptions.dart     # Comprehensive piece movement, abilities & tips data
+            │   └── piece_selector_item.dart    # Horizontal piece carousel item with theme integration
+            ├── game_info_and_controls.dart     # Bottom panel layout
         │   └── game_info_and_controls/
         │       ├── game_status.dart            # Turn/result status text
         │       ├── timer_widget.dart           # Animated countdown timer display

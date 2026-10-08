@@ -356,20 +356,23 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
-              child: CupertinoButton(
-                padding: EdgeInsets.zero,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    CupertinoPageRoute(
-                      builder: (context) => const SettingsView(),
-                    ),
-                  );
-                },
-                child: Icon(
-                  Icons.settings_rounded,
-                  color: theme.lightTile,
-                  size: 24,
+              child: Tooltip(
+                message: 'Settings',
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const SettingsView(),
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.settings_rounded,
+                    color: theme.lightTile,
+                    size: 24,
+                  ),
                 ),
               ),
             ),

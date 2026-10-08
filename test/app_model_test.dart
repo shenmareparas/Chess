@@ -227,5 +227,59 @@ void main() {
       expect(appModel.capturedPiecesFor(Player.player2), [ChessPieceType.pawn]);
       expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
     });
+
+    test(
+        'board and piece rotation in 2P mode behave like single player when viewing history',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+
+      // Configure 2P mode with auto board rotation
+      appModel.setPlayerCount(2);
+      appModel.setEnableRotation(true);
+      appModel.setEnablePieceRotation(false);
+
+      // Play e2e4 (Player 1 move)
+      final meta1 = controller.board.push(Move(48, 32));
+      appModel.pushMoveMeta(meta1);
+      appModel.changeTurn();
+
+      // Play e7e5 (Player 2 move)
+      final meta2 = controller.board.push(Move(12, 28));
+      appModel.pushMoveMeta(meta2);
+      appModel.changeTurn();
+
+      // Turn is Player 1 at live state. Now play another move to make it Player 2's turn again.
+      final meta3 = controller.board.push(Move(32, 24)); // dummy e4-e5/etc
+      appModel.pushMoveMeta(meta3);
+      appModel.changeTurn();
+
+      // Turn is now Player 2
+      expect(appModel.turn, Player.player2);
+      expect(appModel.isBoardInverted, isTrue);
+
+      // Rewind into history viewing state at move index 0 (out of 3 moves)
+      appModel.setHistoryViewIndex(0);
+      expect(appModel.historyViewIndex, 0);
+      // During history view, board rotation behaves like single player (no flip on turn)
+      expect(appModel.isBoardInverted, isFalse);
+
+      // Configure 2P mode with auto piece rotation
+      appModel.setEnableRotation(false);
+      appModel.setEnablePieceRotation(true);
+
+      // Exit history view back to live game on Player 2's turn
+      appModel.setHistoryViewIndex(null);
+      expect(appModel.turn, Player.player2);
+      expect(appModel.isPieceRotated, isTrue);
+
+      // Enter history view again
+      appModel.setHistoryViewIndex(0);
+      // During history view, pieces must NOT rotate
+      expect(appModel.isPieceRotated, isFalse);
+    });
   });
 }

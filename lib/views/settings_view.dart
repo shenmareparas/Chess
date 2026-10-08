@@ -220,13 +220,16 @@ class _SettingsViewState extends State<SettingsView> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  CupertinoButton(
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Icon(
-                                      Icons.arrow_back_ios_new_rounded,
-                                      color: theme.lightTile,
-                                      size: 22,
+                                  Tooltip(
+                                    message: 'Back',
+                                    child: CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      onPressed: () => Navigator.pop(context),
+                                      child: Icon(
+                                        Icons.arrow_back_ios_new_rounded,
+                                        color: theme.lightTile,
+                                        size: 22,
+                                      ),
                                     ),
                                   ),
                                   GestureDetector(
@@ -253,14 +256,17 @@ class _SettingsViewState extends State<SettingsView> {
                                   ),
                                   Consumer<AppModel>(
                                     builder: (context, appModel, child) =>
-                                        CupertinoButton(
-                                      padding: EdgeInsets.zero,
-                                      onPressed: () => _showResetConfirmation(
-                                          context, appModel),
-                                      child: Icon(
-                                        Icons.refresh_rounded,
-                                        color: theme.lightTile,
-                                        size: 26,
+                                        Tooltip(
+                                      message: 'Reset Settings',
+                                      child: CupertinoButton(
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () => _showResetConfirmation(
+                                            context, appModel),
+                                        child: Icon(
+                                          Icons.refresh_rounded,
+                                          color: theme.lightTile,
+                                          size: 26,
+                                        ),
                                       ),
                                     ),
                                   ),
