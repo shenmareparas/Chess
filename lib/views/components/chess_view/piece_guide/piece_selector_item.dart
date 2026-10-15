@@ -82,6 +82,7 @@ class PieceSelectorItem extends StatelessWidget {
                 child: Image.asset(
                   assetPath,
                   fit: BoxFit.contain,
+                  gaplessPlayback: true,
                 ),
               ),
             ),

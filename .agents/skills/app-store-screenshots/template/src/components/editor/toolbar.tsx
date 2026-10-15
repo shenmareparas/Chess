@@ -38,6 +38,7 @@ type Props = {
   orientation: Orientation;
   setOrientation: (v: Orientation) => void;
   onExport: () => void;
+  onExportToDisk?: () => void;
   onResetAll: () => void;
   onResetDevice: () => void;
   exporting: string | null;
@@ -187,6 +188,17 @@ export function Toolbar(props: Props) {
           <RotateCcw className="h-4 w-4" />
         </Button>
         <Button
+          onClick={props.onExportToDisk}
+          disabled={!!props.exporting}
+          variant="outline"
+          size="sm"
+          className="h-8"
+          title="Export preview images directly to screenshots/ folder on disk"
+        >
+          <Cloud className="h-4 w-4" />
+          {props.exporting === "Disk" ? "Saving..." : "Save to Disk"}
+        </Button>
+        <Button
           onClick={props.onExport}
           disabled={!!props.exporting}
           size="sm"
@@ -194,7 +206,7 @@ export function Toolbar(props: Props) {
           title="Export every size × locale for this device as a zip"
         >
           <Download className="h-4 w-4" />
-          {props.exporting ? `Exporting ${props.exporting}` : "Export bundle"}
+          {props.exporting && props.exporting !== "Disk" ? `Exporting ${props.exporting}` : "Export bundle"}
         </Button>
       </div>
 

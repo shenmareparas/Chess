@@ -9,6 +9,7 @@ type FrameProps = {
   style?: React.CSSProperties;
   /** When true, hide EmptySlot placeholder (so it doesn't bake into exports). */
   hideEmpty?: boolean;
+  showCameraDot?: boolean;
 };
 
 // iPhone — uses pre-measured mockup.png overlay
@@ -50,8 +51,21 @@ export function Phone({ src, alt = "", style, hideEmpty }: FrameProps) {
   );
 }
 
-export function AndroidPhone({ src, alt = "", style, hideEmpty }: FrameProps) {
+export function AndroidPhone({
+  src,
+  alt = "",
+  style,
+  hideEmpty,
+  showCameraDot = false,
+}: FrameProps) {
   const resolved = img(src);
+
+  const left = "1.5%";
+  const top = "0.7%";
+  const width = "97%";
+  const height = "98.6%";
+  const borderRadius = "6.8% / 3.4%";
+
   return (
     <div style={{ position: "relative", aspectRatio: "9 / 19.5", ...style }}>
       <div
@@ -65,28 +79,30 @@ export function AndroidPhone({ src, alt = "", style, hideEmpty }: FrameProps) {
           overflow: "hidden",
         }}
       >
+        {showCameraDot && (
+          <div
+            style={{
+              position: "absolute",
+              top: "1.5%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "3%",
+              height: "1.4%",
+              borderRadius: "50%",
+              background: "#0d0d0f",
+              border: "1px solid rgba(255,255,255,0.06)",
+              zIndex: 20,
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",
-            top: "1.5%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "3%",
-            height: "1.4%",
-            borderRadius: "50%",
-            background: "#0d0d0f",
-            border: "1px solid rgba(255,255,255,0.06)",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "3.5%",
-            top: "2%",
-            width: "93%",
-            height: "96%",
-            borderRadius: "5.5% / 2.6%",
+            left,
+            top,
+            width,
+            height,
+            borderRadius,
             overflow: "hidden",
             background: "#000",
           }}
@@ -107,8 +123,22 @@ export function AndroidPhone({ src, alt = "", style, hideEmpty }: FrameProps) {
   );
 }
 
-export function AndroidTabletP({ src, alt = "", style, hideEmpty }: FrameProps) {
+export function AndroidTabletP({
+  src,
+  alt = "",
+  style,
+  hideEmpty,
+  showCameraDot = false,
+}: FrameProps) {
   const resolved = img(src);
+
+  // Hardcoded to thin bezels (the only frame option)
+  const left = "1.5%";
+  const top = "0.9%";
+  const width = "97%";
+  const height = "98.2%";
+  const borderRadius = "3.1% / 1.9%";
+
   return (
     <div style={{ position: "relative", aspectRatio: "5 / 8", ...style }}>
       <div
@@ -122,27 +152,29 @@ export function AndroidTabletP({ src, alt = "", style, hideEmpty }: FrameProps) 
           overflow: "hidden",
         }}
       >
+        {showCameraDot && (
+          <div
+            style={{
+              position: "absolute",
+              top: "1.2%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "1.4%",
+              height: "0.88%",
+              borderRadius: "50%",
+              background: "#0d0d0f",
+              zIndex: 20,
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",
-            top: "1.2%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "1.4%",
-            height: "0.88%",
-            borderRadius: "50%",
-            background: "#0d0d0f",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "3.5%",
-            top: "2.2%",
-            width: "93%",
-            height: "95.6%",
-            borderRadius: "2.5% / 1.6%",
+            left,
+            top,
+            width,
+            height,
+            borderRadius,
             overflow: "hidden",
             background: "#000",
           }}
@@ -163,8 +195,22 @@ export function AndroidTabletP({ src, alt = "", style, hideEmpty }: FrameProps) 
   );
 }
 
-export function AndroidTabletL({ src, alt = "", style, hideEmpty }: FrameProps) {
+export function AndroidTabletL({
+  src,
+  alt = "",
+  style,
+  hideEmpty,
+  showCameraDot = false,
+}: FrameProps) {
   const resolved = img(src);
+
+  // Hardcoded to thin bezels (the only frame option)
+  const left = "0.9%";
+  const top = "1.5%";
+  const width = "98.2%";
+  const height = "97%";
+  const borderRadius = "1.9% / 3.1%";
+
   return (
     <div style={{ position: "relative", aspectRatio: "8 / 5", ...style }}>
       <div
@@ -178,27 +224,29 @@ export function AndroidTabletL({ src, alt = "", style, hideEmpty }: FrameProps) 
           overflow: "hidden",
         }}
       >
+        {showCameraDot && (
+          <div
+            style={{
+              position: "absolute",
+              left: "1.2%",
+              top: "50%",
+              transform: "translateY(-50%)",
+              width: "0.88%",
+              height: "1.4%",
+              borderRadius: "50%",
+              background: "#0d0d0f",
+              zIndex: 20,
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",
-            left: "1.2%",
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: "0.88%",
-            height: "1.4%",
-            borderRadius: "50%",
-            background: "#0d0d0f",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "2.2%",
-            top: "3.5%",
-            width: "95.6%",
-            height: "93%",
-            borderRadius: "1.6% / 2.5%",
+            left,
+            top,
+            width,
+            height,
+            borderRadius,
             overflow: "hidden",
             background: "#000",
           }}
@@ -219,8 +267,22 @@ export function AndroidTabletL({ src, alt = "", style, hideEmpty }: FrameProps) 
   );
 }
 
-export function IPad({ src, alt = "", style, hideEmpty }: FrameProps) {
+export function IPad({
+  src,
+  alt = "",
+  style,
+  hideEmpty,
+  showCameraDot = false,
+}: FrameProps) {
   const resolved = img(src);
+
+  // Hardcoded to thin bezels (the only frame option)
+  const left = "1.8%";
+  const top = "1.4%";
+  const width = "96.4%";
+  const height = "97.2%";
+  const borderRadius = "3.3% / 2.3%";
+
   return (
     <div style={{ position: "relative", aspectRatio: "770 / 1000", ...style }}>
       <div
@@ -234,27 +296,29 @@ export function IPad({ src, alt = "", style, hideEmpty }: FrameProps) {
           boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.1), 0 8px 40px rgba(0,0,0,0.6)",
         }}
       >
+        {showCameraDot && (
+          <div
+            style={{
+              position: "absolute",
+              top: "1.2%",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "0.9%",
+              height: "0.65%",
+              borderRadius: "50%",
+              background: "#111113",
+              zIndex: 20,
+            }}
+          />
+        )}
         <div
           style={{
             position: "absolute",
-            top: "1.2%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "0.9%",
-            height: "0.65%",
-            borderRadius: "50%",
-            background: "#111113",
-            zIndex: 20,
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            left: "4%",
-            top: "2.8%",
-            width: "92%",
-            height: "94.4%",
-            borderRadius: "2.2% / 1.6%",
+            left,
+            top,
+            width,
+            height,
+            borderRadius,
             overflow: "hidden",
             background: "#000",
           }}

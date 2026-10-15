@@ -10,13 +10,13 @@ description: Use when building App Store or Google Play screenshot pages, genera
 Scaffold a pre-built Next.js + ShadCN editor that lets the user design and export App Store **and** Google Play screenshots as **advertisements** (not UI showcases). The editor handles all the heavy lifting:
 
 - Connected live preview at the canvas's true resolution (scaled to fit)
-- Drag-to-reorder screens, inline text editing, layout switcher, horizontal & vertical alignment (both custom text and slide headlines), and stage snap-centering
+- Drag-to-reorder screens, inline text editing, layout switcher (including `device-left`, `device-right`, `three-devices`, `two-devices`, and 5 Play Store Feature Graphic variants), horizontal & vertical alignment (both custom text and slide headlines), and stage snap-centering
 - Cross-screen mockups: phone/device frames, captions, and layered elements can be moved across adjacent screens, then exported as clipped crops (mockup frames thinned by default, with camera pinhole notch toggleable in settings)
 - Drop-target screenshot picker (file → saved to `public/screenshots/uploaded/<hash>.png`)
 - Auto-save to **`app-store-screenshots.json`** at the project root (git-trackable) + `localStorage` mirror
 - Easy iOS ↔ Android platform switch — separate slide decks live side by side
-- One-click bulk PNG export at every Apple/Google-required resolution via `html-to-image`
-- Light/dark variant toggle per slide, theme presets, locale select
+- One-click bulk PNG export at every Apple/Google-required resolution via `html-to-image` as a zip bundle, or direct-to-disk export via `/api/export` directly into the `screenshots/` directory
+- Light/dark variant toggle per slide, slide-level theme overrides, extended theme presets (`forest-mint`, `midnight-slate`, `royal-velvet`, `warm-walnut`, `jargon-jade`), locale select, and adjustable subtle grain noise overlay
 - Guided in-place migration for older projects created by this skill; passive and explicit migrations keep legacy decks isolated until the user intentionally opts into connected canvas
 
 Supported devices out of the box:
@@ -297,9 +297,9 @@ NODE
 Then install/update dependencies and verify:
 
 ```bash
-bun install      # or pnpm install / yarn / npm install
+bun install
 set -o pipefail
-bun run build 2>&1 | tee "$BACKUP_DIR/build.log"    # or the detected package-manager equivalent
+bun run build 2>&1 | tee "$BACKUP_DIR/build.log"
 ```
 
 Start the dev server and verify in the browser:
@@ -321,7 +321,7 @@ Ask the user these. Do not proceed until you have answers:
    - If **yes**: ask "Where are your app screenshots? (PNG files of actual device captures)" and proceed.
    - If **no** and the app is **iOS + Swift**: offer the companion capture skill — "Want to capture them automatically with the `ios-marketing-capture` skill (https://github.com/ParthJadhav/ios-marketing-capture)?" If they say yes, install it with:
      ```bash
-     npx skills add ParthJadhav/ios-marketing-capture
+     bunx skills add ParthJadhav/ios-marketing-capture
      ```
      Then have them run that skill first to generate the screenshots before continuing here.
    - If **no** and the app is **not iOS + Swift** (e.g. Android, React Native, Flutter, web): the capture skill won't work — the user needs to capture screenshots manually (simulator/device screenshots) before continuing.
@@ -344,12 +344,12 @@ Ask the user these. Do not proceed until you have answers:
 
 ## Step 2: Scaffold the Template
 
-### Detect Package Manager
+### Package Manager
 
-Priority: **bun > pnpm > yarn > npm**.
+Always use **Bun** (`bun`, `bunx`).
 
 ```bash
-which bun && echo bun || which pnpm && echo pnpm || which yarn && echo yarn || echo npm
+which bun && echo bun
 ```
 
 ### Copy the Template
@@ -366,7 +366,7 @@ If the target directory already has a `package.json`, ask the user before overwr
 ### Install Dependencies
 
 ```bash
-bun install      # or pnpm install / yarn / npm install
+bun install
 ```
 
 ### Drop the User's Assets
@@ -659,6 +659,10 @@ project/
 │   └── screenshots/...
 └── src/
     ├── app/
+    │   ├── api/
+    │   │   ├── export/route.ts  # Direct-to-disk screenshot exporter
+    │   │   ├── project/route.ts # Read/write project state on disk
+    │   │   └── upload/route.ts  # Asset upload handler
     │   ├── layout.tsx           # Font + root layout
     │   ├── page.tsx             # Renders <ScreenshotEditor />
     │   └── globals.css          # Tailwind + ShadCN tokens
@@ -685,15 +689,14 @@ project/
 
 ## Hand-off Behavior
 
-When you finish scaffolding, **start the dev server** (`bun dev` / `pnpm dev` / `yarn dev` / `npm run dev`) and then tell the user the following, in this order:
+When you finish scaffolding, **start the dev server** (`bun dev`) and then tell the user the following, in this order:
 
 1. **The server is running at `http://localhost:3000`** (or whichever port Next picked — read it from the dev server output and quote the actual URL). Tell them to open it in the browser.
-2. **How to run it next time** — give them the exact two-command recipe for their package manager:
+2. **How to run it next time** — give them the exact two-command recipe:
    ```bash
    bun install   # only needed the first time, or after pulling new deps
    bun dev       # → http://localhost:3000
    ```
-   Substitute `pnpm` / `yarn` / `npm run` as appropriate for what was detected in Step 2.
 3. Which platforms have starter decks seeded (iOS, Android, or both).
 4. Any user-supplied screenshots that didn't match the expected filenames (so they can rename or use the in-editor drop target).
 5. Point them at the **Export bundle** button once they're happy with the layouts.

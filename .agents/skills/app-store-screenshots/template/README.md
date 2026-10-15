@@ -5,7 +5,7 @@ A pre-built Next.js + ShadCN editor for generating App Store and Google Play scr
 ## Quick start
 
 ```bash
-bun install   # or pnpm / yarn / npm
+bun install
 bun dev       # http://localhost:3000
 ```
 

@@ -16,6 +16,7 @@ import 'components/chess_view/game_info_and_controls/game_status.dart';
 import 'components/chess_view/promotion_dialog.dart';
 import 'components/shared/bottom_padding.dart';
 import 'components/shared/glass_panel.dart';
+import 'piece_guide_view.dart';
 import 'settings_view.dart';
 
 class ChessView extends StatefulWidget {
@@ -356,24 +357,50 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
-              child: Tooltip(
-                message: 'Settings',
-                child: CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      CupertinoPageRoute(
-                        builder: (context) => const SettingsView(),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Tooltip(
+                    message: 'Chess Guide',
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        appModel.haptic.light();
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => const PieceGuideView(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.help_outline_rounded,
+                        color: theme.lightTile,
+                        size: 24,
                       ),
-                    );
-                  },
-                  child: Icon(
-                    Icons.settings_rounded,
-                    color: theme.lightTile,
-                    size: 24,
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 14),
+                  Tooltip(
+                    message: 'Settings',
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => const SettingsView(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Icons.settings_rounded,
+                        color: theme.lightTile,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

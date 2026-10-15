@@ -37,6 +37,7 @@ class UserPreferences {
   bool enablePieceRotation = true;
   bool hapticEnabled = true;
   bool showCapturedPieces = true;
+  bool isAdFree = false;
   bool hasRatedApp = false;
   bool dailyPracticeNotification = true;
   int? reminderHour;
@@ -75,12 +76,20 @@ class UserPreferences {
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? true;
     showCapturedPieces = _prefs!.getBool('showCapturedPieces') ?? true;
+    isAdFree = _prefs!.getBool('isAdFree') ?? false;
     dailyPracticeNotification =
         _prefs!.getBool('dailyPracticeNotification') ?? true;
     reminderHour = _prefs!.getInt('daily_reminder_hour');
     hasRatedApp = _prefs!.getBool('hasRatedApp') ?? false;
     timerIncrement = _prefs!.getInt('timerIncrement') ?? 0;
     timerMode = _prefs!.getString('timerMode') ?? TimerModes.increment;
+    onChanged?.call();
+  }
+
+  Future<void> setIsAdFree(bool value) async {
+    isAdFree = value;
+    _prefs ??= await SharedPreferences.getInstance();
+    await _prefs!.setBool('isAdFree', value);
     onChanged?.call();
   }
 

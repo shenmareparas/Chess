@@ -225,16 +225,8 @@ class _MoveListState extends State<MoveList> {
 
         if (turns.isEmpty) {
           turns.add(
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0x28201F1F),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0x14F5F5F0),
-                  width: 1.0,
-                ),
-              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 'Waiting for first move',
                 style: TextStyle(

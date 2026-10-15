@@ -30,13 +30,14 @@ class UndoRedoButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<AppModel, (int?, int, int, int, bool)>(
+    return Selector<AppModel, (int?, int, int, int, bool, bool)>(
       selector: (_, m) => (
         m.historyViewIndex,
         m.availableUndos,
         m.gameController?.board.moveStack.length ?? 0,
         m.gameController?.board.redoStack.length ?? 0,
         m.gameOver,
+        m.isAdFree,
       ),
       builder: (context, _, __) {
         return Row(
@@ -51,12 +52,15 @@ class UndoRedoButtons extends StatelessWidget {
                     // opens the ad dialog rather than doing nothing.
                     onPressed: _undoEnabled ? () => _handleUndo(context) : null,
                   ),
-                  // Undo bank badge — shows remaining free undos.
+                  // Undo bank badge — shows remaining free undos or infinity if ad-free.
                   if (_undoEnabled)
                     Positioned(
                       top: 6,
                       right: 10,
-                      child: _UndoBadge(count: appModel.availableUndos),
+                      child: _UndoBadge(
+                        count: appModel.availableUndos,
+                        isAdFree: appModel.isAdFree,
+                      ),
                     ),
                 ],
               ),
@@ -81,6 +85,11 @@ class UndoRedoButtons extends StatelessWidget {
   /// - If the player still has free undos: execute the undo and decrement.
   /// - If the player has 0 undos: show a Cupertino dialog offering to watch an ad.
   void _handleUndo(BuildContext context) {
+    if (appModel.isAdFree) {
+      _executeUndo();
+      return;
+    }
+
     if (appModel.availableUndos > 0) {
       _executeUndo();
       appModel.decrementUndo();
@@ -356,34 +365,40 @@ class UndoRedoButtons extends StatelessWidget {
 /// tone when the count hits zero to signal that an ad is required.
 class _UndoBadge extends StatelessWidget {
   final int count;
+  final bool isAdFree;
 
-  const _UndoBadge({required this.count});
+  const _UndoBadge({required this.count, this.isAdFree = false});
 
   @override
   Widget build(BuildContext context) {
-    final bool hasUndos = count > 0;
+    final bool hasUndos = isAdFree || count > 0;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      padding: EdgeInsets.symmetric(horizontal: isAdFree ? 5 : 6, vertical: 2),
       decoration: BoxDecoration(
-        color: hasUndos
-            ? const Color(0xFFFFB74D) // warm amber
-            : const Color(0xFF78909C), // cool grey when empty
+        color: isAdFree
+            ? const Color(0xFF81C784) // soft green for premium/unlimited
+            : hasUndos
+                ? const Color(0xFFFFB74D) // warm amber
+                : const Color(0xFF78909C), // cool grey when empty
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color:
-                (hasUndos ? const Color(0xFFFFB74D) : const Color(0xFF78909C))
-                    .withValues(alpha: 0.5),
+            color: (isAdFree
+                    ? const Color(0xFF81C784)
+                    : hasUndos
+                        ? const Color(0xFFFFB74D)
+                        : const Color(0xFF78909C))
+                .withValues(alpha: 0.5),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Text(
-        '$count',
-        style: const TextStyle(
-          fontSize: 11,
+        isAdFree ? '∞' : '$count',
+        style: TextStyle(
+          fontSize: isAdFree ? 12 : 11,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),

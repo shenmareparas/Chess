@@ -78,7 +78,7 @@ export function ScreenshotEditor() {
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
     for (const s of allSlides) {
-      for (const raw of [s.screenshot, s.screenshotSecondary]) {
+      for (const raw of [s.screenshot, s.screenshotSecondary, s.screenshotTertiary]) {
         if (!raw || raw.startsWith("data:")) continue;
         if (raw.includes("{locale}")) {
           for (const loc of state.locales) paths.add(resolveScreenshot(raw, loc));
@@ -489,6 +489,66 @@ export function ScreenshotEditor() {
     }
   }
 
+  async function exportToDisk() {
+    const currentSlides = state.slidesByDevice[state.device] || [];
+    if (currentSlides.length === 0) {
+      toast.error("No slides to export");
+      return;
+    }
+
+    if (typeof document !== "undefined" && document.fonts && document.fonts.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const { cW, cH } = getCanvas(state.device, state.orientation);
+    setExporting(`Disk`);
+    const images: Array<{ name: string; dataUrl: string }> = [];
+    let okCount = 0;
+    
+    try {
+      for (let i = 0; i < currentSlides.length; i++) {
+        setExportSlideIndex(i);
+        await waitForPaint();
+        const el = exportRef.current;
+        if (!el) {
+          throw new Error("Render target missing");
+        }
+        const filename = state.device === "feature-graphic" 
+          ? "feature_graphic.png" 
+          : `slide${i + 1}.png`;
+        const dataUrl = await captureSlide(el, cW, cH, cW, cH);
+        images.push({
+          name: filename,
+          dataUrl,
+        });
+        okCount += 1;
+      }
+
+      // Send to API
+      const res = await fetch("/api/export", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Failed to save to disk");
+      }
+
+      toast.success(`Successfully exported ${okCount} slides directly to screenshots/ directory!`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(`Disk Export failed: ${msg}`);
+      console.error("Disk export failed", e);
+    } finally {
+      setExporting(null);
+    }
+  }
+
   async function captureSlide(
     el: HTMLElement,
     sourceW: number,
@@ -566,6 +626,7 @@ export function ScreenshotEditor() {
         orientation={state.orientation}
         setOrientation={(v) => setState((p) => ({ ...p, orientation: v }))}
         onExport={exportAll}
+        onExportToDisk={exportToDisk}
         onResetAll={() => {
           reset();
           setActiveSlideId(null);
@@ -622,6 +683,8 @@ export function ScreenshotEditor() {
               onTextElementTextChange={patchTextElementText}
               onElementChange={patchElementTransform}
               onSelectElement={setSelectedElement}
+              showCameraDot={state.showCameraDot ?? false}
+              noiseOpacity={state.noiseOpacity ?? 0.045}
             />
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center text-sm text-muted-foreground">
@@ -647,6 +710,9 @@ export function ScreenshotEditor() {
                   elementId ? { slideId: activeSlide.id, elementId } : null,
                 )
               }
+              showCameraDot={state.showCameraDot ?? false}
+              noiseOpacity={state.noiseOpacity ?? 0.045}
+              onUpdateGlobalSettings={(patch) => setState((p) => ({ ...p, ...patch }))}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
@@ -698,6 +764,8 @@ export function ScreenshotEditor() {
                 appIcon={state.appIcon}
                 connectedCanvas={state.connectedCanvas}
                 hideEmpty
+                showCameraDot={state.showCameraDot ?? false}
+                noiseOpacity={state.noiseOpacity ?? 0.045}
               />
             </div>
           </div>

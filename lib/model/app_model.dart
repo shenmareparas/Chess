@@ -50,6 +50,7 @@ class AppModel extends ChangeNotifier {
   bool get enablePieceRotation => prefs.enablePieceRotation;
   bool get hapticEnabled => prefs.hapticEnabled;
   bool get showCapturedPieces => prefs.showCapturedPieces;
+  bool get isAdFree => prefs.isAdFree;
   bool get dailyPracticeNotification => prefs.dailyPracticeNotification;
   int get timerIncrement => prefs.timerIncrement;
   String get timerMode => prefs.timerMode;
@@ -120,7 +121,7 @@ class AppModel extends ChangeNotifier {
   /// Number of free undos remaining for the current game.
   /// Starts at 1 for each new game. Players can earn 1 more by watching an ad.
   int _availableUndos = 1;
-  int get availableUndos => _availableUndos;
+  int get availableUndos => isAdFree ? 999 : _availableUndos;
 
   void resetUndos() {
     _availableUndos = 1;
@@ -128,6 +129,8 @@ class AppModel extends ChangeNotifier {
   }
 
   void decrementUndo() {
+    if (isAdFree) return;
+
     if (_availableUndos > 0) {
       _availableUndos--;
       // Preload rewarded ad lazily as soon as the user exhausts their free undo,

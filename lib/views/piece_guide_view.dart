@@ -25,11 +25,37 @@ class PieceGuideView extends StatefulWidget {
 class _PieceGuideViewState extends State<PieceGuideView> {
   late ChessPieceType _selectedPiece;
   String _selectedColor = 'white'; // 'white' or 'black'
+  bool _precached = false;
 
   @override
   void initState() {
     super.initState();
     _selectedPiece = widget.initialPiece;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_precached) {
+      _precached = true;
+      final pieceTheme =
+          Provider.of<AppModel>(context, listen: false).pieceTheme;
+      _precacheImages(pieceTheme);
+    }
+  }
+
+  void _precacheImages(String pieceTheme) {
+    final formattedTheme = formatPieceTheme(pieceTheme);
+    for (final piece in pieceGuideOrder) {
+      for (final color in ['white', 'black']) {
+        precacheImage(
+          AssetImage(
+            'assets/images/pieces/$formattedTheme/${pieceTypeToString(piece)}_$color.png',
+          ),
+          context,
+        );
+      }
+    }
   }
 
   @override
@@ -102,8 +128,9 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                               key: ValueKey('title-${info.name}'),
                               textAlign: TextAlign.center,
                               style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Inter',
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
                                 letterSpacing: 0.5,
                                 color: Color(0xFFE5E2E1),
                               ),
@@ -149,42 +176,48 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                     Expanded(
                       flex: 4,
                       child: Center(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 250),
-                          transitionBuilder: (child, animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(
-                                scale: Tween<double>(begin: 0.92, end: 1.0)
-                                    .animate(animation),
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: Padding(
-                            key: ValueKey(
-                                '$_selectedPiece-$_selectedColor-$pieceTheme'),
-                            padding: const EdgeInsets.symmetric(vertical: 12.0),
-                            child: Container(
-                              decoration: _selectedColor == 'black'
-                                  ? BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: theme.lightTile
-                                              .withValues(alpha: 0.28),
-                                          blurRadius: 36,
-                                          spreadRadius: 8,
-                                        ),
-                                      ],
-                                    )
-                                  : null,
-                              child: Image.asset(
-                                heroAssetPath,
-                                width: 190,
-                                height: 190,
-                                fit: BoxFit.contain,
-                                filterQuality: FilterQuality.medium,
+                        child: RepaintBoundary(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 220),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: (child, animation) {
+                              return FadeTransition(
+                                opacity: animation,
+                                child: ScaleTransition(
+                                  scale: Tween<double>(begin: 0.94, end: 1.0)
+                                      .animate(animation),
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              key: ValueKey(
+                                  '$_selectedPiece-$_selectedColor-$pieceTheme'),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12.0),
+                              child: Container(
+                                decoration: _selectedColor == 'black'
+                                    ? BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: theme.lightTile
+                                                .withValues(alpha: 0.28),
+                                            blurRadius: 36,
+                                            spreadRadius: 8,
+                                          ),
+                                        ],
+                                      )
+                                    : null,
+                                child: Image.asset(
+                                  heroAssetPath,
+                                  width: 190,
+                                  height: 190,
+                                  fit: BoxFit.contain,
+                                  gaplessPlayback: true,
+                                  filterQuality: FilterQuality.medium,
+                                ),
                               ),
                             ),
                           ),
@@ -233,224 +266,27 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                       flex: 4,
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: GlassPanel(
-                          borderRadius: 24,
-                          padding: const EdgeInsets.all(20),
-                          color: const Color(0x80201F1F),
-                          child: SizedBox.expand(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 220),
-                              layoutBuilder: (currentChild, previousChildren) =>
-                                  Stack(
-                                alignment: Alignment.topLeft,
-                                children: [
-                                  ...previousChildren,
-                                  if (currentChild != null) currentChild,
-                                ],
-                              ),
-                              child: Align(
-                                key: ValueKey(_selectedPiece),
-                                alignment: Alignment.topLeft,
-                                child: SingleChildScrollView(
-                                  physics: const BouncingScrollPhysics(),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      // Header Row: Summary & Points Pill Badge
-                                      Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              info.summary,
-                                              style: const TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                                color: Color(0xFFE5E2E1),
-                                                height: 1.45,
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                              vertical: 5,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: highlightColor.withValues(
-                                                  alpha: 0.16),
-                                              borderRadius:
-                                                  BorderRadius.circular(12),
-                                              border: Border.all(
-                                                color: highlightColor
-                                                    .withValues(alpha: 0.35),
-                                                width: 1,
-                                              ),
-                                            ),
-                                            child: Text(
-                                              info.valueText,
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.w700,
-                                                color: highlightColor,
-                                                letterSpacing: 0.4,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      const SizedBox(height: 14),
-
-                                      // Movement Pattern Card
-                                      Container(
-                                        width: double.infinity,
-                                        padding: const EdgeInsets.all(12),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white
-                                              .withValues(alpha: 0.04),
-                                          borderRadius:
-                                              BorderRadius.circular(14),
-                                          border: Border.all(
-                                            color: Colors.white
-                                                .withValues(alpha: 0.08),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Container(
-                                              width: 28,
-                                              height: 28,
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                color: highlightColor
-                                                    .withValues(alpha: 0.15),
-                                              ),
-                                              child: Icon(
-                                                Icons.navigation_rounded,
-                                                size: 16,
-                                                color: highlightColor,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    'MOVEMENT PATTERN',
-                                                    style: TextStyle(
-                                                      fontSize: 10.5,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                      letterSpacing: 0.8,
-                                                      color: theme.lightTile
-                                                          .withValues(
-                                                              alpha: 0.7),
-                                                    ),
-                                                  ),
-                                                  const SizedBox(height: 3),
-                                                  Text(
-                                                    info.movePattern,
-                                                    style: const TextStyle(
-                                                      fontSize: 13.5,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: Color(0xFFE5E2E1),
-                                                      height: 1.35,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 12),
-
-                                      // Detailed Explanation
-                                      Text(
-                                        info.details,
-                                        style: const TextStyle(
-                                          fontSize: 13.5,
-                                          color: Color(0xFFC3C8C2),
-                                          height: 1.5,
-                                        ),
-                                      ),
-
-                                      // Special Rules Card (Castling, En Passant, Promotion, Leaping)
-                                      if (info.specialRule != null) ...[
-                                        const SizedBox(height: 14),
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: highlightColor.withValues(
-                                                alpha: 0.08),
-                                            borderRadius:
-                                                BorderRadius.circular(14),
-                                            border: Border.all(
-                                              color: highlightColor.withValues(
-                                                  alpha: 0.25),
-                                            ),
-                                          ),
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Icon(
-                                                Icons.stars_rounded,
-                                                size: 18,
-                                                color: highlightColor,
-                                              ),
-                                              const SizedBox(width: 10),
-                                              Expanded(
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    if (info.specialRuleTitle !=
-                                                        null) ...[
-                                                      Text(
-                                                        info.specialRuleTitle!,
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: highlightColor,
-                                                          letterSpacing: 0.3,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 4),
-                                                    ],
-                                                    Text(
-                                                      info.specialRule!,
-                                                      style: TextStyle(
-                                                        fontSize: 12.5,
-                                                        color: Colors.white
-                                                            .withValues(
-                                                                alpha: 0.85),
-                                                        height: 1.45,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ],
-                                  ),
+                        child: RepaintBoundary(
+                          child: GlassPanel(
+                            borderRadius: 24,
+                            padding: const EdgeInsets.fromLTRB(18, 18, 8, 18),
+                            color: const Color(0x80201F1F),
+                            child: SizedBox.expand(
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                switchInCurve: Curves.easeOutCubic,
+                                switchOutCurve: Curves.easeInCubic,
+                                transitionBuilder: (child, animation) {
+                                  return FadeTransition(
+                                    opacity: animation,
+                                    child: child,
+                                  );
+                                },
+                                child: _PieceDescriptionCard(
+                                  key: ValueKey(_selectedPiece),
+                                  piece: _selectedPiece,
+                                  theme: theme,
+                                  highlightColor: highlightColor,
                                 ),
                               ),
                             ),
@@ -545,6 +381,481 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                   )
                 ]
               : null,
+        ),
+      ),
+    );
+  }
+}
+
+class _PieceDescriptionCard extends StatefulWidget {
+  final ChessPieceType piece;
+  final AppTheme theme;
+  final Color highlightColor;
+
+  const _PieceDescriptionCard({
+    super.key,
+    required this.piece,
+    required this.theme,
+    required this.highlightColor,
+  });
+
+  @override
+  State<_PieceDescriptionCard> createState() => _PieceDescriptionCardState();
+}
+
+class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
+  final ScrollController _scrollController = ScrollController();
+  bool _canScrollDown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkScroll());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    final canScroll = maxScroll > 8 && currentScroll < maxScroll - 16;
+    if (canScroll != _canScrollDown) {
+      setState(() => _canScrollDown = canScroll);
+    }
+  }
+
+  void _checkScroll() {
+    if (!mounted || !_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    final canScroll = maxScroll > 8 && currentScroll < maxScroll - 16;
+    if (canScroll != _canScrollDown) {
+      setState(() => _canScrollDown = canScroll);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final info = pieceDescriptions[widget.piece]!;
+    final theme = widget.theme;
+    final highlightColor = widget.highlightColor;
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          _checkScroll();
+          return false;
+        },
+        child: Stack(
+          children: [
+            RawScrollbar(
+              thumbVisibility: true,
+              trackVisibility: false,
+              thickness: 3.0,
+              radius: const Radius.circular(8),
+              padding: const EdgeInsets.only(
+                top: 4,
+                bottom: 12,
+                right: 0,
+              ),
+              thumbColor: theme.lightTile.withValues(alpha: 0.35),
+              controller: _scrollController,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(2, 0, 12, 28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Row: Summary & Points Pill Badge
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Tactical Role Tag
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                child: Text(
+                                  info.role.toUpperCase(),
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color:
+                                        theme.lightTile.withValues(alpha: 0.85),
+                                    letterSpacing: 0.8,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                info.summary,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFFE5E2E1),
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 11,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: highlightColor.withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: highlightColor.withValues(alpha: 0.4),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: highlightColor.withValues(alpha: 0.2),
+                                blurRadius: 8,
+                                spreadRadius: 0,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            info.valueText,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: highlightColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Movement Pattern Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: highlightColor.withValues(alpha: 0.15),
+                              border: Border.all(
+                                color: highlightColor.withValues(alpha: 0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.navigation_rounded,
+                              size: 16,
+                              color: highlightColor,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'MOVEMENT PATTERN',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0,
+                                    color:
+                                        theme.lightTile.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  info.movePattern,
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFE5E2E1),
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Detailed Explanation Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.06),
+                        ),
+                      ),
+                      child: Text(
+                        info.details,
+                        textAlign: TextAlign.justify,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 12.5,
+                          color: Color(0xFFC3C8C2),
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Strategy / Combat Tip Card
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.amber.withValues(alpha: 0.22),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.amber.withValues(alpha: 0.15),
+                            ),
+                            child: const Icon(
+                              Icons.lightbulb_outline_rounded,
+                              size: 16,
+                              color: Colors.amber,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'STRATEGY & TACTICS',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.8,
+                                    color: Colors.amber,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  info.combatTip,
+                                  textAlign: TextAlign.justify,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 12,
+                                    color: Colors.white.withValues(alpha: 0.88),
+                                    height: 1.45,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Special Rules Card (Castling, En Passant, Promotion, Leaping)
+                    if (info.specialRule != null) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: highlightColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: highlightColor.withValues(alpha: 0.28),
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.stars_rounded,
+                              size: 18,
+                              color: highlightColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (info.specialRuleTitle != null) ...[
+                                    Text(
+                                      info.specialRuleTitle!,
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.w700,
+                                        color: highlightColor,
+                                        letterSpacing: 0.3,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                  ],
+                                  Text(
+                                    info.specialRule!,
+                                    textAlign: TextAlign.justify,
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 12,
+                                      color:
+                                          Colors.white.withValues(alpha: 0.85),
+                                      height: 1.45,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+
+            // Subtle bottom fade gradient to indicate content continues below
+            if (_canScrollDown)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 38,
+                child: IgnorePointer(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          const Color(0x80201F1F).withValues(alpha: 0.0),
+                          const Color(0x80201F1F).withValues(alpha: 0.95),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+            // "MORE INFO" scroll affordance badge
+            if (_canScrollDown)
+              Positioned(
+                bottom: 4,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    onPressed: () {
+                      _scrollController.animateTo(
+                        (_scrollController.offset + 120).clamp(
+                          0.0,
+                          _scrollController.position.maxScrollExtent,
+                        ),
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 3.5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'MORE INFO',
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                              color: theme.lightTile,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 14,
+                            color: theme.lightTile,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );

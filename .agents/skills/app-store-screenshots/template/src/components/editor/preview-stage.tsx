@@ -31,6 +31,8 @@ type Props = {
   onTextElementTextChange: (slideId: string, id: string, v: string) => void;
   onElementChange: (slideId: string, id: ElementId, t: ElementTransform) => void;
   onSelectElement: (element: SelectedElement | null) => void;
+  showCameraDot?: boolean;
+  noiseOpacity?: number;
 };
 
 // Fits one full-resolution screen inside the viewport while keeping the whole
@@ -52,6 +54,8 @@ export function PreviewStage({
   onTextElementTextChange,
   onElementChange,
   onSelectElement,
+  showCameraDot,
+  noiseOpacity,
 }: Props) {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const scrollerRef = React.useRef<HTMLDivElement>(null);
@@ -144,6 +148,8 @@ export function PreviewStage({
               selectedElement={selectedElement}
               activeSlideId={activeSlide?.id || null}
               showGuides
+              showCameraDot={showCameraDot}
+              noiseOpacity={noiseOpacity}
               edit={{
                 onLabelChange: (slideId, value) => {
                   const slide = slides.find((s) => s.id === slideId);

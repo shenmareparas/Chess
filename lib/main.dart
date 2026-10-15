@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'logic/ad_service.dart';
+import 'logic/in_app_purchase_service.dart';
 import 'logic/in_app_update_service.dart';
 import 'logic/notification_service.dart';
 import 'logic/play_games_service.dart';
@@ -49,6 +50,9 @@ void main() async {
 
   // Sign in to Play Games Services silently on startup in a microtask after render
   Future.microtask(() => PlayGamesService.instance.signInSilently());
+
+  // Initialize In-App Purchase service to listen for purchases and cache product details
+  Future.microtask(() => InAppPurchaseService.instance.initialize(prefs));
 
   // Check for Google Play Store updates on Android
   InAppUpdateService.instance.checkForUpdate();

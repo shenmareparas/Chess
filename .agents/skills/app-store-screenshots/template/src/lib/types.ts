@@ -18,7 +18,14 @@ export type SlideLayout =
   | "two-devices"      // back + front phones, headline above
   | "no-device"        // big headline + decorative blob, no device
   | "split-landscape"  // landscape tablets only: caption left + device right
-  | "feature-graphic"; // 1024×500 banner with icon + name + tagline
+  | "device-left"      // device left, headline right
+  | "device-right"     // device right, headline left
+  | "three-devices"    // three layered phones, headline above
+  | "feature-graphic"  // 1024×500 banner with icon + name + tagline
+  | "feature-graphic-cards"
+  | "feature-graphic-triple-mockup"
+  | "feature-graphic-dual-upright"
+  | "feature-graphic-fan-cards";
 
 // Per-element rect in canvas pixel space. Optional rotation in degrees and zIndex.
 export type ElementTransform = {
@@ -28,9 +35,11 @@ export type ElementTransform = {
   height: number;
   rotation?: number;
   zIndex?: number;
+  align?: "left" | "center" | "right";
+  vAlign?: "top" | "center" | "bottom";
 };
 
-export type BuiltInElementId = "caption" | "device" | "deviceSecondary";
+export type BuiltInElementId = "caption" | "device" | "deviceSecondary" | "deviceTertiary";
 export type TextElementId = `text:${string}`;
 export type ElementId = BuiltInElementId | TextElementId;
 
@@ -53,6 +62,7 @@ export type TextElement = {
   fontWeight?: number;
   color?: string;
   align?: "left" | "center" | "right";
+  vAlign?: "top" | "center" | "bottom";
 };
 
 export type Slide = {
@@ -62,7 +72,9 @@ export type Slide = {
   headline: LocalizedText;    // multi-line; newlines are intentional, per locale
   screenshot: string;         // path under /screenshots/ — may contain {locale}
   screenshotSecondary?: string; // for two-devices layout — may contain {locale}
+  screenshotTertiary?: string;  // for three-devices layout — may contain {locale}
   inverted?: boolean;         // dark background variant
+  themeId?: string;           // slide-specific theme override
   // Per-element overrides; when present, replaces layout default placement.
   transforms?: Partial<Record<BuiltInElementId, ElementTransform>>;
   textElements?: TextElement[];
@@ -73,7 +85,12 @@ export type ThemeId =
   | "dark-bold"
   | "warm-editorial"
   | "ocean-fresh"
-  | "bloom-roast";
+  | "bloom-roast"
+  | "forest-mint"
+  | "midnight-slate"
+  | "royal-velvet"
+  | "warm-walnut"
+  | "jargon-jade";
 
 export type Theme = {
   id: string;
@@ -84,6 +101,7 @@ export type Theme = {
   fgAlt: string;       // text on bgAlt
   accent: string;
   muted: string;
+  bgGrad?: string;     // optional secondary gradient background color
 };
 
 export type ProjectState = {
@@ -101,4 +119,6 @@ export type ProjectState = {
   // Per-device slide decks so platform switching preserves work
   slidesByDevice: Record<Device, Slide[]>;
   appIcon?: string;    // path under /public (e.g. /app-icon.png)
+  showCameraDot?: boolean;
+  noiseOpacity?: number;
 };

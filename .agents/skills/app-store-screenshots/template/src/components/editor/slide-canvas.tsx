@@ -22,6 +22,7 @@ import {
   phoneWSmall,
   tabletLW,
   tabletPW,
+  themeById,
 } from "@/lib/constants";
 import { toTextElementId } from "@/lib/elements";
 import { img } from "@/lib/image-cache";
@@ -39,6 +40,7 @@ type FrameComp = React.ComponentType<{
   alt?: string;
   style?: React.CSSProperties;
   hideEmpty?: boolean;
+  showCameraDot?: boolean;
 }>;
 
 export function getCanvas(device: Device, orientation: Orientation) {
@@ -108,6 +110,8 @@ type Props = {
   previewScale?: number;
   /** When true, suppress the "Drop a screenshot here" placeholder. Used for export. */
   hideEmpty?: boolean;
+  showCameraDot?: boolean;
+  noiseOpacity?: number;
 };
 
 type DeckEditHandlers = {
@@ -135,6 +139,8 @@ type DeckCanvasProps = {
   previewScale?: number;
   hideEmpty?: boolean;
   showGuides?: boolean;
+  showCameraDot?: boolean;
+  noiseOpacity?: number;
 };
 
 // ---------- Editable text helpers ----------
@@ -217,6 +223,7 @@ function Caption({
   editable,
   edit,
   align = "center",
+  vAlign = "top",
   inverted,
   onFocus,
 }: {
@@ -227,7 +234,8 @@ function Caption({
   locale: string;
   editable?: boolean;
   edit?: EditHandlers;
-  align?: "center" | "left";
+  align?: "left" | "center" | "right";
+  vAlign?: "top" | "center" | "bottom";
   inverted?: boolean;
   onFocus?: () => void;
 }) {
@@ -237,7 +245,28 @@ function Caption({
   // produce headlines so tall they overlap the device frame.
   const unit = Math.min(cW, cH);
   return (
-    <div style={{ textAlign: align, position: "relative", width: "100%" }}>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        textAlign: align,
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        justifyContent:
+          vAlign === "center"
+            ? "center"
+            : vAlign === "bottom"
+              ? "flex-end"
+              : "flex-start",
+        alignItems:
+          align === "left"
+            ? "flex-start"
+            : align === "right"
+              ? "flex-end"
+              : "center",
+      }}
+    >
       <EditableText
         value={pickText(slide.label, locale)}
         editable={editable}
@@ -278,6 +307,9 @@ function Caption({
 function backgroundFor(theme: Theme, inverted?: boolean) {
   if (inverted) {
     return `linear-gradient(160deg, ${theme.bgAlt} 0%, ${shade(theme.bgAlt, -8)} 100%)`;
+  }
+  if (theme.bgGrad) {
+    return `linear-gradient(160deg, ${theme.bg} 0%, ${theme.bgGrad} 100%)`;
   }
   return `linear-gradient(160deg, ${theme.bg} 0%, ${shade(theme.bg, -6)} 100%)`;
 }
@@ -337,6 +369,7 @@ type LayoutRects = {
   caption?: Rect & { align?: "center" | "left" };
   device?: Rect;
   deviceSecondary?: Rect;
+  deviceTertiary?: Rect;
 };
 
 function getDefaultRects(
@@ -401,6 +434,28 @@ function getDefaultRects(
           height: (deviceW * 0.9) / frameAspect,
         },
       };
+    case "three-devices":
+      return {
+        caption: { x: cW * 0.08, y: cH * 0.05, width: capW, height: capH, align: "center" },
+        deviceSecondary: {
+          x: -cW * 0.12,
+          y: cH - smallH * 0.85 - cH * 0.02,
+          width: smallW * 0.85,
+          height: (smallW * 0.85) / frameAspect,
+        },
+        deviceTertiary: {
+          x: cW - smallW * 0.85 + cW * 0.12,
+          y: cH - smallH * 0.85 - cH * 0.02,
+          width: smallW * 0.85,
+          height: (smallW * 0.85) / frameAspect,
+        },
+        device: {
+          x: (cW - deviceW * 0.85) / 2,
+          y: cH - deviceH * 0.85 - cH * 0.01,
+          width: deviceW * 0.85,
+          height: (deviceW * 0.85) / frameAspect,
+        },
+      };
     case "no-device":
       return {
         caption: {
@@ -427,6 +482,38 @@ function getDefaultRects(
           height: deviceH,
         },
       };
+    case "device-left":
+      return {
+        caption: {
+          x: cW * 0.46,
+          y: cH * 0.3,
+          width: cW * 0.48,
+          height: capH,
+          align: "left",
+        },
+        device: {
+          x: cW * 0.06,
+          y: (cH - deviceH * 0.85) / 2 + cH * 0.05,
+          width: deviceW * 0.85,
+          height: (deviceW * 0.85) / frameAspect,
+        },
+      };
+    case "device-right":
+      return {
+        caption: {
+          x: cW * 0.06,
+          y: cH * 0.3,
+          width: cW * 0.48,
+          height: capH,
+          align: "left",
+        },
+        device: {
+          x: cW * 0.52,
+          y: (cH - deviceH * 0.85) / 2 + cH * 0.05,
+          width: deviceW * 0.85,
+          height: (deviceW * 0.85) / frameAspect,
+        },
+      };
     default:
       return {};
   }
@@ -436,7 +523,7 @@ function rectFor(
   id: BuiltInElementId,
   slide: Slide,
   defaults: LayoutRects,
-): (Rect & { align?: "center" | "left" }) | undefined {
+): (Rect & { align?: "left" | "center" | "right"; vAlign?: "top" | "center" | "bottom" }) | undefined {
   const saved = slide.transforms?.[id];
   const def = defaults[id];
   if (!def && !saved) return undefined;
@@ -446,7 +533,8 @@ function rectFor(
     y: saved.y,
     width: saved.width,
     height: saved.height,
-    align: (def as { align?: "center" | "left" } | undefined)?.align,
+    align: saved.align ?? (def as any)?.align ?? "center",
+    vAlign: saved.vAlign ?? (def as any)?.vAlign ?? "top",
   };
 }
 
@@ -506,15 +594,18 @@ export function SlideCanvas({
   selectedElementId = null,
   previewScale = 1,
   hideEmpty,
+  showCameraDot,
+  noiseOpacity,
 }: Props) {
   const { cW, cH } = getCanvas(device, orientation);
+  const resolvedTheme = slide.themeId ? themeById(slide.themeId) : theme;
 
-  if (slide.layout === "feature-graphic" || device === "feature-graphic") {
+  if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") {
     return (
       <FeatureGraphicCanvas
         slide={slide}
         cW={cW}
-        theme={theme}
+        theme={resolvedTheme}
         locale={locale}
         appName={appName}
         appIcon={appIcon}
@@ -540,12 +631,12 @@ export function SlideCanvas({
         overflow: "hidden",
       }}
     >
-      <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+      <SlideBackground slide={slide} cW={cW} cH={cH} theme={resolvedTheme} noiseOpacity={noiseOpacity} />
       <SlideElements
         slide={slide}
         device={device}
         orientation={orientation}
-        theme={theme}
+        theme={resolvedTheme}
         locale={locale}
         editable={editable}
         edit={edit}
@@ -556,6 +647,7 @@ export function SlideCanvas({
         boundsW={cW}
         boundsH={cH}
         allowCrossScreen={false}
+        showCameraDot={showCameraDot}
       />
     </div>
   );
@@ -579,6 +671,8 @@ export function DeckCanvas({
   previewScale = 1,
   hideEmpty,
   showGuides = false,
+  showCameraDot,
+  noiseOpacity,
 }: DeckCanvasProps) {
   const { cW, cH } = getCanvas(device, orientation);
   const totalW = Math.max(1, slides.length) * cW;
@@ -595,7 +689,8 @@ export function DeckCanvas({
       {slides.map((slide, index) => {
         const screenX = index * cW;
         const active = activeSlideId === slide.id;
-        if (slide.layout === "feature-graphic" || device === "feature-graphic") {
+        const resolvedTheme = slide.themeId ? themeById(slide.themeId) : theme;
+        if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") {
           return (
             <div
               key={`${slide.id}-feature`}
@@ -616,7 +711,7 @@ export function DeckCanvas({
               <FeatureGraphicCanvas
                 slide={slide}
                 cW={cW}
-                theme={theme}
+                theme={resolvedTheme}
                 locale={locale}
                 appName={appName}
                 appIcon={appIcon}
@@ -646,14 +741,14 @@ export function DeckCanvas({
               overflow: "hidden",
             }}
           >
-            <SlideBackground slide={slide} cW={cW} cH={cH} theme={theme} />
+            <SlideBackground slide={slide} cW={cW} cH={cH} theme={resolvedTheme} noiseOpacity={noiseOpacity} />
             {showGuides && <ScreenGuide cW={cW} cH={cH} index={index} active={active} />}
           </div>
         );
       })}
 
       {slides.map((slide, index) => {
-        if (slide.layout === "feature-graphic" || device === "feature-graphic") return null;
+        if (slide.layout.startsWith("feature-graphic") || device === "feature-graphic") return null;
         const selectedElementId =
           selectedElement?.slideId === slide.id ? selectedElement.elementId : null;
         const perSlideEdit: EditHandlers | undefined = editable
@@ -669,13 +764,14 @@ export function DeckCanvas({
             }
           : undefined;
 
+        const resolvedTheme = slide.themeId ? themeById(slide.themeId) : theme;
         const elements = (
           <SlideElements
             key={`${slide.id}-elements`}
             slide={slide}
             device={device}
             orientation={orientation}
-            theme={theme}
+            theme={resolvedTheme}
             locale={locale}
             editable={editable}
             edit={perSlideEdit}
@@ -686,6 +782,7 @@ export function DeckCanvas({
             boundsW={connectedCanvas ? totalW : cW}
             boundsH={cH}
             allowCrossScreen={connectedCanvas}
+            showCameraDot={showCameraDot}
           />
         );
         if (connectedCanvas) return elements;
@@ -714,25 +811,81 @@ function SlideBackground({
   cW,
   cH,
   theme,
+  noiseOpacity = 0.045,
 }: {
   slide: Slide;
   cW: number;
   cH: number;
   theme: Theme;
+  noiseOpacity?: number;
 }) {
   const inverted = !!slide.inverted;
+  const isCustomThemesSlide = slide.id === "s_chess_3";
+  const customBg = "linear-gradient(90deg, #0B0E14 0%, #0F1B15 50%, #0F070C 100%)";
+
   return (
     <div
       style={{
         position: "absolute",
         inset: 0,
         overflow: "hidden",
-        background: backgroundFor(theme, inverted),
+        background: isCustomThemesSlide ? customBg : backgroundFor(theme, inverted),
         color: inverted ? theme.fgAlt : theme.fg,
       }}
     >
-      <Blob cW={cW} color={theme.accent} x={-15} y={-10} size={55} opacity={inverted ? 0.25 : 0.32} />
-      <Blob cW={cW} color={theme.accent} x={70} y={75} size={45} opacity={inverted ? 0.18 : 0.25} />
+      {/* 1. Subtle Dot Grid Background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `radial-gradient(circle, ${theme.fg}18 1.5px, transparent 1.5px)`,
+          backgroundSize: `${cW * 0.035}px ${cW * 0.035}px`,
+          opacity: 0.6,
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* 2. Noise Grain Overlay */}
+      {noiseOpacity > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+            opacity: noiseOpacity,
+            mixBlendMode: "overlay",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
+      {/* 3. Soft Vignette / Depth Gradient */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "radial-gradient(circle, transparent 30%, rgba(0, 0, 0, 0.28) 160%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* 4. Rich Glowing Blobs */}
+      {isCustomThemesSlide ? (
+        <>
+          {/* Blue blob on the left behind the Oceanic Blue/Slate device */}
+          <Blob cW={cW} color="#5B9CF8" x={-10} y={50} size={50} opacity={0.25} />
+          {/* Gold/Green blob in the center behind the Forest Mint device */}
+          <Blob cW={cW} color="#E0B634" x={35} y={50} size={45} opacity={0.22} />
+          {/* Purple/Velvet blob on the right behind the Royal Velvet device */}
+          <Blob cW={cW} color="#E5B2B8" x={80} y={50} size={50} opacity={0.25} />
+        </>
+      ) : (
+        <>
+          <Blob cW={cW} color={theme.accent} x={-15} y={-10} size={58} opacity={inverted ? 0.28 : 0.38} />
+          <Blob cW={cW} color={theme.accent} x={70} y={75} size={48} opacity={inverted ? 0.22 : 0.3} />
+          <Blob cW={cW} color={theme.fg} x={30} y={40} size={25} opacity={0.05} />
+        </>
+      )}
     </div>
   );
 }
@@ -804,6 +957,106 @@ function FeatureGraphicCanvas({
   editable?: boolean;
   edit?: EditHandlers;
 }) {
+  const cH = cW * 0.48828; // 1024x500 ratio
+  const screenshot = resolveScreenshot(slide.screenshot, locale);
+  const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary || slide.screenshot, locale);
+  const screenshotTertiary = resolveScreenshot(slide.screenshotTertiary || slide.screenshot, locale);
+
+  const layout = slide.layout;
+
+  // Background gradient strictly using theme.bg and theme.bgGrad (forest green to near-black)
+  const bgGradient = `linear-gradient(135deg, ${theme.bg} 0%, ${theme.bgGrad} 100%)`;
+
+  // Left Content rendering
+  const renderTextContent = (alignLeft = false) => {
+    const textThemeColor = theme.bgAlt || theme.accent; // Soft mint color from theme
+    return (
+      <div 
+        style={{ 
+          display: "flex", 
+          flexDirection: "column",
+          alignItems: alignLeft ? "flex-start" : "center",
+          textAlign: alignLeft ? "left" : "center",
+          gap: cH * 0.04, 
+          zIndex: 10,
+          maxWidth: alignLeft ? cW * 0.45 : "100%",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: cW * 0.02 }}>
+          {appIcon && img(appIcon) ? (
+            <img
+              src={img(appIcon)}
+              alt=""
+              style={{
+                width: cW * 0.08,
+                height: cW * 0.08,
+                borderRadius: cW * 0.016,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+              }}
+              draggable={false}
+            />
+          ) : (
+            <div
+              aria-hidden
+              style={{
+                width: cW * 0.08,
+                height: cW * 0.08,
+                borderRadius: cW * 0.016,
+                background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent})`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: theme.bg || "#0F1B15",
+                fontWeight: 800,
+                fontSize: cW * 0.045,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+              }}
+            >
+              {(appName || "A").slice(0, 1).toUpperCase()}
+            </div>
+          )}
+          <div style={{ fontSize: cW * 0.045, fontWeight: 900, letterSpacing: "-0.02em", color: theme.bgAlt || theme.accent }}>
+            {appName || "Chess"}
+          </div>
+        </div>
+
+        <EditableText
+          value={pickText(slide.headline, locale)}
+          editable={editable}
+          multiline
+          onChange={edit?.onHeadlineChange}
+          style={{
+            fontSize: cW * 0.038,
+            fontWeight: 850,
+            color: textThemeColor,
+            lineHeight: 1.15,
+            letterSpacing: "-0.01em",
+            textShadow: "0 2px 10px rgba(0,0,0,0.25)",
+          }}
+        />
+      </div>
+    );
+  };
+
+  const renderBareScreenshot = (src: string, style?: React.CSSProperties) => {
+    const resolved = img(src);
+    if (!resolved) return null;
+    return (
+      <div
+        style={{
+          borderRadius: cW * 0.015,
+          overflow: "hidden",
+          border: `${cW * 0.003}px solid ${(theme.bgAlt || theme.accent)}40`,
+          boxShadow: "0 12px 36px rgba(0,0,0,0.55)",
+          background: theme.bgGrad || "#000",
+          ...style,
+        }}
+      >
+        <img src={resolved} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
+    );
+  };  const isCentered = layout === "feature-graphic";
+
   return (
     <div
       style={{
@@ -811,63 +1064,184 @@ function FeatureGraphicCanvas({
         height: "100%",
         position: "relative",
         overflow: "hidden",
-        background: `linear-gradient(135deg, ${theme.bgAlt} 0%, ${shade(theme.bgAlt, -10)} 50%, ${theme.accent} 200%)`,
+        background: bgGradient,
         display: "flex",
         alignItems: "center",
-        padding: `0 ${cW * 0.06}px`,
-        color: theme.fgAlt,
+        justifyContent: isCentered ? "center" : "flex-start",
+        padding: isCentered ? 0 : `0 ${cW * 0.08}px`,
+        color: theme.bgAlt || theme.accent,
       }}
     >
-      <Blob cW={cW} color={theme.accent} x={70} y={20} size={50} opacity={0.45} />
-      <div style={{ display: "flex", alignItems: "center", gap: cW * 0.03, zIndex: 2 }}>
-        {appIcon && img(appIcon) ? (
-          <img
-            src={img(appIcon)}
-            alt=""
-            style={{
-              width: cW * 0.13,
-              height: cW * 0.13,
-              borderRadius: cW * 0.022,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            }}
-            draggable={false}
-          />
-        ) : (
-          <div
-            aria-hidden
-            style={{
-              width: cW * 0.13,
-              height: cW * 0.13,
-              borderRadius: cW * 0.022,
-              background: `linear-gradient(135deg, ${theme.accent}55, ${theme.accent})`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: theme.fgAlt,
-              fontWeight: 800,
-              fontSize: cW * 0.07,
-              boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-            }}
-          >
-            {(appName || "A").slice(0, 1).toUpperCase()}
-          </div>
-        )}
-        <div>
-          <div style={{ fontSize: cW * 0.06, fontWeight: 800, lineHeight: 1.05 }}>{appName || "App"}</div>
-          <EditableText
-            value={pickText(slide.headline, locale)}
-            editable={editable}
-            multiline
-            onChange={edit?.onHeadlineChange}
-            style={{
-              fontSize: cW * 0.028,
-              color: "rgba(255,255,255,0.85)",
-              marginTop: cW * 0.012,
-              lineHeight: 1.25,
-            }}
-          />
-        </div>
-      </div>
+      {isCentered ? (
+        renderTextContent(false)
+      ) : (
+        <>
+          {renderTextContent(true)}
+
+          {layout === "feature-graphic-cards" && (
+            <div style={{ position: "absolute", right: cW * 0.04, bottom: -cH * 0.1, width: cW * 0.46, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back Card */}
+              {renderBareScreenshot(screenshotTertiary, {
+                position: "absolute",
+                right: cW * 0.02,
+                top: cH * 0.08,
+                height: cH * 0.78,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(14deg)",
+              })}
+              {/* Middle Card */}
+              {renderBareScreenshot(screenshotSecondary, {
+                position: "absolute",
+                right: cW * 0.12,
+                top: cH * 0.12,
+                height: cH * 0.84,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-6deg)",
+              })}
+              {/* Front Card */}
+              {renderBareScreenshot(screenshot, {
+                position: "absolute",
+                right: cW * 0.22,
+                top: cH * 0.16,
+                height: cH * 0.9,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-18deg)",
+                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.55))",
+                zIndex: 6,
+              })}
+            </div>
+          )}
+
+          {layout === "feature-graphic-triple-mockup" && (
+            <div style={{ position: "absolute", right: cW * 0.02, bottom: -cH * 0.18, width: cW * 0.52, height: cH * 1.15, zIndex: 5 }}>
+              {/* Left Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  bottom: -cH * 0.06,
+                  height: cH * 0.88,
+                  aspectRatio: "9 / 19.5",
+                  transform: "rotate(-12deg)",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.82,
+                }}
+              >
+                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
+              </div>
+              {/* Right Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  bottom: -cH * 0.06,
+                  height: cH * 0.88,
+                  aspectRatio: "9 / 19.5",
+                  transform: "rotate(12deg)",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.82,
+                }}
+              >
+                <AndroidPhone src={screenshotTertiary} showCameraDot={false} />
+              </div>
+              {/* Center Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  bottom: 0,
+                  height: cH * 0.98,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 18px 45px rgba(0,0,0,0.5))",
+                  zIndex: 7,
+                }}
+              >
+                <AndroidPhone src={screenshot} showCameraDot={false} />
+              </div>
+            </div>
+          )}
+
+          {layout === "feature-graphic-dual-upright" && (
+            <div style={{ position: "absolute", right: cW * 0.05, bottom: -cH * 0.16, width: cW * 0.45, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: cW * 0.15,
+                  bottom: -cH * 0.08,
+                  height: cH * 0.92,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 10px 25px rgba(0,0,0,0.35))",
+                  opacity: 0.9,
+                }}
+              >
+                <AndroidPhone src={screenshotSecondary} showCameraDot={false} />
+              </div>
+              {/* Front Phone */}
+              <div
+                style={{
+                  position: "absolute",
+                  right: cW * 0.02,
+                  bottom: 0,
+                  height: cH * 0.95,
+                  aspectRatio: "9 / 19.5",
+                  filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.45))",
+                  zIndex: 6,
+                }}
+              >
+                <AndroidPhone src={screenshot} showCameraDot={false} />
+              </div>
+            </div>
+          )}
+
+          {layout === "feature-graphic-fan-cards" && (
+            <div style={{ position: "absolute", right: cW * 0.02, bottom: -cH * 0.1, width: cW * 0.52, height: cH * 1.1, zIndex: 5 }}>
+              {/* Back-Most (4th Card) */}
+              {renderBareScreenshot(screenshotSecondary || screenshot, {
+                position: "absolute",
+                right: cW * 0.02,
+                top: cH * 0.06,
+                height: cH * 0.74,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(24deg)",
+                opacity: 0.65,
+              })}
+              {/* 3rd Card */}
+              {renderBareScreenshot(screenshotTertiary, {
+                position: "absolute",
+                right: cW * 0.1,
+                top: cH * 0.1,
+                height: cH * 0.78,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(8deg)",
+                opacity: 0.8,
+              })}
+              {/* 2nd Card */}
+              {renderBareScreenshot(screenshotSecondary, {
+                position: "absolute",
+                right: cW * 0.18,
+                top: cH * 0.14,
+                height: cH * 0.82,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-8deg)",
+                opacity: 0.9,
+              })}
+              {/* Front Card */}
+              {renderBareScreenshot(screenshot, {
+                position: "absolute",
+                right: cW * 0.26,
+                top: cH * 0.18,
+                height: cH * 0.86,
+                aspectRatio: "9 / 19.5",
+                transform: "rotate(-20deg)",
+                filter: "drop-shadow(0 15px 35px rgba(0,0,0,0.55))",
+                zIndex: 6,
+              })}
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -887,6 +1261,7 @@ function SlideElements({
   boundsW,
   boundsH,
   allowCrossScreen,
+  showCameraDot = false,
 }: {
   slide: Slide;
   device: Device;
@@ -902,14 +1277,17 @@ function SlideElements({
   boundsW: number;
   boundsH: number;
   allowCrossScreen: boolean;
+  showCameraDot?: boolean;
 }) {
   const screenshot = resolveScreenshot(slide.screenshot, locale);
   const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary, locale);
+  const screenshotTertiary = resolveScreenshot(slide.screenshotTertiary, locale);
   const { cW, cH, Frame, frameAspect, defaults } = getSlideGeometry(slide, device, orientation);
   const inverted = !!slide.inverted;
   const captionRect = rectFor("caption", slide, defaults);
   const deviceRect = rectFor("device", slide, defaults);
   const secondaryRect = rectFor("deviceSecondary", slide, defaults);
+  const tertiaryRect = rectFor("deviceTertiary", slide, defaults);
 
   function toGlobal(rect: Rect): Rect {
     return { ...rect, x: rect.x + screenX };
@@ -934,6 +1312,7 @@ function SlideElements({
         editable={editable}
         edit={edit}
         align={captionRect.align || "center"}
+        vAlign={captionRect.vAlign || "top"}
         inverted={inverted}
         onFocus={() => edit?.onSelectElement?.("caption")}
       />
@@ -968,10 +1347,10 @@ function SlideElements({
     );
   }
 
-  function renderDevice(id: "device" | "deviceSecondary", rect: Rect, src: string, extraStyle?: React.CSSProperties) {
+  function renderDevice(id: "device" | "deviceSecondary" | "deviceTertiary", rect: Rect, src: string, extraStyle?: React.CSSProperties) {
     const saved = slide.transforms?.[id];
     const rotation = saved?.rotation ?? 0;
-    const zIndex = saved?.zIndex ?? (id === "deviceSecondary" ? 2 : 3);
+    const zIndex = saved?.zIndex ?? (id === "device" ? 3 : 2);
     return (
       <Movable
         rect={toGlobal(rect)}
@@ -1000,6 +1379,7 @@ function SlideElements({
           src={src}
           hideEmpty={hideEmpty}
           style={{ width: "100%", height: "100%", ...extraStyle }}
+          showCameraDot={showCameraDot}
         />
       </Movable>
     );
@@ -1040,7 +1420,12 @@ function SlideElements({
             width: "100%",
             height: "100%",
             display: "flex",
-            alignItems: "center",
+            alignItems:
+              textElement.vAlign === "top"
+                ? "flex-start"
+                : textElement.vAlign === "bottom"
+                  ? "flex-end"
+                  : "center",
             justifyContent:
               textElement.align === "right"
                 ? "flex-end"
@@ -1079,6 +1464,13 @@ function SlideElements({
           "deviceSecondary",
           secondaryRect,
           screenshotSecondary || screenshot,
+          { opacity: 0.85 },
+        )}
+      {tertiaryRect &&
+        renderDevice(
+          "deviceTertiary",
+          tertiaryRect,
+          screenshotTertiary || screenshot,
           { opacity: 0.85 },
         )}
       {deviceRect && renderDevice("device", deviceRect, screenshot)}

@@ -68,17 +68,36 @@ class AdService {
     }
   }
 
+  bool _isAdFree = false;
+
+  /// Updates the ad-free status to suppress all ad loads and displays.
+  void setAdFree(bool value) {
+    _isAdFree = value;
+    if (value) {
+      _rewardedInterstitialAd?.dispose();
+      _rewardedInterstitialAd = null;
+      _rewardedLoadedAt = null;
+      _exitInterstitialAd?.dispose();
+      _exitInterstitialAd = null;
+      _exitInterstitialLoadedAt = null;
+    }
+  }
+
+  bool get isAdFree => _isAdFree;
+
   // ── Ad Loading ──
 
   /// Preloads a rewarded interstitial ad lazily when the user is likely to need one
   /// (e.g. after using their free undo or opening the chess board).
   void preloadRewardedAd() {
+    if (_isAdFree) return;
     _loadRewardedAd();
   }
 
   /// Preloads an exit interstitial ad lazily during match play
   /// (e.g. once the first move is made), rather than on app launch.
   void preloadExitInterstitialAd() {
+    if (_isAdFree) return;
     _loadExitInterstitialAd();
   }
 
@@ -162,6 +181,11 @@ class AdService {
     required VoidCallback onRewardEarned,
     VoidCallback? onAdNotAvailable,
   }) {
+    if (_isAdFree) {
+      onRewardEarned();
+      return;
+    }
+
     if (_rewardedInterstitialAd == null) {
       debugPrint('[AdService] No rewarded ad available yet, preloading.');
       _loadRewardedAd();
@@ -209,6 +233,11 @@ class AdService {
   /// due to missing ad readiness or AdMob server capping. This ensures navigation
   /// back to [MainMenuView] is never blocked.
   void showExitInterstitialAd({required VoidCallback onAdDismissed}) {
+    if (_isAdFree) {
+      onAdDismissed();
+      return;
+    }
+
     if (_exitInterstitialAd == null) {
       debugPrint(
           '[AdService] Exit interstitial ad not ready. Preloading next.');

@@ -1,12 +1,13 @@
-import 'package:en_passant/logic/chess_piece.dart';
-import 'package:en_passant/logic/game_controller.dart';
-import 'package:en_passant/logic/game_state_storage.dart';
-import 'package:en_passant/logic/move_calculation/move_classes/move.dart';
-import 'package:en_passant/model/app_model.dart';
-import 'package:en_passant/model/player.dart';
-import 'package:en_passant/model/user_preferences.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../lib/logic/chess_piece.dart';
+import '../lib/logic/game_controller.dart';
+import '../lib/logic/game_state_storage.dart';
+import '../lib/logic/move_calculation/move_classes/move.dart';
+import '../lib/model/app_model.dart';
+import '../lib/model/player.dart';
+import '../lib/model/user_preferences.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
