@@ -207,28 +207,41 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
               SafeArea(
                 child: Column(
                   children: [
-                    _buildTopBar(theme),
+                    Selector<AppModel, (AppTheme, int)>(
+                      selector: (_, m) => (m.theme, m.aiDifficulty),
+                      builder: (_, data, __) => _buildTopBar(data.$1),
+                    ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: Center(
-                          child: Selector<AppModel, (bool, bool)>(
-                            selector: (_, m) =>
-                                (m.showCapturedPieces, m.isBoardInverted),
+                          child:
+                              Selector<AppModel, (bool, bool, AppTheme, bool)>(
+                            selector: (_, m) => (
+                              m.showCapturedPieces,
+                              m.isBoardInverted,
+                              m.theme,
+                              m.showNotation,
+                            ),
                             builder: (_, boardData, ___) {
                               final showCapturedPieces = boardData.$1;
                               return ChessBoardWidget(
                                 appModel,
                                 chessGame!,
                                 topWidget: showCapturedPieces
-                                    ? Selector<AppModel, (int, bool, int?)>(
+                                    ? Selector<AppModel,
+                                        (int, bool, int?, AppTheme, String)>(
                                         selector: (_, m) => (
                                           m.moveMetaList.length,
                                           m.isPieceRotated,
                                           m.historyViewIndex,
+                                          m.theme,
+                                          m.pieceTheme,
                                         ),
                                         builder: (_, data, ___) {
                                           final isPieceRotated = data.$2;
+                                          final currentTheme = data.$4;
+                                          final currentPieceTheme = data.$5;
                                           final topPlayer =
                                               appModel.isBoardInverted
                                                   ? appModel.playerSide
@@ -240,8 +253,8 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                             child: CapturedPiecesRow(
                                               appModel: appModel,
                                               player: topPlayer,
-                                              pieceTheme: appModel.pieceTheme,
-                                              theme: theme,
+                                              pieceTheme: currentPieceTheme,
+                                              theme: currentTheme,
                                               // Only reverse icon order when
                                               // the pill itself spins 180°
                                               // (piece-rotation mode).
@@ -255,14 +268,19 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                       )
                                     : null,
                                 bottomWidget: showCapturedPieces
-                                    ? Selector<AppModel, (int, bool, int?)>(
+                                    ? Selector<AppModel,
+                                        (int, bool, int?, AppTheme, String)>(
                                         selector: (_, m) => (
                                           m.moveMetaList.length,
                                           m.isPieceRotated,
                                           m.historyViewIndex,
+                                          m.theme,
+                                          m.pieceTheme,
                                         ),
                                         builder: (_, data, ___) {
                                           final isPieceRotated = data.$2;
+                                          final currentTheme = data.$4;
+                                          final currentPieceTheme = data.$5;
                                           final bottomPlayer =
                                               appModel.isBoardInverted
                                                   ? oppositePlayer(
@@ -274,8 +292,8 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                             child: CapturedPiecesRow(
                                               appModel: appModel,
                                               player: bottomPlayer,
-                                              pieceTheme: appModel.pieceTheme,
-                                              theme: theme,
+                                              pieceTheme: currentPieceTheme,
+                                              theme: currentTheme,
                                               flipped: isPieceRotated,
                                               rotatePieces: isPieceRotated,
                                             ),
@@ -299,14 +317,17 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                 ),
               ),
 
-              Align(
-                alignment: Alignment.topCenter,
-                child: ConfettiWidget(
-                  key: ValueKey('${theme.name}_confetti'),
-                  confettiController: _confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  shouldLoop: false,
-                  colors: _getConfettiColors(theme),
+              Selector<AppModel, AppTheme>(
+                selector: (_, m) => m.theme,
+                builder: (_, currentTheme, __) => Align(
+                  alignment: Alignment.topCenter,
+                  child: ConfettiWidget(
+                    key: ValueKey('${currentTheme.name}_confetti'),
+                    confettiController: _confettiController,
+                    blastDirectionality: BlastDirectionality.explosive,
+                    shouldLoop: false,
+                    colors: _getConfettiColors(currentTheme),
+                  ),
                 ),
               ),
             ],

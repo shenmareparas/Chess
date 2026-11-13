@@ -2,6 +2,7 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../model/app_model.dart';
+import '../../../../model/app_themes.dart';
 import '../../../../model/player.dart';
 
 /// State tuple for GameStatus — only rebuilds when these fields change.
@@ -13,6 +14,7 @@ typedef _StatusState = ({
   bool stalemate,
   int aiDifficulty,
   int? historyViewIndex,
+  AppTheme theme,
 });
 
 class StatusTheme {
@@ -43,10 +45,11 @@ class GameStatus extends StatelessWidget {
         stalemate: m.stalemate,
         aiDifficulty: m.aiDifficulty,
         historyViewIndex: m.historyViewIndex,
+        theme: m.theme,
       ),
       builder: (context, state, child) {
         final appModel = Provider.of<AppModel>(context, listen: false);
-        final theme = appModel.theme;
+        final theme = state.theme;
 
         final isHistoryMode = state.historyViewIndex != null;
         if (isHistoryMode) {

@@ -25,10 +25,12 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **8 Beautiful Themes**: Amoled Carbon, Forest Mint, Jargon Jade, Midnight Slate, Oceanic Breeze, Royal Velvet, Warm Walnut, and Winter Glacier
 -   **6 Piece Themes**: Classic, Angular, 8-Bit, Letters, Old School, and Fairy Tale
 -   **Dark Mode Support**: Multiple dark theme options including pure AMOLED black
+-   **Dynamic Mid-Game Theme Propagation**: Switching board or piece themes mid-match immediately re-renders all match UI elements (top bar, status badge, timers, dead pieces counters) and swaps Flame piece textures on-the-fly without resetting match state
 -   **Custom Font**: Inter font for clean, readable UI typography
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
-    -   **Stockfish Native Stability & Memory Cap**: Configures `Use NNUE` = false, `Threads` = 1, and `Hash` = 16 **before** engine UCI initialization to prevent C++ `SIGSEGV` network load issues, restricts search threads to 1 to prevent lock contention ANRs, and caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion. All stdin logging in `getBestMove()` is also gated behind `if (kDebugMode)` to ensure zero overhead in release builds.
+    -   **Stockfish Native Stability & Memory Cap**: Powered by `multistockfish` (by Lichess) running Stockfish 19 with embedded ~1MB NNUE. Configures `Threads` = 1 to prevent lock contention ANRs, caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices, and enforces single-instance flavor locking to prevent lifecycle conflicts. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion. All stdin logging in `getBestMove()` is also gated behind `if (kDebugMode)` to ensure zero overhead in release builds.
+    -   **iOS Mach-O Static Linker Symbol Retention**: Specifies `OTHER_LDFLAGS = $(inherited) -Wl,-u,_stockfish_light_init` and uses an address link hook in `AppDelegate.swift` to ensure `ld` extracts and retains pure C++ engine symbols from `libmultistockfish_light.a` when building with CocoaPods static libraries without `use_frameworks!`.
     -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
     -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move. `_piecesOfTypeForPlayer()` returns a lazy `Iterable.where()` rather than eagerly allocating a `List<ChessPiece>` for ambiguity checks.
     -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Active piece theme images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
@@ -76,8 +78,8 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ### 🤖 AI Features
 
--   **World-Class Engine**: Powered by the highly optimized **Stockfish 18** engine.
--   **Native Stability & Resource Caps**: Configured with `Use NNUE` = false, `Hash` = 16, and `Threads` = 1 **prior** to `uci` initialization to prevent native SIGSEGVs, platform-channel OutOfMemoryErrors, and thread lock contention ANRs.
+-   **World-Class Engine**: Powered by the highly optimized **Stockfish 19** engine via `multistockfish` (by Lichess).
+-   **Native Stability & Resource Caps**: Leverages `StockfishFlavor.light` with an embedded ~1MB NNUE network, configured with `Hash` = 16 and `Threads` = 1 to prevent native OutOfMemoryErrors and thread lock contention ANRs.
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with filtered logging under `kDebugMode`.
@@ -102,11 +104,12 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ## 🛠️ Technologies Used
 
--   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+12`)
+-   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+13`)
 -   **[cupertino_ui](https://pub.dev/packages/cupertino_ui)** & **[material_ui](https://pub.dev/packages/material_ui)** — UI design components and styling wrappers
 -   **[Flame](https://flame-engine.org/)** — 2D game engine for chess board rendering
 -   **[Provider](https://pub.dev/packages/provider)** — State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
+-   **[multistockfish](https://pub.dev/packages/multistockfish)** — Native Stockfish 19 chess engine wrapper by Lichess with embedded ~1MB NNUE and UCI communication
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** — Sound effects with pooled `AudioPool` for rapid move sounds
 -   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic) and exit interstitial ads (`google_mobile_ads` 9.1.0 with native `Google-Mobile-Ads-SDK` 13.9.0)
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
@@ -197,6 +200,10 @@ lib/
 │   ├── chess_piece_sprite.dart    # Flame Sprite component for chess pieces
 │   ├── chess_constants.dart       # Shared constants (e.g. PROMOTIONS list)
 │   ├── shared_functions.dart      # Utilities: formatPieceTheme, oppositePlayer, tile↔coordinate helpers
+│   ├── stockfish_service.dart     # Native Stockfish 19 engine interface via multistockfish
+│   ├── checkmate_worker.dart      # Background isolate worker manager for checkmate calculations
+│   ├── checkmate_isolate.dart     # Background isolate execution logic
+│   ├── in_app_purchase_service.dart # In-app purchases / remove ads (in_app_purchase)
 │   ├── game_state_storage.dart    # Full game-state save/load/clear via SharedPreferences
 │   ├── timer_service.dart         # Per-player countdown timers with pause/resume support
 │   ├── audio_service.dart         # Pooled piece-move sounds and game-end audio
@@ -264,7 +271,7 @@ lib/
 
 ## 🧠 AI Engine & Algorithm
 
-The chess application interfaces with the **Stockfish Chess Engine** using the **UCI (Universal Chess Interface)** protocol via Dart FFI.
+The chess application interfaces with the **Stockfish 19 Chess Engine** using the **UCI (Universal Chess Interface)** protocol via Dart FFI with the `multistockfish` package (by Lichess).
 
 ### How It Works
 

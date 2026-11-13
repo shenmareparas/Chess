@@ -12,11 +12,11 @@ PODS:
   - games_services (5.0.1):
     - Flutter
     - FlutterMacOS
-  - Google-Mobile-Ads-SDK (13.9.0):
+  - Google-Mobile-Ads-SDK (13.12.0):
     - GoogleUserMessagingPlatform (>= 1.1)
-  - google_mobile_ads (9.1.0):
+  - google_mobile_ads (9.2.0):
     - Flutter
-    - Google-Mobile-Ads-SDK (~> 13.7)
+    - Google-Mobile-Ads-SDK (~> 13.11)
     - webview_flutter_wkwebview
   - GoogleUserMessagingPlatform (3.1.0)
   - in_app_purchase_storekit (0.0.1):
@@ -24,11 +24,15 @@ PODS:
     - FlutterMacOS
   - in_app_review (2.0.0):
     - Flutter
+  - multistockfish_chess (0.6.0):
+    - Flutter
+  - multistockfish_light (0.1.0):
+    - Flutter
+  - multistockfish_variant (0.4.0):
+    - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - stockfish (1.8.1):
-    - Flutter
   - url_launcher_ios (0.0.1):
     - Flutter
   - webview_flutter_wkwebview (0.0.1):
@@ -45,8 +49,10 @@ DEPENDENCIES:
   - google_mobile_ads (from `.symlinks/plugins/google_mobile_ads/ios`)
   - in_app_purchase_storekit (from `.symlinks/plugins/in_app_purchase_storekit/darwin`)
   - in_app_review (from `.symlinks/plugins/in_app_review/ios`)
+  - multistockfish_chess (from `.symlinks/plugins/multistockfish_chess/ios`)
+  - multistockfish_light (from `.symlinks/plugins/multistockfish_light/ios`)
+  - multistockfish_variant (from `.symlinks/plugins/multistockfish_variant/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
-  - stockfish (from `.symlinks/plugins/stockfish/ios`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - webview_flutter_wkwebview (from `.symlinks/plugins/webview_flutter_wkwebview/darwin`)
 
@@ -74,10 +80,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/in_app_purchase_storekit/darwin"
   in_app_review:
     :path: ".symlinks/plugins/in_app_review/ios"
+  multistockfish_chess:
+    :path: ".symlinks/plugins/multistockfish_chess/ios"
+  multistockfish_light:
+    :path: ".symlinks/plugins/multistockfish_light/ios"
+  multistockfish_variant:
+    :path: ".symlinks/plugins/multistockfish_variant/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
-  stockfish:
-    :path: ".symlinks/plugins/stockfish/ios"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   webview_flutter_wkwebview:
@@ -90,13 +100,15 @@ SPEC CHECKSUMS:
   flutter_timezone: 7c838e17ffd4645d261e87037e5bebf6d38fe544
   fluttertoast: 1a1c71b9fbdf68f5fef34d2c548d5038ac51c0ea
   games_services: ef0e2cfe158a00045dfa747117deac4fb15c2ac9
-  Google-Mobile-Ads-SDK: cec761d0da669c462bcc19cd16c747498b9f39f7
-  google_mobile_ads: 6b1c16497394528f4a59e76e2fc947cb32b101e2
+  Google-Mobile-Ads-SDK: cbfc0aa6883afbad2ff3dcccce75b673ff8d3f65
+  google_mobile_ads: 2d3c1fe797954fe6a4103b74eff2375c08eab20e
   GoogleUserMessagingPlatform: befe603da6501006420c206222acd449bba45a9c
   in_app_purchase_storekit: 22cca7d08eebca9babdf4d07d0baccb73325d3c8
   in_app_review: 7dd1ea365263f834b8464673f9df72c80c17c937
-  shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
-  stockfish: b4eb49218804f8fa1ee5fef01e5e760c54df0436
+  multistockfish_chess: 734b184361abaa50e27fd7d9e6c47ec49192bf85
+  multistockfish_light: 7d83d7b0459629db2521f8f6e486d3ea63f5c5ff
+  multistockfish_variant: 98a2aebf672845634ab7feea5029c15ff3b3e098
+  shared_preferences_foundation: a7c3904f2dedb3701dd1903cb152ef5e7df92422
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   webview_flutter_wkwebview: 8ebf4fded22593026f7dbff1fbff31ea98573c8d
 

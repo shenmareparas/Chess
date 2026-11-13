@@ -11,6 +11,7 @@
     native <methods>;
 }
 -keep class **.*stockfish*.** { *; }
+-keep class org.lichess.** { *; }
 
 # Keep AudioPlayers plugin
 -keep class xyz.luan.audioplayers.** { *; }

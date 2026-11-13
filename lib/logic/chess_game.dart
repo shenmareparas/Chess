@@ -37,6 +37,7 @@ class ChessGame extends FlameGame with TapCallbacks {
   Paint _selectedPiecePaint = Paint();
   Paint _warningHintPaint = Paint();
   String? _cachedThemeName;
+  String? _cachedPieceTheme;
 
   // 64 pre-built Rects for the chess board tiles (rebuilt in onGameResize).
   // Eliminates 64 float multiplications + 64 Rect allocations per frame.
@@ -48,7 +49,12 @@ class ChessGame extends FlameGame with TapCallbacks {
   List<ChessPiece> _allPieces = [];
 
   ChessGame(this.controller, this.appModel) {
+    _cachedPieceTheme = appModel.pieceTheme;
     controller.onSnapSprites = ({bool snap = true}) => snapSprites(snap: snap);
+    _initPieceSprites();
+  }
+
+  void _initPieceSprites() {
     // Gather all pieces that exist in the active lists as well as captured pieces in move stacks.
     // This ensures that when review mode restores captured pieces, they have initialized sprites.
     final Set<ChessPiece> allUniquePieces = {};
@@ -188,6 +194,13 @@ class ChessGame extends FlameGame with TapCallbacks {
     // Update cached paints if theme changed
     if (_cachedThemeName != appModel.theme.name) {
       _updatePaints();
+    }
+
+    // Update piece sprites if piece theme changed mid-game
+    if (_cachedPieceTheme != appModel.pieceTheme) {
+      _cachedPieceTheme = appModel.pieceTheme;
+      _initPieceSprites();
+      _initSpritePositions();
     }
 
     double newTargetRotation = 0;
