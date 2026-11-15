@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 
 import '../logic/ad_service.dart';
 import '../logic/audio_service.dart';
+import '../logic/chess_notation_service.dart';
 import '../logic/chess_piece.dart';
 import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
@@ -80,6 +81,8 @@ class AppModel extends ChangeNotifier {
   set gameOver(bool v) => _gameState.gameOver = v;
   bool get stalemate => _gameState.stalemate;
   set stalemate(bool v) => _gameState.stalemate = v;
+  FideDrawReason? get drawReason => _gameState.drawReason;
+  set drawReason(FideDrawReason? v) => _gameState.drawReason = v;
   bool get userWon => _gameState.userWon;
   set userWon(bool v) => _gameState.userWon = v;
   Player get turn => _gameState.turn;
@@ -316,8 +319,15 @@ class AppModel extends ChangeNotifier {
       moveListUpdated = true;
       if (moveMetaList.isNotEmpty) {
         gameController!.latestMove = moveMetaList.last.move;
+        if (gameController!.board.kingInCheck(turn)) {
+          gameController!.checkHintTile =
+              gameController!.board.kingForPlayer(turn)?.tile;
+        } else {
+          gameController!.checkHintTile = null;
+        }
       } else {
         gameController!.latestMove = null;
+        gameController!.checkHintTile = null;
       }
       if (!gameOver) {
         timerService.resume();
@@ -355,8 +365,21 @@ class AppModel extends ChangeNotifier {
       } else {
         gameController!.latestMove = null;
       }
+      final mover = moveMetaList[index].player;
+      if (mover != null) {
+        final checkedPlayer = oppositePlayer(mover);
+        if (gameController!.board.kingInCheck(checkedPlayer)) {
+          gameController!.checkHintTile =
+              gameController!.board.kingForPlayer(checkedPlayer)?.tile;
+        } else {
+          gameController!.checkHintTile = null;
+        }
+      } else {
+        gameController!.checkHintTile = null;
+      }
     } else {
       gameController!.latestMove = null;
+      gameController!.checkHintTile = null;
     }
     if (playAudio) {
       audio.playMovedSound();
@@ -397,10 +420,19 @@ class AppModel extends ChangeNotifier {
     });
   }
 
-  void endGame({bool silent = false, Player? winner}) {
+  void endGame({
+    bool silent = false,
+    Player? winner,
+    bool stalemate = false,
+    FideDrawReason? drawReason,
+  }) {
     if (gameOver) return;
     _gameOverInvertedState = isBoardInverted;
     gameOver = true;
+    if (stalemate || drawReason != null) {
+      this.stalemate = true;
+      this.drawReason = drawReason ?? FideDrawReason.stalemate;
+    }
 
     final actualWinner = winner ?? turn;
 
@@ -413,7 +445,7 @@ class AppModel extends ChangeNotifier {
     );
 
     audio.playGameEndSound(
-      stalemate: stalemate,
+      stalemate: this.stalemate,
       playingWithAI: playingWithAI,
       playerSide: playerSide,
       turn: actualWinner,
@@ -438,9 +470,58 @@ class AppModel extends ChangeNotifier {
   void undoEndGame({bool silent = false}) {
     gameOver = false;
     stalemate = false;
+    drawReason = null;
     userWon = false;
     _gameOverInvertedState = null;
     if (!silent) notifyListeners();
+  }
+
+  /// Exports the complete game as a standard PGN string with tournament headers.
+  String exportPgn() {
+    final controller = gameController;
+    if (controller == null) return '';
+
+    String whiteName;
+    String blackName;
+    if (playingWithAI) {
+      final aiLabel =
+          'Stockfish L$aiDifficulty (${AppModel.getDifficultyElo(aiDifficulty)} ELO)';
+      if (playerSide == Player.player1) {
+        whiteName = 'Player 1';
+        blackName = aiLabel;
+      } else {
+        whiteName = aiLabel;
+        blackName = 'Player 1';
+      }
+    } else {
+      whiteName = 'Player 1';
+      blackName = 'Player 2';
+    }
+
+    String? result;
+    if (gameOver) {
+      if (stalemate) {
+        result = '1/2-1/2';
+      } else if (turn == Player.player2) {
+        result = '1-0';
+      } else {
+        result = '0-1';
+      }
+    }
+
+    return ChessNotationService.instance.generatePgn(
+      moveStack: controller.board.moveStack,
+      whiteName: whiteName,
+      blackName: blackName,
+      result: result,
+    );
+  }
+
+  /// Exports the current board position as a standard FEN string.
+  String exportFen() {
+    final controller = gameController;
+    if (controller == null) return '';
+    return ChessNotationService.instance.exportFen(controller.board.moveStack);
   }
 
   void changeTurn({bool silent = false}) {

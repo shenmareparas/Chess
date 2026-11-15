@@ -25,9 +25,8 @@ ChessPiece _deserializePiece(Map<String, dynamic> m) => ChessPiece(
 
 /// Produces the minimum board snapshot needed to run [kingInCheckmate].
 ///
-/// Only the 64-tile layout, piece lists (type/player/tile/moveCount),
-/// enPassant state, and the player-to-check are serialized — the full
-/// Zobrist hash, incremental eval, and move-stack history are not needed.
+/// Deprecated: replaced by [ChessNotationService] powered by `dartchess`.
+@deprecated
 Map<String, dynamic> serializeBoardForCheckmate(
     ChessBoard board, Player player) {
   return {

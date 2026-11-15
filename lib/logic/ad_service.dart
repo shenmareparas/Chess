@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -54,17 +55,97 @@ class AdService {
 
   // ── Initialization ──
 
-  /// Initializes the Mobile Ads SDK.
+  Future<void>? _initFuture;
+
+  /// Initializes the User Messaging Platform (UMP) consent flow and Mobile Ads SDK.
   /// Must be called once in [main()] after [WidgetsFlutterBinding.ensureInitialized()].
   /// Ads are loaded lazily on demand when gameplay begins or free undos run low,
   /// avoiding thousands of wasted ad requests on app launch.
-  Future<void> initialize() async {
+  Future<void> initialize() => _initFuture ??= _doInitialize();
+
+  Future<void> _doInitialize() async {
     if (_isInitialized) return;
+    if (_isAdFree) return;
+
     try {
-      await MobileAds.instance.initialize();
-      _isInitialized = true;
+      final params = ConsentRequestParameters();
+      final completer = Completer<void>();
+
+      ConsentInformation.instance.requestConsentInfoUpdate(
+        params,
+        () async {
+          ConsentForm.loadAndShowConsentFormIfRequired((formError) async {
+            if (formError != null) {
+              debugPrint(
+                '[AdService] Consent form error: ${formError.errorCode}: ${formError.message}',
+              );
+            }
+            await _initMobileAdsIfPermitted();
+            if (!completer.isCompleted) completer.complete();
+          });
+        },
+        (formError) async {
+          debugPrint(
+            '[AdService] Consent info update error: ${formError.errorCode}: ${formError.message}',
+          );
+          await _initMobileAdsIfPermitted();
+          if (!completer.isCompleted) completer.complete();
+        },
+      );
+
+      await completer.future;
     } catch (e) {
-      debugPrint('[AdService] MobileAds initialization error: $e');
+      debugPrint('[AdService] Consent/MobileAds initialization error: $e');
+      if (!_isInitialized) {
+        try {
+          await MobileAds.instance.initialize();
+          _isInitialized = true;
+        } catch (_) {}
+      }
+    }
+  }
+
+  Future<void> _initMobileAdsIfPermitted() async {
+    try {
+      final canRequest = await ConsentInformation.instance.canRequestAds();
+      if (canRequest && !_isInitialized) {
+        await MobileAds.instance.initialize();
+        _isInitialized = true;
+        debugPrint(
+          '[AdService] MobileAds SDK initialized successfully with UMP consent.',
+        );
+      }
+    } catch (e) {
+      debugPrint('[AdService] Error verifying canRequestAds: $e');
+      if (!_isInitialized) {
+        await MobileAds.instance.initialize();
+        _isInitialized = true;
+      }
+    }
+  }
+
+  /// Presents the privacy options form allowing users to modify or withdraw consent.
+  Future<void> showPrivacyOptionsForm() async {
+    final completer = Completer<void>();
+    ConsentForm.showPrivacyOptionsForm((formError) {
+      if (formError != null) {
+        debugPrint(
+          '[AdService] Privacy options error: ${formError.errorCode}: ${formError.message}',
+        );
+      }
+      completer.complete();
+    });
+    return completer.future;
+  }
+
+  /// Returns whether the user is in a jurisdiction requiring privacy options (e.g. EEA/UK).
+  Future<bool> isPrivacyOptionsRequired() async {
+    try {
+      final status = await ConsentInformation.instance
+          .getPrivacyOptionsRequirementStatus();
+      return status == PrivacyOptionsRequirementStatus.required;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -101,8 +182,12 @@ class AdService {
     _loadExitInterstitialAd();
   }
 
-  void _loadRewardedAd() {
-    if (!_isInitialized) return;
+  void _loadRewardedAd() async {
+    if (_isAdFree) return;
+    if (!_isInitialized) {
+      await initialize();
+      if (!_isInitialized) return;
+    }
 
     // Check if current ad is still fresh
     if (_rewardedInterstitialAd != null) {
@@ -138,8 +223,12 @@ class AdService {
     );
   }
 
-  void _loadExitInterstitialAd() {
-    if (!_isInitialized) return;
+  void _loadExitInterstitialAd() async {
+    if (_isAdFree) return;
+    if (!_isInitialized) {
+      await initialize();
+      if (!_isInitialized) return;
+    }
 
     // Check if current ad is still fresh
     if (_exitInterstitialAd != null) {

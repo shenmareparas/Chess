@@ -1,3 +1,4 @@
+import '../logic/chess_notation_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import 'player.dart';
 
@@ -17,6 +18,9 @@ class GameState {
   /// Whether the game ended in stalemate rather than checkmate.
   bool stalemate = false;
 
+  /// Specific FIDE draw reason if the game ended in a draw.
+  FideDrawReason? drawReason;
+
   /// Whether the human player won (used for confetti + audio selection).
   bool userWon = false;
 
@@ -30,6 +34,7 @@ class GameState {
   void reset() {
     gameOver = false;
     stalemate = false;
+    drawReason = null;
     userWon = false;
     turn = Player.player1;
     moveMetaList = [];

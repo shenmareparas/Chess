@@ -50,9 +50,12 @@ class _MoveListState extends State<MoveList> {
   }
 
   void _copyMovesToClipboard(BuildContext context) {
-    final moves = _allMoves();
-    if (moves.isEmpty) return;
-    Clipboard.setData(ClipboardData(text: moves));
+    String pgn = appModel.exportPgn();
+    if (pgn.isEmpty) {
+      pgn = _allMoves();
+    }
+    if (pgn.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: pgn));
     appModel.haptic.medium();
     _showCopiedOverlay(context);
   }
@@ -78,7 +81,7 @@ class _MoveListState extends State<MoveList> {
           ],
         ),
         child: const Text(
-          'Moves copied to clipboard',
+          'PGN copied to clipboard',
           style: TextStyle(
             color: Color(0xFFE5E2E1),
             fontSize: 13,

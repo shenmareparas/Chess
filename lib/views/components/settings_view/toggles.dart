@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
+import '../../../logic/ad_service.dart';
 import '../../../logic/notification_service.dart';
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
@@ -244,6 +245,31 @@ class Toggles extends StatelessWidget {
               subtitle: achievementsSubtitle,
               theme: theme,
               onTap: appModel.showAchievements,
+            ),
+          ],
+          // Privacy Options (Consent Management for EEA, UK & Switzerland)
+          if (!appModel.isAdFree) ...[
+            FutureBuilder<bool>(
+              future: AdService.instance.isPrivacyOptionsRequired(),
+              builder: (context, snapshot) {
+                if (snapshot.data == true) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Divider(height: 1, color: themeColor, thickness: 1),
+                      _SettingsTile(
+                        label: 'Ad Privacy Settings',
+                        icon: Icons.privacy_tip_outlined,
+                        subtitle: 'Review or update your ad consent choices',
+                        theme: theme,
+                        onTap: () =>
+                            AdService.instance.showPrivacyOptionsForm(),
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             ),
           ],
         ],

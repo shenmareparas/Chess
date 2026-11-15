@@ -5,6 +5,7 @@ import '../lib/logic/chess_piece.dart';
 import '../lib/logic/game_controller.dart';
 import '../lib/logic/game_state_storage.dart';
 import '../lib/logic/move_calculation/move_classes/move.dart';
+import '../lib/logic/move_calculation/move_classes/move_meta.dart';
 import '../lib/model/app_model.dart';
 import '../lib/model/player.dart';
 import '../lib/model/user_preferences.dart';
@@ -44,6 +45,36 @@ void main() {
       expect(controller.selectedPiece, isNull);
       expect(controller.validMoves, isEmpty);
       expect(controller.warningTile, isNull);
+    });
+
+    test(
+        'history navigation updates checkHintTile accurately and clears stale check highlights',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+
+      // Simulate live game has checkHintTile active (e.g. from a recent check)
+      controller.checkHintTile = 36;
+
+      // Create two moves: 1. e4 (52->36), 1... e5 (12->28)
+      final meta1 = MoveMeta(Move(52, 36), Player.player1, ChessPieceType.pawn);
+      final meta2 = MoveMeta(Move(12, 28), Player.player2, ChessPieceType.pawn);
+      controller.board.push(meta1.move!);
+      controller.board.push(meta2.move!);
+      appModel.moveMetaList.addAll([meta1, meta2]);
+
+      // Navigate to move 0 (e4) where neither king is in check
+      appModel.setHistoryViewIndex(0);
+
+      // The stale checkHintTile MUST be cleared
+      expect(controller.checkHintTile, isNull);
+
+      // Return to live state where neither king is in check
+      appModel.setHistoryViewIndex(null);
+      expect(controller.checkHintTile, isNull);
     });
 
     test('king check highlight restored on game resume', () async {

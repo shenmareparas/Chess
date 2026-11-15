@@ -5,9 +5,8 @@ import '../model/app_model.dart';
 import '../model/player.dart';
 
 import 'ad_service.dart';
-import 'checkmate_isolate.dart';
-import 'checkmate_worker.dart';
 import 'chess_board.dart';
+import 'chess_notation_service.dart';
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
 import 'move_calculation/move_classes/move_meta.dart';
@@ -30,20 +29,10 @@ class GameController {
   int? warningTile;
   Move? latestMove;
 
-  /// Persistent background isolate for checkmate detection.
-  /// Spawned once at construction so it is warm before the first move.
-  CheckmateWorker? _checkmateWorker;
-
   /// Called when the view needs to refresh sprites (e.g. after game restore).
   void Function({bool snap})? onSnapSprites;
 
-  GameController(this.appModel) {
-    // Spawn the worker asynchronously so construction is synchronous.
-    // By the time the first move is played the isolate will already be warm.
-    CheckmateWorker.create().then((worker) {
-      _checkmateWorker = worker;
-    });
-  }
+  GameController(this.appModel);
 
   // ── Piece Selection ──
 
@@ -336,39 +325,29 @@ class GameController {
       appModel.changeTurn(silent: true);
     }
     selectedPiece = null;
-    // First rebuild — shows the move immediately without blocking on checkmate.
-    appModel.update();
 
-    // Offload kingInCheckmate to the persistent background isolate so the UI
-    // thread is free to render the move animation.
-    final snapshot = serializeBoardForCheckmate(board, oppositeTurn);
-    // Fall back to compute() if the worker hasn't finished initialising yet
-    // (only possible on the very first move of the very first game).
-    final bool isCheckmate = _checkmateWorker != null
-        ? await _checkmateWorker!.check(snapshot)
-        : checkmateIsolateEntry(snapshot);
+    if (!undoing && changeTurn) {
+      final outcome =
+          ChessNotationService.instance.evaluateOutcome(board.moveStack);
 
-    // Guard: the game may have ended for another reason (e.g. timer) while the
-    // isolate was running — skip applying a stale result.
-    if (appModel.gameOver && !isCheckmate) {
-      if (appModel.isAIsTurn && !undoing && changeTurn) {
-        _aiMove();
-      }
-      return;
-    }
-
-    if (isCheckmate) {
-      if (!meta.isCheck) {
-        appModel.stalemate = true;
+      if (outcome.isCheckmate) {
+        meta.isCheck = false;
+        meta.isCheckmate = true;
+        // Pass moverTurn so endGame() sees the winner, not the post-changeTurn
+        // loser. endGame() compares this against playerSide to play win/lose audio.
+        appModel.endGame(silent: true, winner: moverTurn);
+      } else if (outcome.isDraw) {
+        meta.isCheck = false;
         meta.isStalemate = true;
+        appModel.endGame(
+          silent: true,
+          stalemate: true,
+          drawReason: outcome.drawReason,
+        );
       }
-      meta.isCheck = false;
-      meta.isCheckmate = true;
-      // Pass moverTurn so endGame() sees the winner, not the post-changeTurn
-      // loser. endGame() compares this against playerSide to play win/lose audio.
-      appModel.endGame(silent: true, winner: moverTurn);
-      appModel.update();
     }
+
+    appModel.update();
 
     // Trigger haptic feedback based on move outcome
     final isOpponentMove =
@@ -400,7 +379,7 @@ class GameController {
     // Trigger AI if it's now the AI's turn. Use !undoing instead of clearRedo
     // so that undoing the human's last move (which restores AI's turn) still
     // calls _aiMove(), preventing the AI from freezing after an undo-to-AI-turn.
-    if (appModel.isAIsTurn && !undoing && changeTurn) {
+    if (appModel.isAIsTurn && !undoing && changeTurn && !appModel.gameOver) {
       _aiMove();
     }
   }
@@ -409,10 +388,8 @@ class GameController {
     onSnapSprites?.call(snap: snap);
   }
 
-  /// Releases the background checkmate isolate. Call when discarding this
-  /// controller (e.g. on new game or app dispose).
+  /// Cleans up in-flight operations when discarding this controller.
   void dispose() {
-    _checkmateWorker?.dispose();
-    _checkmateWorker = null;
+    cancelAIMove();
   }
 }

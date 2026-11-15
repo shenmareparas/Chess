@@ -1,6 +1,7 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../logic/chess_notation_service.dart';
 import '../../../../model/app_model.dart';
 import '../../../../model/app_themes.dart';
 import '../../../../model/player.dart';
@@ -12,6 +13,7 @@ typedef _StatusState = ({
   bool isAIsTurn,
   Player turn,
   bool stalemate,
+  FideDrawReason? drawReason,
   int aiDifficulty,
   int? historyViewIndex,
   AppTheme theme,
@@ -43,6 +45,7 @@ class GameStatus extends StatelessWidget {
         isAIsTurn: m.isAIsTurn,
         turn: m.turn,
         stalemate: m.stalemate,
+        drawReason: m.drawReason,
         aiDifficulty: m.aiDifficulty,
         historyViewIndex: m.historyViewIndex,
         theme: m.theme,
@@ -234,6 +237,18 @@ class GameStatus extends StatelessWidget {
       }
     } else {
       if (s.stalemate) {
+        if (s.drawReason != null) {
+          switch (s.drawReason!) {
+            case FideDrawReason.stalemate:
+              return 'Stalemate';
+            case FideDrawReason.threefoldRepetition:
+              return 'Draw (Repetition)';
+            case FideDrawReason.fiftyMoveRule:
+              return 'Draw (50-Move Rule)';
+            case FideDrawReason.insufficientMaterial:
+              return 'Draw (Material)';
+          }
+        }
         return 'Stalemate';
       } else {
         if (s.playerCount == 1) {

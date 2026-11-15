@@ -31,7 +31,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **⚡ Performance Optimizations**:
     -   **Stockfish Native Stability & Memory Cap**: Powered by `multistockfish` (by Lichess) running Stockfish 19 with embedded ~1MB NNUE. Configures `Threads` = 1 to prevent lock contention ANRs, caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices, and enforces single-instance flavor locking to prevent lifecycle conflicts. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion. All stdin logging in `getBestMove()` is also gated behind `if (kDebugMode)` to ensure zero overhead in release builds.
     -   **iOS Mach-O Static Linker Symbol Retention**: Specifies `OTHER_LDFLAGS = $(inherited) -Wl,-u,_stockfish_light_init` and uses an address link hook in `AppDelegate.swift` to ensure `ld` extracts and retains pure C++ engine symbols from `libmultistockfish_light.a` when building with CocoaPods static libraries without `use_frameworks!`.
-    -   **Warm Checkmate Isolate**: Offloads heavy push/check/pop legal move search computations (needed for checkmate/stalemate detection) to a persistent warm isolate spawned once per game. Avoids Dart's `compute()` isolate spawn overhead (150-400ms on Android) entirely on gameplay moves.
+    -   **Synchronous Bitboard Evaluation via dartchess**: Computes checkmate, stalemate, and FIDE-compliant draw detection (threefold repetition, 50-move rule, insufficient material) via high-speed compiled 64-bit bitboards in `ChessNotationService` (< 0.1ms on the main thread), eliminating background isolate serialization latency, race conditions, and thread overhead.
     -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move. `_piecesOfTypeForPlayer()` returns a lazy `Iterable.where()` rather than eagerly allocating a `List<ChessPiece>` for ambiguity checks.
     -   **Non-Blocking Startup Layout**: Spawns `runApp()` immediately to render the home screen logo on the first frame. Active piece theme images and audios decode asynchronously in the background rather than freezing the main isolate synchronously before startup.
     -   **Scroll-Debounced Pickers**: App theme and piece theme wheels are debounced (150ms) to avoid heavy layout and theme rebuilds during scroll.
@@ -71,9 +71,11 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Daily Practice Notifications**: Adaptively schedules daily reminder notifications at the player's most frequent playing hour, with built-in permission handling and blocked-notification recovery (default: on)
 -   **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
 -   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
--   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates)
+-   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates and FIDE draws)
 -   **Promotion Handling**: Full support for glassmorphic pawn promotion dialog (wrapped in `PopScope(canPop: false)` to require an explicit piece choice)
--   **Check Detection**: Visual indicators for check and checkmate
+-   **Check Detection & History Highlight Sync**: Visual indicators for check and checkmate, seamlessly synchronized with move history navigation so historical positions display accurate check hints without stale artifacts
+-   **FIDE Draw Detection & Granular Status**: Full support for FIDE draw rules including threefold repetition (via Polyglot 64-bit Zobrist hashes across the game tree), 50-move rule, and insufficient material with clear status indicators in the game pill (e.g. Draw (Repetition), Draw (50-Move Rule), Draw (Material))
+-   **PGN & FEN Export**: Standard tournament PGN export with tournament headers, SAN move notation, and game results, plus live FEN serialization. Long-press on the move list copies full PGN to clipboard with a glassmorphic confirmation toast
 -   **Stalemate Detection**: Proper game-end condition handling
 
 ### 🤖 AI Features
@@ -110,6 +112,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Provider](https://pub.dev/packages/provider)** — State management
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
 -   **[multistockfish](https://pub.dev/packages/multistockfish)** — Native Stockfish 19 chess engine wrapper by Lichess with embedded ~1MB NNUE and UCI communication
+-   **[dartchess](https://pub.dev/packages/dartchess)** — Fast, immutable chess rules, bitboard legal move validation, SAN formatting, PGN generation, FEN serialization, and FIDE-compliant draw evaluation by Lichess
 -   **[Flame Audio](https://pub.dev/packages/flame_audio)** — Sound effects with pooled `AudioPool` for rapid move sounds
 -   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic) and exit interstitial ads (`google_mobile_ads` 9.1.0 with native `Google-Mobile-Ads-SDK` 13.9.0)
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
@@ -127,7 +130,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   Flutter SDK (3.0.0 or higher)
 -   Dart SDK (3.0.0 or higher)
--   Android Studio / Xcode (Android Gradle Plugin 9.5.1, Gradle 9.7.1, Kotlin 2.4.0, iOS 15.0+ deployment target)
+-   Android Studio / Xcode (Android Gradle Plugin 9.5.1, Gradle 9.7.1, Kotlin 2.4.20, iOS 15.0+ deployment target)
 -   A device or emulator
 
 ### Steps
@@ -333,6 +336,8 @@ This project is licensed under the GNU General Public License v3.0 (GPL-3.0) —
 ### Third-Party Licenses
 
 - **Stockfish Chess Engine**: Licensed under the [GNU General Public License v3.0 (GPL-3.0)](https://www.gnu.org/licenses/gpl-3.0.html).
+- **multistockfish**: Native multi-platform Stockfish wrapper by [lichess.org](https://lichess.org), licensed under the [GNU General Public License v3.0 (GPL-3.0)](https://github.com/lichess-org/multistockfish).
+- **dartchess**: Fast, immutable chess rules, bitboard calculations, and notation library by [lichess.org](https://lichess.org), licensed under the [GNU General Public License v3.0 (GPL-3.0)](https://github.com/lichess-org/dartchess).
 
 ## 👨‍💻 Author
 

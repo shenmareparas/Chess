@@ -5,11 +5,10 @@ import 'checkmate_isolate.dart';
 
 /// A persistent background isolate that handles checkmate computation requests.
 ///
-/// Unlike [compute()], which spawns a fresh isolate on every call (costing
-/// 150–400 ms on Android), [CheckmateWorker] spawns the isolate **once** at
-/// construction and keeps it alive for the duration of the game. Each
-/// [check] call sends a request over a [SendPort] and awaits the reply —
-/// no spawn overhead after the first frame.
+/// Deprecated: replaced by [ChessNotationService] powered by `dartchess`
+/// bitboards which computes checkmate and FIDE draw outcomes synchronously
+/// on the main thread in < 0.1ms without isolate thread overhead.
+@deprecated
 class CheckmateWorker {
   late final Isolate _isolate;
   late final SendPort _sendPort;
