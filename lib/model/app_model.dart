@@ -473,6 +473,9 @@ class AppModel extends ChangeNotifier {
     drawReason = null;
     userWon = false;
     _gameOverInvertedState = null;
+    if (timeLimit > 0) {
+      timerService.start(() => turn, () => gameOver);
+    }
     if (!silent) notifyListeners();
   }
 

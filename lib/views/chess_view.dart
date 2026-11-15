@@ -339,93 +339,98 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
 
   Widget _buildTopBar(AppTheme theme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: appModel.playerCount == 1
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Stockfish L${appModel.aiDifficulty}',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: theme.lightTile.withValues(alpha: 0.6),
-                            letterSpacing: 0.5,
-                          ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: SizedBox(
+        height: 44,
+        child: NavigationToolbar(
+          leading: appModel.playerCount == 1
+              ? Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Stockfish L${appModel.aiDifficulty}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: theme.lightTile.withValues(alpha: 0.6),
+                          letterSpacing: 0.5,
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w500,
-                            color: theme.lightTile.withValues(alpha: 0.45),
-                            letterSpacing: 0.5,
-                          ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w500,
+                          color: theme.lightTile.withValues(alpha: 0.45),
+                          letterSpacing: 0.5,
                         ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                )
+              : null,
+          middle: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: GameStatus(),
+          ),
+          trailing: Align(
+            alignment: Alignment.centerRight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Tooltip(
+                  message: 'Chess Guide',
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      appModel.haptic.light();
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const PieceGuideView(),
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      Icons.help_outline_rounded,
+                      color: theme.lightTile,
+                      size: 24,
+                    ),
+                    minimumSize: Size(36, 36),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: 'Settings',
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        CupertinoPageRoute(
+                          builder: (context) => const SettingsView(),
+                        ),
+                      );
+                    },
+                    child: Icon(
+                      Icons.settings_rounded,
+                      color: theme.lightTile,
+                      size: 24,
+                    ),
+                    minimumSize: Size(36, 36),
+                  ),
+                ),
+              ],
             ),
           ),
-          GameStatus(),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Tooltip(
-                    message: 'Chess Guide',
-                    child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        appModel.haptic.light();
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => const PieceGuideView(),
-                          ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.help_outline_rounded,
-                        color: theme.lightTile,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Tooltip(
-                    message: 'Settings',
-                    child: CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          CupertinoPageRoute(
-                            builder: (context) => const SettingsView(),
-                          ),
-                        );
-                      },
-                      child: Icon(
-                        Icons.settings_rounded,
-                        color: theme.lightTile,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+          centerMiddle: true,
+          middleSpacing: 8.0,
+        ),
       ),
     );
   }
@@ -455,10 +460,22 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   }
 
   void _showPromotionDialog(AppModel appModel) {
-    showCupertinoDialog(
+    showGeneralDialog(
       context: context,
-      builder: (BuildContext context) {
-        return PromotionDialog(appModel);
+      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierDismissible: false,
+      barrierLabel: '',
+      transitionDuration: const Duration(milliseconds: 240),
+      pageBuilder: (dialogContext, anim1, anim2) {
+        return PromotionDialog(appModel, animation: anim1);
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1.drive(
+            CurveTween(curve: Curves.easeOut),
+          ),
+          child: child,
+        );
       },
     );
   }

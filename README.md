@@ -30,6 +30,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Settings Reset**: One-tap reset to factory defaults via a confirmation dialog
 -   **⚡ Performance Optimizations**:
     -   **Stockfish Native Stability & Memory Cap**: Powered by `multistockfish` (by Lichess) running Stockfish 19 with embedded ~1MB NNUE. Configures `Threads` = 1 to prevent lock contention ANRs, caps transposition memory to 16MB (`Hash` = 16) to avoid native/Java heap `OutOfMemoryError` failures on lower-end devices, and enforces single-instance flavor locking to prevent lifecycle conflicts. Additionally filters standard output logging to only dispatch key UCI transitions over the Flutter method channel under `kDebugMode`, reducing channel congestion. All stdin logging in `getBestMove()` is also gated behind `if (kDebugMode)` to ensure zero overhead in release builds.
+    -   **Immediate AI Move Search Cancellation**: Halts background Stockfish computations instantly via `StockfishService.instance.stop()` (dispatching UCI `stop` via stdin) and cancels the `CancelableOperation` during move undos, match restarts, and exits, releasing CPU resources and eliminating desynchronized move delivery.
     -   **iOS Mach-O Static Linker Symbol Retention**: Specifies `OTHER_LDFLAGS = $(inherited) -Wl,-u,_stockfish_light_init` and uses an address link hook in `AppDelegate.swift` to ensure `ld` extracts and retains pure C++ engine symbols from `libmultistockfish_light.a` when building with CocoaPods static libraries without `use_frameworks!`.
     -   **Synchronous Bitboard Evaluation via dartchess**: Computes checkmate, stalemate, and FIDE-compliant draw detection (threefold repetition, 50-move rule, insufficient material) via high-speed compiled 64-bit bitboards in `ChessNotationService` (< 0.1ms on the main thread), eliminating background isolate serialization latency, race conditions, and thread overhead.
     -   **Zero-Allocation Castling Checks**: Utilizes direct target attack scans (`_pieceAttacksTile`) inside checkmate and castling legality validations to eliminate temporary list allocations per piece on every move. `_piecesOfTypeForPlayer()` returns a lazy `Iterable.where()` rather than eagerly allocating a `List<ChessPiece>` for ambiguity checks.
@@ -57,7 +58,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 -   **Interactive Piece Guide**: Learn how every chess piece moves, captures, and promotes with an interactive guide accessible directly from the main menu and during matches. Features stutter-free pre-cached piece previews matching the active piece theme, live color toggle (White/Black), point values, tactical roles, movement pattern cards, combat strategy tips, and special rules (en passant, castling, promotion, leaping) with justified typography and scroll affordances.
 -   **Move History Preview**: Move lists are fully clickable. Tap any past move to review the board state at that position (which pauses active AI, but keeps timers running and disables board taps). In offline 2-Player mode, board auto-rotation and piece auto-rotation are paused during history review so the player reviewing past positions isn't disoriented by sudden flips. Navigate through moves using the bottom-right chevron buttons, copy all history via a long-press, or tap the prominent **RESUME** button in the top status bar to return to the live game state without any layout shifts. The active tile dynamically calculates its width from character measurements to ensure it always auto-scrolls perfectly to the center of the viewport.
--   **Undo/Redo with Ad Bank**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad
+-   **Undo/Redo with Ad Bank & Smart Step**: Start each game with 1 free undo; earn an extra undo by watching a rewarded ad. In 1-player mode against Stockfish, smart undo detects the last player to move: if the human was the last mover (including after delivering checkmate or stalemate), a single undo is executed, restoring the match and restarting countdown timers if timed. If the AI was the last mover, a standard two-move undo is performed. Active AI computations are halted immediately via `stop` on undo.
 -   **Remove Ads & Unlimited Undos (In-App Purchase)**: Optional one-time product (`remove_ads`) permanently removes all exit interstitials and rewarded ads, unlocking infinite undos with an `∞` badge indicator and seamless store purchase restoration. Accessible via a top-left quick-action button on the main menu and in Settings, with resilient error/cancellation handling and Android-style circular progress indicators.
 -   **Exit Match Interstitial Ads**: Displays a non-intrusive interstitial ad when leaving a chess match back to the main menu (with AdMob Console server-side frequency capping and instant offline fallback)
 -   **In-App Store Rating Prompt**: Seamlessly prompts for app rating/review on Google Play Store or App Store using `in_app_review` after a human victory upon returning to the main menu (guarded by `hasRatedApp` user preference)
@@ -72,11 +73,12 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
 -   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
 -   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates and FIDE draws)
--   **Promotion Handling**: Full support for glassmorphic pawn promotion dialog (wrapped in `PopScope(canPop: false)` to require an explicit piece choice)
+-   **Smooth Animated Promotion Handling**: Glassmorphic pawn promotion picker with custom spring scale and fade transition (`Curves.easeOutBack` over 240ms) via `showGeneralDialog` (wrapped in `PopScope(canPop: false)` to require an explicit piece choice).
 -   **Check Detection & History Highlight Sync**: Visual indicators for check and checkmate, seamlessly synchronized with move history navigation so historical positions display accurate check hints without stale artifacts
 -   **FIDE Draw Detection & Granular Status**: Full support for FIDE draw rules including threefold repetition (via Polyglot 64-bit Zobrist hashes across the game tree), 50-move rule, and insufficient material with clear status indicators in the game pill (e.g. Draw (Repetition), Draw (50-Move Rule), Draw (Material))
 -   **PGN & FEN Export**: Standard tournament PGN export with tournament headers, SAN move notation, and game results, plus live FEN serialization. Long-press on the move list copies full PGN to clipboard with a glassmorphic confirmation toast
 -   **Stalemate Detection**: Proper game-end condition handling
+-   **GDPR & Privacy Consent Management (UMP)**: Fully integrates Google's certified User Messaging Platform (UMP) SDK for IAB TCF v2.2 compliance in the EEA, UK, and Switzerland, providing an on-demand "Ad Privacy Settings" tile in Settings to reconfigure consent choices at any time.
 
 ### 🤖 AI Features
 
@@ -85,7 +87,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Castling UCI Translation**: Features automated castling move translation mapping custom king-captures-rook engine moves to standard UCI notation (e.g. `e1g1`, `e1c1`), preventing AI logic desyncs and crash states.
 -   **5 Difficulty Levels**: Smooth progression from Beginner (400 ELO), Casual (800 ELO), Intermediate (1200 ELO), Advanced (1600 ELO), to Master (2000 ELO). Levels 1 & 2 run Stockfish at Skill 0 with a randomized blunder pass (60% and 25% chance of random legal moves respectively) to ensure beginner-friendly play, while levels 3–5 natively leverage `UCI_LimitStrength` and `UCI_Elo` engine options.
 -   **Real-time Move Logs**: Asynchronous stdin/stdout UCI command processing with filtered logging under `kDebugMode`.
--   **Safe Cancellation**: Search calculations are run asynchronously and cleanly cancelled on game restart or exit.
+-   **Safe Cancellation**: Search calculations are run asynchronously and cleanly halted on game restart, undo, or exit via engine UCI `stop` and `CancelableOperation` cancellation.
 
 ### 🏆 Achievements
 
@@ -106,7 +108,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 
 ## 🛠️ Technologies Used
 
--   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+13`)
+-   **[Flutter](https://flutter.dev/)** — UI framework (Dart ≥ 3.0.0, app version `1.0.7+15`)
 -   **[cupertino_ui](https://pub.dev/packages/cupertino_ui)** & **[material_ui](https://pub.dev/packages/material_ui)** — UI design components and styling wrappers
 -   **[Flame](https://flame-engine.org/)** — 2D game engine for chess board rendering
 -   **[Provider](https://pub.dev/packages/provider)** — State management
@@ -204,15 +206,16 @@ lib/
 │   ├── chess_constants.dart       # Shared constants (e.g. PROMOTIONS list)
 │   ├── shared_functions.dart      # Utilities: formatPieceTheme, oppositePlayer, tile↔coordinate helpers
 │   ├── stockfish_service.dart     # Native Stockfish 19 engine interface via multistockfish
-│   ├── checkmate_worker.dart      # Background isolate worker manager for checkmate calculations
-│   ├── checkmate_isolate.dart     # Background isolate execution logic
+│   ├── chess_notation_service.dart # PGN/SAN formatting, FEN export, and FIDE draw evaluation (dartchess)
+│   ├── checkmate_worker.dart      # (Deprecated) Background isolate worker manager for checkmate calculations
+│   ├── checkmate_isolate.dart     # (Deprecated) Background isolate execution logic
 │   ├── in_app_purchase_service.dart # In-app purchases / remove ads (in_app_purchase)
 │   ├── game_state_storage.dart    # Full game-state save/load/clear via SharedPreferences
 │   ├── timer_service.dart         # Per-player countdown timers with pause/resume support
 │   ├── audio_service.dart         # Pooled piece-move sounds and game-end audio
 │   ├── haptic_service.dart        # Centralized haptic feedback (selection/light/medium/heavy/vibrate)
 │   ├── notification_service.dart  # Daily practice notification scheduling & permission handling
-│   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo")
+│   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo") & UMP consent
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
 │   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
 │   ├── rating_service.dart        # Google Play Store / App Store rating prompt (in_app_review)
@@ -229,14 +232,14 @@ lib/
     ├── settings_view.dart         # Settings: theme pickers, toggles, achievements tile, reset
     └── components/
         ├── chess_view/
-            ├── chess_board_widget.dart         # Flutter↔Flame GameWidget bridge
-            ├── captured_pieces_row.dart        # Frosted glass dead pieces display with ambient glow
-            ├── promotion_dialog.dart           # Non-dismissible glassmorphic promotion picker
-            ├── promotion_option.dart           # Individual promotion piece option
-            ├── piece_guide/
-            │   ├── piece_descriptions.dart     # Comprehensive piece movement, abilities & tips data
-            │   └── piece_selector_item.dart    # Horizontal piece carousel item with theme integration
-            ├── game_info_and_controls.dart     # Bottom panel layout
+        │   ├── chess_board_widget.dart         # Flutter↔Flame GameWidget bridge
+        │   ├── captured_pieces_row.dart        # Frosted glass dead pieces display with ambient glow
+        │   ├── promotion_dialog.dart           # Animated glassmorphic promotion picker
+        │   ├── promotion_option.dart           # Individual promotion piece option
+        │   ├── piece_guide/
+        │   │   ├── piece_descriptions.dart     # Comprehensive piece movement, abilities & tips data
+        │   │   └── piece_selector_item.dart    # Horizontal piece carousel item with theme integration
+        │   ├── game_info_and_controls.dart     # Bottom panel layout
         │   └── game_info_and_controls/
         │       ├── game_status.dart            # Turn/result status text
         │       ├── timer_widget.dart           # Animated countdown timer display
@@ -247,9 +250,10 @@ lib/
         │       └── moves_undo_redo_row/
         │           ├── move_list.dart          # Interactive move list panel
         │           ├── rounded_icon_button.dart# Reusable icon button
-        │           └── undo_redo_buttons.dart  # Undo/redo control buttons
+        │           └── undo_redo_buttons.dart  # Smart undo/redo control buttons
         ├── main_menu_view/
         │   ├── main_menu_buttons.dart          # Start / Resume game buttons
+        │   ├── remove_ads_button.dart          # Floating remove ads & unlimited undos button
         │   ├── game_options.dart               # Options panel container
         │   └── game_options/
         │       ├── game_mode_picker.dart       # 1P / 2P mode selection
@@ -263,8 +267,9 @@ lib/
         │   ├── app_theme_picker.dart           # Board theme CupertinoPicker (debounced 150ms)
         │   ├── piece_theme_picker.dart         # Piece theme CupertinoPicker + Easter egg
         │   ├── piece_preview.dart              # Lightweight StatelessWidget piece preview
+        │   ├── remove_ads_tile.dart            # In-app purchase tile for remove_ads & restore
         │   ├── toggle.dart                     # Reusable switch row
-        │   └── toggles.dart                    # All settings toggles + Achievements tile
+        │   └── toggles.dart                    # All settings toggles, GDPR consent + Achievements
         └── shared/
             ├── glass_panel.dart               # Glassmorphic container with optional animation
             ├── rounded_button.dart            # Reusable rounded button
@@ -305,6 +310,8 @@ The app stores user preferences locally using SharedPreferences:
 -   Undo/Redo availability (`allowUndoRedo`)
 -   Haptic feedback (`hapticEnabled`, default: `true`)
 -   Daily practice notification (`dailyPracticeNotification`, default: `true`)
+-   Ad-free status (`isAdFree`, persistent across settings reset)
+-   In-app store rating status (`hasRatedApp`)
 
 Defaults are defined in `lib/model/user_preferences.dart`. Game state (board position, move history, timers, undo bank) is persisted separately in `lib/logic/game_state_storage.dart` and restored on app resume.
 

@@ -65,7 +65,7 @@ class GameStatus extends StatelessWidget {
               },
               child: Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
                   color: theme.moveHint.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -96,7 +96,7 @@ class GameStatus extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: theme.moveHint,
-                        letterSpacing: 1.5,
+                        letterSpacing: 1.2,
                       ),
                     ),
                   ],
@@ -111,7 +111,7 @@ class GameStatus extends StatelessWidget {
 
         return Center(
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
               color: statusTheme.bgColor,
               borderRadius: BorderRadius.circular(20),
@@ -131,20 +131,20 @@ class GameStatus extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RepaintBoundary(child: _PulseDot(color: statusTheme.dotColor)),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 Text(
                   statusText,
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: statusTheme.textColor,
-                    letterSpacing: 1.5,
+                    letterSpacing: 1.2,
                   ),
                 ),
                 if (statusTheme.showProgress) ...[
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   CupertinoActivityIndicator(
-                    radius: 8,
+                    radius: 7,
                     color: statusTheme.textColor,
                   ),
                 ],

@@ -11,19 +11,25 @@ class UndoRedoButtons extends StatelessWidget {
   final AppModel appModel;
 
   bool get _undoEnabled {
-    return appModel.historyViewIndex == null &&
-        appModel.gameController != null &&
-        appModel.gameController!.board.moveStack.isNotEmpty &&
-        (!appModel.playingWithAI ||
-            appModel.gameController!.board.moveStack.length > 1);
+    final controller = appModel.gameController;
+    if (appModel.historyViewIndex != null || controller == null) return false;
+    final moveStack = controller.board.moveStack;
+    if (moveStack.isEmpty) return false;
+
+    if (appModel.playingWithAI) {
+      final lastMovePlayer = moveStack.last.movedPiece?.player;
+      if (lastMovePlayer == appModel.playerSide) {
+        return moveStack.isNotEmpty;
+      }
+      return moveStack.length >= 2;
+    }
+    return true;
   }
 
   bool get _redoEnabled {
-    return appModel.historyViewIndex == null &&
-        appModel.gameController != null &&
-        appModel.gameController!.board.redoStack.isNotEmpty &&
-        (!appModel.playingWithAI ||
-            appModel.gameController!.board.redoStack.length > 1);
+    final controller = appModel.gameController;
+    if (appModel.historyViewIndex != null || controller == null) return false;
+    return controller.board.redoStack.isNotEmpty;
   }
 
   UndoRedoButtons(this.appModel);
@@ -100,15 +106,23 @@ class UndoRedoButtons extends StatelessWidget {
 
   /// Performs the actual undo move on the game board.
   void _executeUndo() {
-    if (appModel.gameController != null) {
+    final controller = appModel.gameController;
+    if (controller != null) {
+      controller.cancelAIMove();
       if (appModel.playingWithAI) {
-        if (appModel.gameOver && appModel.userWon) {
-          appModel.gameController!.undoMove();
+        final moveStack = controller.board.moveStack;
+        if (moveStack.isEmpty) return;
+
+        final lastMovePlayer = moveStack.last.movedPiece?.player;
+        if (lastMovePlayer == appModel.playerSide) {
+          controller.undoMove();
+        } else if (moveStack.length >= 2) {
+          controller.undoTwoMoves();
         } else {
-          appModel.gameController!.undoTwoMoves();
+          controller.undoMove();
         }
       } else {
-        appModel.gameController!.undoMove();
+        controller.undoMove();
       }
     }
   }
@@ -348,11 +362,16 @@ class UndoRedoButtons extends StatelessWidget {
   // ── Redo ──
 
   void _redo() {
-    if (appModel.gameController != null) {
+    final controller = appModel.gameController;
+    if (controller != null) {
       if (appModel.playingWithAI) {
-        appModel.gameController!.redoTwoMoves();
+        if (controller.board.redoStack.length == 1) {
+          controller.redoMove();
+        } else {
+          controller.redoTwoMoves();
+        }
       } else {
-        appModel.gameController!.redoMove();
+        controller.redoMove();
       }
     }
   }

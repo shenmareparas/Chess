@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -15,6 +16,16 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('xyz.luan/audioplayers.global'),
+      (MethodCall methodCall) async => null,
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+      const MethodChannel('xyz.luan/audioplayers'),
+      (MethodCall methodCall) async => null,
+    );
   });
 
   group('AppModel ELO and History Tests', () {
@@ -312,6 +323,43 @@ void main() {
       appModel.setHistoryViewIndex(0);
       // During history view, pieces must NOT rotate
       expect(appModel.isPieceRotated, isFalse);
+    });
+
+    test(
+        'Undo after stalemate in AI mode restores human turn and clears game over',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+      appModel.playerCount = 1;
+      appModel.playerSide = Player.player1;
+
+      // Play e2e4 (White / Human)
+      final meta = controller.board.push(Move(52, 36));
+      appModel.pushMoveMeta(meta);
+      appModel.changeTurn();
+
+      // Simulate stalemate delivered by human
+      appModel.endGame(stalemate: true);
+      expect(appModel.gameOver, isTrue);
+      expect(appModel.stalemate, isTrue);
+      expect(appModel.userWon, isFalse);
+
+      // Verify last move was by the user
+      final lastMovePlayer = controller.board.moveStack.last.movedPiece?.player;
+      expect(lastMovePlayer, appModel.playerSide);
+
+      // Undo the human's stalemate move
+      controller.undoMove();
+
+      // Verify game over and stalemate are cleared, and turn is restored to Human
+      expect(appModel.gameOver, isFalse);
+      expect(appModel.stalemate, isFalse);
+      expect(appModel.turn, Player.player1);
+      expect(appModel.isAIsTurn, isFalse);
+      expect(controller.board.moveStack, isEmpty);
     });
   });
 }

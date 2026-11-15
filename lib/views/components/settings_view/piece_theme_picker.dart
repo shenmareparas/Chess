@@ -48,10 +48,22 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
     if (_easterEggTapCount >= 7) {
       _easterEggTapCount = 0;
       _fToast.removeCustomToast();
-      showCupertinoDialog(
+      showGeneralDialog(
         context: context,
+        barrierColor: CupertinoColors.black.withValues(alpha: 0.6),
         barrierDismissible: true,
-        builder: (context) => PromotionDialog(appModel),
+        barrierLabel: '',
+        transitionDuration: const Duration(milliseconds: 240),
+        pageBuilder: (dialogContext, anim1, anim2) =>
+            PromotionDialog(appModel, animation: anim1, canPop: true),
+        transitionBuilder: (context, anim1, anim2, child) {
+          return FadeTransition(
+            opacity: anim1.drive(
+              CurveTween(curve: Curves.easeOut),
+            ),
+            child: child,
+          );
+        },
       );
     } else {
       _easterEggResetTimer = Timer(const Duration(seconds: 2), () {

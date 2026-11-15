@@ -103,6 +103,16 @@ class StockfishService {
     _ensureEngine();
   }
 
+  /// Halts any in-flight move search immediately.
+  void stop() {
+    if (_engine != null && _engine!.state.value == StockfishState.ready) {
+      if (kDebugMode) {
+        debugPrint('[Stockfish stdin] stop');
+      }
+      _engine!.stdin = 'stop';
+    }
+  }
+
   /// Synchronizes with the Stockfish engine via `isready` → `readyok`.
   Future<void> _waitUntilReady() async {
     final engine = await _ensureEngine();

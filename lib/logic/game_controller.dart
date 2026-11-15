@@ -200,6 +200,7 @@ class GameController {
 
   void cancelAIMove() {
     aiOperation?.cancel();
+    StockfishService.instance.stop();
   }
 
   void triggerAIMove() {
@@ -209,6 +210,7 @@ class GameController {
   // ── Undo / Redo ──
 
   void undoMove() {
+    cancelAIMove();
     appModel.haptic.light();
     board.redoStack.add(board.pop());
     if (appModel.moveMetaList.length > 1) {
@@ -217,10 +219,14 @@ class GameController {
     } else {
       _undoOpeningMove();
       appModel.changeTurn();
+      if (appModel.isAIsTurn && !appModel.gameOver) {
+        _aiMove();
+      }
     }
   }
 
   void undoTwoMoves() {
+    cancelAIMove();
     appModel.haptic.light();
     board.redoStack.add(board.pop());
     board.redoStack.add(board.pop());
@@ -230,6 +236,10 @@ class GameController {
           clearRedo: false, undoing: true, changeTurn: false);
     } else {
       _undoOpeningMove();
+      appModel.update();
+      if (appModel.isAIsTurn && !appModel.gameOver) {
+        _aiMove();
+      }
     }
   }
 
@@ -239,7 +249,8 @@ class GameController {
     latestMove = null;
     checkHintTile = null;
     warningTile = null;
-    appModel.popMoveMeta();
+    appModel.popMoveMeta(silent: true);
+    appModel.undoEndGame(silent: true);
   }
 
   void redoMove() {
@@ -251,7 +262,7 @@ class GameController {
   void redoTwoMoves() {
     appModel.haptic.light();
     _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
-        clearRedo: false, updateMetaList: true);
+        clearRedo: false, updateMetaList: true, triggerAI: false);
     _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
         clearRedo: false, updateMetaList: true);
   }
@@ -278,6 +289,7 @@ class GameController {
     bool undoing = false,
     bool changeTurn = true,
     bool updateMetaList = true,
+    bool triggerAI = true,
   }) async {
     if (clearRedo) {
       board.redoStack = [];
@@ -376,10 +388,8 @@ class GameController {
       }
     }
 
-    // Trigger AI if it's now the AI's turn. Use !undoing instead of clearRedo
-    // so that undoing the human's last move (which restores AI's turn) still
-    // calls _aiMove(), preventing the AI from freezing after an undo-to-AI-turn.
-    if (appModel.isAIsTurn && !undoing && changeTurn && !appModel.gameOver) {
+    // Trigger AI if it's now the AI's turn and the game is active.
+    if (appModel.isAIsTurn && !appModel.gameOver && triggerAI) {
       _aiMove();
     }
   }
