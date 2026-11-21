@@ -107,6 +107,22 @@ class AppModel extends ChangeNotifier {
   /// or debounce timers from saving state after an explicit exit.
   bool isExiting = false;
 
+  /// Whether the match is in fullscreen mode (hiding system bars and exit/restart controls).
+  bool _isFullscreen = false;
+  bool get isFullscreen => _isFullscreen;
+
+  void toggleFullscreen() {
+    _isFullscreen = !_isFullscreen;
+    notifyListeners();
+  }
+
+  void setFullscreen(bool value) {
+    if (_isFullscreen != value) {
+      _isFullscreen = value;
+      notifyListeners();
+    }
+  }
+
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
   bool get isAIsTurn =>
@@ -333,6 +349,7 @@ class AppModel extends ChangeNotifier {
 
   Future<void> exitChessView() async {
     isExiting = true;
+    _isFullscreen = false;
     _saveDebounceTimer?.cancel();
     _saveDebounceTimer = null;
     gameController?.cancelAIMove();
@@ -354,6 +371,7 @@ class AppModel extends ChangeNotifier {
     }
     await refreshHasSavedGame();
     isExiting = true;
+    _isFullscreen = false;
     gameController?.cancelAIMove();
     timerService.stop();
     notifyListeners();

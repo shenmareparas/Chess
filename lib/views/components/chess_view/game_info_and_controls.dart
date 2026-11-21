@@ -1,4 +1,5 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:provider/provider.dart';
 
 import '../../../model/app_model.dart';
 import 'game_info_and_controls/moves_undo_redo_row.dart';
@@ -30,7 +31,18 @@ class GameInfoAndControls extends StatelessWidget {
         children: [
           Timers(appModel),
           MovesUndoRedoRow(appModel),
-          RestartExitButtons(appModel),
+          Selector<AppModel, bool>(
+            selector: (_, m) => m.isFullscreen,
+            builder: (_, isFullscreen, __) {
+              return AnimatedSize(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                child: isFullscreen
+                    ? const SizedBox.shrink()
+                    : RestartExitButtons(appModel),
+              );
+            },
+          ),
         ],
       ),
     );

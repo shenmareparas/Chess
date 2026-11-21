@@ -28,7 +28,7 @@ class ChessBoardWidget extends StatelessWidget {
             (bottomWidget != null ? 42.0 : 0.0);
         final double maxSide = math.min(
             constraints.maxWidth, constraints.maxHeight - verticalReserve);
-        final double boardSize = (maxSide - 8).clamp(0.0, double.infinity);
+        final double boardSize = maxSide.clamp(0.0, double.infinity);
 
         return Center(
           child: Column(
@@ -36,12 +36,12 @@ class ChessBoardWidget extends StatelessWidget {
             children: [
               if (topWidget != null)
                 SizedBox(
-                  width: boardSize + 8,
+                  width: boardSize,
                   child: topWidget,
                 ),
               SizedBox(
-                width: boardSize + 8,
-                height: boardSize + 8,
+                width: boardSize,
+                height: boardSize,
                 child: Stack(
                   children: [
                     Positioned.fill(
@@ -51,27 +51,15 @@ class ChessBoardWidget extends StatelessWidget {
                             ? const Duration(milliseconds: 600)
                             : Duration.zero,
                         curve: Curves.easeInOut,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: appModel.theme.border,
-                              width: 4,
-                            ),
-                          ),
-                          child: SizedBox(
-                            width: boardSize,
-                            height: boardSize,
-                            child: GameWidget(game: chessGame),
-                          ),
+                        child: SizedBox(
+                          width: boardSize,
+                          height: boardSize,
+                          child: GameWidget(game: chessGame),
                         ),
                       ),
                     ),
                     if (appModel.showNotation)
-                      Positioned(
-                        left: 4,
-                        top: 4,
-                        width: boardSize,
-                        height: boardSize,
+                      Positioned.fill(
                         child: _NotationOverlay(
                           lightTileColor: appModel.theme.lightTile,
                           darkTileColor: appModel.theme.darkTile,
@@ -84,7 +72,7 @@ class ChessBoardWidget extends StatelessWidget {
               ),
               if (bottomWidget != null)
                 SizedBox(
-                  width: boardSize + 8,
+                  width: boardSize,
                   child: bottomWidget,
                 ),
             ],
