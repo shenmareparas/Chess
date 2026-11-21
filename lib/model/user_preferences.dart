@@ -3,15 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../logic/timer_service.dart';
 import 'app_themes.dart';
 
-const PIECE_THEMES = [
-  'Classic',
-  'Angular',
-  '8-Bit',
-  'Letters',
-  'Old School',
-  'Fairy Tale'
-];
-
 const List<String> sortedPieceThemes = [
   '8-Bit',
   'Angular',

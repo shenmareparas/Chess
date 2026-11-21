@@ -40,21 +40,7 @@ class MovesUndoRedoRow extends StatelessWidget {
                             child: RoundedIconButton(
                               CupertinoIcons.chevron_left,
                               onPressed: (historyViewIndex > 0)
-                                  ? () {
-                                      appModel.haptic.light();
-                                      final int idx = historyViewIndex;
-                                      final int currentTurnIndex =
-                                          (idx / 2).floor();
-                                      if (idx == 1) {
-                                        appModel.selectHistoryTurn(0);
-                                      } else if (currentTurnIndex > 0) {
-                                        appModel.selectHistoryTurn(
-                                            currentTurnIndex - 1);
-                                      } else {
-                                        appModel.setHistoryViewIndex(0,
-                                            snap: true, playAudio: false);
-                                      }
-                                    }
+                                  ? appModel.stepHistoryBackward
                                   : null,
                             ),
                           ),
@@ -63,20 +49,7 @@ class MovesUndoRedoRow extends StatelessWidget {
                             flex: 1,
                             child: RoundedIconButton(
                               CupertinoIcons.chevron_right,
-                              onPressed: () {
-                                appModel.haptic.light();
-                                final int idx = historyViewIndex;
-                                final int currentTurnIndex =
-                                    idx < 0 ? -1 : (idx / 2).floor();
-                                final int totalTurns =
-                                    (appModel.moveMetaList.length / 2).ceil();
-                                if (currentTurnIndex < totalTurns - 1) {
-                                  appModel
-                                      .selectHistoryTurn(currentTurnIndex + 1);
-                                } else {
-                                  appModel.setHistoryViewIndex(null);
-                                }
-                              },
+                              onPressed: appModel.stepHistoryForward,
                             ),
                           ),
                         ],

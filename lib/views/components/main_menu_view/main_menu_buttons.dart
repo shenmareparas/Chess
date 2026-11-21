@@ -9,31 +9,28 @@ import '../../chess_view.dart';
 
 class MainMenuButtons extends StatelessWidget {
   final AppModel appModel;
-  final bool hasSavedGame;
-  final VoidCallback onGameReturned;
   final VoidCallback? onResetScroll;
 
   const MainMenuButtons(
     this.appModel, {
     Key? key,
-    required this.hasSavedGame,
-    required this.onGameReturned,
     this.onResetScroll,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final theme = appModel.theme;
-    // Rebuild only when imagesReady flips — avoids unnecessary rebuilds from
-    // other AppModel changes (move meta, timers, etc.)
-    final imagesReady = Selector<AppModel, bool>(
-      selector: (_, m) => m.imagesReady,
-      builder: (context, ready, _) => _buildButtons(context, theme, ready),
+    return Selector<AppModel, (bool, bool)>(
+      selector: (_, m) => (m.imagesReady, m.hasSavedGame),
+      builder: (context, data, _) {
+        final (ready, hasSavedGame) = data;
+        return _buildButtons(context, theme, ready, hasSavedGame);
+      },
     );
-    return imagesReady;
   }
 
-  Widget _buildButtons(BuildContext context, AppTheme theme, bool ready) {
+  Widget _buildButtons(
+      BuildContext context, AppTheme theme, bool ready, bool hasSavedGame) {
     return Container(
       width: double.infinity,
       child: Column(
@@ -55,7 +52,7 @@ class MainMenuButtons extends StatelessWidget {
                     },
                   ),
                 ).then((_) {
-                  onGameReturned();
+                  appModel.refreshHasSavedGame();
                 });
                 Future.delayed(
                   const Duration(milliseconds: 300),
@@ -80,7 +77,7 @@ class MainMenuButtons extends StatelessWidget {
                   },
                 ),
               ).then((_) {
-                onGameReturned();
+                appModel.refreshHasSavedGame();
               });
               Future.delayed(
                 const Duration(milliseconds: 300),

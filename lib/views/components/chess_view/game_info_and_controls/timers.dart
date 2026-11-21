@@ -15,10 +15,10 @@ class Timers extends StatelessWidget {
   Widget build(BuildContext context) {
     if (appModel.timeLimit == 0) return const SizedBox.shrink();
 
-    return Selector<AppModel, AppTheme>(
-      selector: (_, m) => m.theme,
-      builder: (_, theme, __) {
-        final turn = appModel.turn;
+    return Selector<AppModel, (AppTheme, Player)>(
+      selector: (_, m) => (m.theme, m.turn),
+      builder: (_, data, __) {
+        final (theme, turn) = data;
 
         // Check active states
         final isP1Active = turn == Player.player1;

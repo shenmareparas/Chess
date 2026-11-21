@@ -13,8 +13,6 @@
 -keep class **.*stockfish*.** { *; }
 -keep class org.lichess.** { *; }
 
-# Keep AudioPlayers plugin
--keep class xyz.luan.audioplayers.** { *; }
 
 # Keep Play Services (AdMob & Play Games Services)
 -keep class com.google.android.gms.** { *; }

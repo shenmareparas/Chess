@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flame/flame.dart';
-import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
@@ -117,13 +116,8 @@ Future<void> _loadFlameAssetsAsync(
     await Future.delayed(Duration.zero);
   }
 
-  // Load audio assets (fast — small files)
-  await FlameAudio.audioCache.loadAll([
-    'piece_moved.mp3',
-    'win.wav',
-    'lose.wav',
-    'tie.wav',
-  ]);
+  // Preload audio assets into low-latency native sound pool
+  await appModel.audio.initialize();
 
   // Signal that navigation to ChessView is now safe.
   appModel.imagesReady = true;

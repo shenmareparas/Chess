@@ -110,23 +110,10 @@ class ChessGame extends FlameGame with TapCallbacks {
 
   ChessBoard get board => controller.board;
   List<int> get validMoves => controller.validMoves;
-  set validMoves(List<int> v) => controller.validMoves = v;
   ChessPiece? get selectedPiece => controller.selectedPiece;
-  set selectedPiece(ChessPiece? v) => controller.selectedPiece = v;
   int? get checkHintTile => controller.checkHintTile;
-  set checkHintTile(int? v) => controller.checkHintTile = v;
   int? get warningTile => controller.warningTile;
-  set warningTile(int? v) => controller.warningTile = v;
   Move? get latestMove => controller.latestMove;
-  set latestMove(Move? v) => controller.latestMove = v;
-
-  void cancelAIMove() => controller.cancelAIMove();
-  void triggerAIMove() => controller.triggerAIMove();
-  void undoMove() => controller.undoMove();
-  void undoTwoMoves() => controller.undoTwoMoves();
-  void redoMove() => controller.redoMove();
-  void redoTwoMoves() => controller.redoTwoMoves();
-  void promote(ChessPieceType type) => controller.promote(type);
 
   // ── Input Handling ──
 

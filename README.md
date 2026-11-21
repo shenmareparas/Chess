@@ -39,7 +39,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Lightweight Previews**: Piece preview uses a cached Flutter `StatelessWidget` asset renderer rather than re-instantiating heavy Flame `Game` states.
     -   **On-Demand Piece Theme Loading**: Non-active piece themes load lazily on-demand when selected or previewed, preventing excessive memory usage and GC pauses (`dart::MarkingVisitor`).
     -   **Isolated Background Repaints**: Heavy background paint layers (dot grids in `MainMenuView` and `SettingsView`, and radial blurs) are wrapped in `RepaintBoundary` objects and isolated via `Selector` to prevent unnecessary redraws.
-    -   **Responsive Foldable & Dynamic Orientation Support**: `ChessBoardWidget` uses dynamic parent constraints (`LayoutBuilder` `min(maxWidth, maxHeight) - 8`) to automatically scale the board for any aspect ratio without `RenderFlex` overflows. The app dynamically manages orientation settings: standard phones and folded outer displays (`shortestSide < 600`) lock to portrait mode, while unfolded inner displays (`shortestSide >= 600`) allow multi-orientation rotation. Main menu options and settings lists are constrained to a max-width of 600px for clean display on large inner screens.
+    -   **Responsive Foldable & Dynamic Orientation Support**: `ChessBoardWidget` uses dynamic parent constraints (`LayoutBuilder` `min(maxWidth, maxHeight) - 8`) to automatically scale the board for any aspect ratio without `RenderFlex` overflows. The app dynamically manages orientation settings: standard phones and folded outer displays (`shortestSide < 600`) lock to portrait mode, while unfolded inner displays (`shortestSide >= 600`) allow multi-orientation rotation. Main menu options and settings lists are constrained to a max-width of 600px for clean display on large inner screens. The top bar uses `NavigationToolbar` with intrinsically sized side controls (`Column` and `Row` directly without outer expanding `Align` wrappers), ensuring the centered `GameStatus` badge ("AI is thinking" and "RESUME" button) remains fully visible and perfectly centered across all phone and tablet widths.
     -   **Deferred Flame Init**: Board and sprite initialization is deferred to a `addPostFrameCallback` so it doesn't block the page transition animation.
     -   **Guarded Scroll Callbacks**: `MoveList.build()` tracks `_lastMoveCount` and `_lastHistoryIndex` and only registers `addPostFrameCallback` (which iterates the full move list to compute pixel offsets) when the list or history selection actually changes — not on every timer tick or AI notification.
     -   **Column Layout for Controls Panel**: `GameInfoAndControls` uses a `Column` instead of `ListView(shrinkWrap: true)`, eliminating the double layout pass that occurred on every AppModel notification.
@@ -53,6 +53,9 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
     -   **Backdrop Blur Compositing Isolation**: `TimerWidget`'s iOS `BackdropFilter` is wrapped in a dedicated `RepaintBoundary` to prevent redundant compositing buffer read-backs during 10 Hz clock updates.
     -   **Parallel SharedPreferences Reset**: Uses `Future.wait([...])` to write factory-reset preferences in parallel rather than issuing 14 sequential method channel requests.
     -   **AdMob Impression Ratio & TTL Optimization**: Replaced eager ad preloading on launch with an on-demand strategy (exit interstitials preload on the 1st match move; rewarded ads preload when available undos reach 0) and enforced a 50-minute TTL to purge expired AdMob tokens and maximize impression-to-request health.
+    -   **Reactive Clock & Turn Synchronization**: Scoped timer state bindings with `Selector<AppModel, (AppTheme, Player)>` watching both theme and turn, ensuring active clock border highlights and background tints transition instantaneously without broad container repaints.
+    -   **Decoupled MVVM Command & State Encapsulation**: Encapsulated undo, redo, pawn promotion, and move-history stepping logic directly within `AppModel`. UI views remain pure declarative layouts and dispatchers without inline domain calculations, controller reaching, or state prop-drilling.
+    -   **Reactive Saved-Game State**: Transitioned saved game indicators from manual `setState` queries to a reactive `AppModel.hasSavedGame` listener synchronized with lifecycle events (`newGame`, `exitChessView`, `saveAndExitChessView`, `restoreGameState`).
 
 ### 🎯 Gameplay Features
 
@@ -74,7 +77,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled (configurable)
 -   **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates and FIDE draws)
 -   **Smooth Animated Promotion Handling**: Glassmorphic pawn promotion picker with custom spring scale and fade transition (`Curves.easeOutBack` over 240ms) via `showGeneralDialog` (wrapped in `PopScope(canPop: false)` to require an explicit piece choice).
--   **Check Detection & History Highlight Sync**: Visual indicators for check and checkmate, seamlessly synchronized with move history navigation so historical positions display accurate check hints without stale artifacts
+-   **Check Detection & Dynamic Undo Sync**: Visual red check mark highlight on the king piece for checks and checkmate. Dynamically synchronizes across both forward moves and move undos (in single-player AI games and two-player offline matches), as well as during move history navigation without stale indicators.
 -   **FIDE Draw Detection & Granular Status**: Full support for FIDE draw rules including threefold repetition (via Polyglot 64-bit Zobrist hashes across the game tree), 50-move rule, and insufficient material with clear status indicators in the game pill (e.g. Draw (Repetition), Draw (50-Move Rule), Draw (Material))
 -   **PGN & FEN Export**: Standard tournament PGN export with tournament headers, SAN move notation, and game results, plus live FEN serialization. Long-press on the move list copies full PGN to clipboard with a glassmorphic confirmation toast
 -   **Stalemate Detection**: Proper game-end condition handling
@@ -115,7 +118,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[Shared Preferences](https://pub.dev/packages/shared_preferences)** — Local data persistence (settings & full game-state save/restore)
 -   **[multistockfish](https://pub.dev/packages/multistockfish)** — Native Stockfish 19 chess engine wrapper by Lichess with embedded ~1MB NNUE and UCI communication
 -   **[dartchess](https://pub.dev/packages/dartchess)** — Fast, immutable chess rules, bitboard legal move validation, SAN formatting, PGN generation, FEN serialization, and FIDE-compliant draw evaluation by Lichess
--   **[Flame Audio](https://pub.dev/packages/flame_audio)** — Sound effects with pooled `AudioPool` for rapid move sounds
+-   **[sound_effect](https://pub.dev/packages/sound_effect)** — Ultra-low latency native audio playback by Lichess for instantaneous move sounds
 -   **[Google Mobile Ads](https://pub.dev/packages/google_mobile_ads)** — Rewarded interstitial ads ("1 Ad = 1 Undo" mechanic) and exit interstitial ads (`google_mobile_ads` 9.1.0 with native `Google-Mobile-Ads-SDK` 13.9.0)
 -   **[Games Services](https://pub.dev/packages/games_services)** — Google Play Games (Android) achievements
 -   **[Confetti](https://pub.dev/packages/confetti)** — Celebration effects on win
@@ -207,8 +210,6 @@ lib/
 │   ├── shared_functions.dart      # Utilities: formatPieceTheme, oppositePlayer, tile↔coordinate helpers
 │   ├── stockfish_service.dart     # Native Stockfish 19 engine interface via multistockfish
 │   ├── chess_notation_service.dart # PGN/SAN formatting, FEN export, and FIDE draw evaluation (dartchess)
-│   ├── checkmate_worker.dart      # (Deprecated) Background isolate worker manager for checkmate calculations
-│   ├── checkmate_isolate.dart     # (Deprecated) Background isolate execution logic
 │   ├── in_app_purchase_service.dart # In-app purchases / remove ads (in_app_purchase)
 │   ├── game_state_storage.dart    # Full game-state save/load/clear via SharedPreferences
 │   ├── timer_service.dart         # Per-player countdown timers with pause/resume support
@@ -246,7 +247,6 @@ lib/
         │       ├── timers.dart                 # Dual-timer row
         │       ├── moves_undo_redo_row.dart    # Undo/redo controls row (main row layout)
         │       ├── restart_exit_buttons.dart   # Restart and exit action buttons
-        │       ├── rounded_alert_button.dart   # Styled alert/action button
         │       └── moves_undo_redo_row/
         │           ├── move_list.dart          # Interactive move list panel
         │           ├── rounded_icon_button.dart# Reusable icon button
@@ -261,8 +261,7 @@ lib/
         │       ├── time_limit_picker.dart      # Time control selection
         │       ├── timer_increment_picker.dart # Time increment value selection
         │       ├── timer_mode_picker.dart      # Time control mode (Fischer increment vs USCF delay)
-        │       ├── side_picker.dart            # White / Black / Random side picker
-        │       └── picker.dart                 # Shared picker primitive
+        │       └── side_picker.dart            # White / Black / Random side picker
         ├── settings_view/
         │   ├── app_theme_picker.dart           # Board theme CupertinoPicker (debounced 150ms)
         │   ├── piece_theme_picker.dart         # Piece theme CupertinoPicker + Easter egg
@@ -272,8 +271,6 @@ lib/
         │   └── toggles.dart                    # All settings toggles, GDPR consent + Achievements
         └── shared/
             ├── glass_panel.dart               # Glassmorphic container with optional animation
-            ├── rounded_button.dart            # Reusable rounded button
-            ├── text_variable.dart             # Styled text helper
             └── bottom_padding.dart            # Safe-area bottom padding
 ```
 

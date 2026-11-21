@@ -1,48 +1,31 @@
-import 'package:flame_audio/flame_audio.dart';
+import 'package:sound_effect/sound_effect.dart';
 
 import '../model/player.dart';
 
 /// Centralized audio playback service.
 /// Extracted from AppModel to follow single-responsibility principle.
 class AudioService {
+  final SoundEffect _soundEffect = SoundEffect();
   bool _enabled;
-  AudioPool? _movePool;
-  AudioPool? _winPool;
-  AudioPool? _losePool;
-  AudioPool? _tiePool;
+  bool _isInitialized = false;
 
   AudioService({bool enabled = true}) : _enabled = enabled;
 
   Future<void> initialize() async {
+    if (_isInitialized) return;
     try {
-      _movePool = await FlameAudio.createPool(
-        'piece_moved.mp3',
-        maxPlayers: 1,
-      );
-      _winPool = await FlameAudio.createPool(
-        'win.wav',
-        maxPlayers: 1,
-      );
-      _losePool = await FlameAudio.createPool(
-        'lose.wav',
-        maxPlayers: 1,
-      );
-      _tiePool = await FlameAudio.createPool(
-        'tie.wav',
-        maxPlayers: 1,
-      );
+      await _soundEffect.initialize(maxStreams: 4);
+      await _soundEffect.load('move', 'assets/audio/piece_moved.mp3');
+      await _soundEffect.load('win', 'assets/audio/win.wav');
+      await _soundEffect.load('lose', 'assets/audio/lose.wav');
+      await _soundEffect.load('tie', 'assets/audio/tie.wav');
+      _isInitialized = true;
     } catch (_) {}
   }
 
   void dispose() {
-    _movePool?.dispose();
-    _movePool = null;
-    _winPool?.dispose();
-    _winPool = null;
-    _losePool?.dispose();
-    _losePool = null;
-    _tiePool?.dispose();
-    _tiePool = null;
+    _soundEffect.release();
+    _isInitialized = false;
   }
 
   bool get enabled => _enabled;
@@ -50,35 +33,19 @@ class AudioService {
 
   void playMovedSound() {
     if (!_enabled) return;
-    if (_movePool != null) {
-      _movePool!.start(volume: 1.0);
-    } else {
-      FlameAudio.play('piece_moved.mp3', volume: 1.0);
-    }
+    _soundEffect.play('move', volume: 1.0);
   }
 
   void _playWin() {
-    if (_winPool != null) {
-      _winPool!.start(volume: 1.0);
-    } else {
-      FlameAudio.play('win.wav', volume: 1.0);
-    }
+    _soundEffect.play('win', volume: 1.0);
   }
 
   void _playLose() {
-    if (_losePool != null) {
-      _losePool!.start(volume: 1.0);
-    } else {
-      FlameAudio.play('lose.wav', volume: 1.0);
-    }
+    _soundEffect.play('lose', volume: 1.0);
   }
 
   void _playTie() {
-    if (_tiePool != null) {
-      _tiePool!.start(volume: 1.0);
-    } else {
-      FlameAudio.play('tie.wav', volume: 1.0);
-    }
+    _soundEffect.play('tie', volume: 1.0);
   }
 
   void playGameEndSound({

@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 
 import '../logic/ad_service.dart';
 import '../logic/chess_game.dart';
-import '../logic/rating_service.dart';
 import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
@@ -169,24 +168,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             if (appModel.gameOver) {
-              void performExit() async {
-                await appModel.exitChessView();
-                AdService.instance.showExitInterstitialAd(
-                  onAdDismissed: () {
-                    if (context.mounted) Navigator.of(context).pop();
-                  },
-                );
-              }
-
-              if (appModel.userWon && !appModel.hasRatedApp) {
-                RatingService.instance.showRatingPrompt(
-                  context,
-                  prefs: appModel.prefs,
-                  onComplete: performExit,
-                );
-              } else {
-                performExit();
-              }
+              appModel.handleGameExit(context);
             } else {
               showExitDialog(context);
             }
@@ -344,89 +326,83 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         height: 44,
         child: NavigationToolbar(
           leading: appModel.playerCount == 1
-              ? Align(
-                  alignment: Alignment.centerLeft,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Stockfish L${appModel.aiDifficulty}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: theme.lightTile.withValues(alpha: 0.6),
-                          letterSpacing: 0.5,
-                        ),
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Stockfish L${appModel.aiDifficulty}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: theme.lightTile.withValues(alpha: 0.6),
+                        letterSpacing: 0.5,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w500,
-                          color: theme.lightTile.withValues(alpha: 0.45),
-                          letterSpacing: 0.5,
-                        ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '(${AppModel.getDifficultyElo(appModel.aiDifficulty)} ELO)',
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w500,
+                        color: theme.lightTile.withValues(alpha: 0.45),
+                        letterSpacing: 0.5,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 )
               : null,
           middle: FittedBox(
             fit: BoxFit.scaleDown,
             child: GameStatus(),
           ),
-          trailing: Align(
-            alignment: Alignment.centerRight,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Tooltip(
-                  message: 'Chess Guide',
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      appModel.haptic.light();
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const PieceGuideView(),
-                        ),
-                      );
-                    },
-                    child: Icon(
-                      Icons.help_outline_rounded,
-                      color: theme.lightTile,
-                      size: 24,
-                    ),
-                    minimumSize: Size(36, 36),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Tooltip(
+                message: 'Chess Guide',
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    appModel.haptic.light();
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const PieceGuideView(),
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.help_outline_rounded,
+                    color: theme.lightTile,
+                    size: 24,
                   ),
+                  minimumSize: Size(36, 36),
                 ),
-                const SizedBox(width: 8),
-                Tooltip(
-                  message: 'Settings',
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        CupertinoPageRoute(
-                          builder: (context) => const SettingsView(),
-                        ),
-                      );
-                    },
-                    child: Icon(
-                      Icons.settings_rounded,
-                      color: theme.lightTile,
-                      size: 24,
-                    ),
-                    minimumSize: Size(36, 36),
+              ),
+              const SizedBox(width: 8),
+              Tooltip(
+                message: 'Settings',
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (context) => const SettingsView(),
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.settings_rounded,
+                    color: theme.lightTile,
+                    size: 24,
                   ),
+                  minimumSize: Size(36, 36),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
           centerMiddle: true,
           middleSpacing: 8.0,

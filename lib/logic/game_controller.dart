@@ -298,16 +298,18 @@ class GameController {
     latestMove = meta.move;
     checkHintTile = null;
     warningTile = null;
-    var oppositeTurn = oppositePlayer(appModel.turn);
+    final nextTurn = changeTurn ? oppositePlayer(appModel.turn) : appModel.turn;
 
     // kingInCheck is lightweight (no push/pop), keep synchronous.
-    if (board.kingInCheck(oppositeTurn)) {
+    if (board.kingInCheck(nextTurn)) {
       meta.isCheck = true;
-      checkHintTile = board.kingForPlayer(oppositeTurn)?.tile;
+      checkHintTile = board.kingForPlayer(nextTurn)?.tile;
       // Play Games: put opponent in check (human player's move only)
-      if (!appModel.isAIsTurn) {
+      if (!undoing && !appModel.isAIsTurn) {
         PlayGamesService.instance.onCheckDelivered();
       }
+    } else {
+      meta.isCheck = false;
     }
 
     // Capture the mover's player BEFORE changeTurn() so endGame() can
@@ -362,29 +364,31 @@ class GameController {
     appModel.update();
 
     // Trigger haptic feedback based on move outcome
-    final isOpponentMove =
-        appModel.playingWithAI && (meta.player != appModel.playerSide);
+    if (!undoing) {
+      final isOpponentMove =
+          appModel.playingWithAI && (meta.player != appModel.playerSide);
 
-    if (meta.isCheckmate) {
-      appModel.haptic.vibrate();
-    } else if (meta.isStalemate) {
-      appModel.haptic.heavy();
-    } else if (isOpponentMove) {
-      if (meta.isCheck) {
-        appModel.haptic.medium();
-      } else {
-        appModel.haptic.light();
-      }
-    } else {
-      // Human move
-      if (meta.isCheck) {
+      if (meta.isCheckmate) {
+        appModel.haptic.vibrate();
+      } else if (meta.isStalemate) {
         appModel.haptic.heavy();
-      } else if (meta.took) {
-        appModel.haptic.medium();
-      } else if (meta.kingCastle || meta.queenCastle) {
-        appModel.haptic.doubleLight();
+      } else if (isOpponentMove) {
+        if (meta.isCheck) {
+          appModel.haptic.medium();
+        } else {
+          appModel.haptic.light();
+        }
       } else {
-        appModel.haptic.light();
+        // Human move
+        if (meta.isCheck) {
+          appModel.haptic.heavy();
+        } else if (meta.took) {
+          appModel.haptic.medium();
+        } else if (meta.kingCastle || meta.queenCastle) {
+          appModel.haptic.doubleLight();
+        } else {
+          appModel.haptic.light();
+        }
       }
     }
 

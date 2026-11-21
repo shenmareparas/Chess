@@ -404,15 +404,6 @@ class ChessBoard {
     return false;
   }
 
-  bool kingInCheckmate(Player player) {
-    for (var piece in piecesForPlayer(player)) {
-      if (movesForPiece(piece).isNotEmpty) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   // ──────────────────────────────────────────────
   // Private: Move Execution
   // ──────────────────────────────────────────────

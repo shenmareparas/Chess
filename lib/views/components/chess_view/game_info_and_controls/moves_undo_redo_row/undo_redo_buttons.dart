@@ -10,42 +10,19 @@ import 'rounded_icon_button.dart';
 class UndoRedoButtons extends StatelessWidget {
   final AppModel appModel;
 
-  bool get _undoEnabled {
-    final controller = appModel.gameController;
-    if (appModel.historyViewIndex != null || controller == null) return false;
-    final moveStack = controller.board.moveStack;
-    if (moveStack.isEmpty) return false;
-
-    if (appModel.playingWithAI) {
-      final lastMovePlayer = moveStack.last.movedPiece?.player;
-      if (lastMovePlayer == appModel.playerSide) {
-        return moveStack.isNotEmpty;
-      }
-      return moveStack.length >= 2;
-    }
-    return true;
-  }
-
-  bool get _redoEnabled {
-    final controller = appModel.gameController;
-    if (appModel.historyViewIndex != null || controller == null) return false;
-    return controller.board.redoStack.isNotEmpty;
-  }
-
   UndoRedoButtons(this.appModel);
 
   @override
   Widget build(BuildContext context) {
-    return Selector<AppModel, (int?, int, int, int, bool, bool)>(
+    return Selector<AppModel, (bool, bool, int, bool)>(
       selector: (_, m) => (
-        m.historyViewIndex,
+        m.canUndo,
+        m.canRedo,
         m.availableUndos,
-        m.gameController?.board.moveStack.length ?? 0,
-        m.gameController?.board.redoStack.length ?? 0,
-        m.gameOver,
         m.isAdFree,
       ),
-      builder: (context, _, __) {
+      builder: (context, data, __) {
+        final (canUndo, canRedo, availableUndos, isAdFree) = data;
         return Row(
           children: [
             Expanded(
@@ -56,16 +33,16 @@ class UndoRedoButtons extends StatelessWidget {
                     CupertinoIcons.arrow_counterclockwise,
                     // Always provide a callback so tapping when out of undos
                     // opens the ad dialog rather than doing nothing.
-                    onPressed: _undoEnabled ? () => _handleUndo(context) : null,
+                    onPressed: canUndo ? () => _handleUndo(context) : null,
                   ),
                   // Undo bank badge — shows remaining free undos or infinity if ad-free.
-                  if (_undoEnabled)
+                  if (canUndo)
                     Positioned(
                       top: 6,
                       right: 10,
                       child: _UndoBadge(
-                        count: appModel.availableUndos,
-                        isAdFree: appModel.isAdFree,
+                        count: availableUndos,
+                        isAdFree: isAdFree,
                       ),
                     ),
                 ],
@@ -75,7 +52,7 @@ class UndoRedoButtons extends StatelessWidget {
             Expanded(
               child: RoundedIconButton(
                 CupertinoIcons.arrow_clockwise,
-                onPressed: _redoEnabled ? () => _redo() : null,
+                onPressed: canRedo ? appModel.redo : null,
               ),
             ),
           ],
@@ -92,38 +69,15 @@ class UndoRedoButtons extends StatelessWidget {
   /// - If the player has 0 undos: show a Cupertino dialog offering to watch an ad.
   void _handleUndo(BuildContext context) {
     if (appModel.isAdFree) {
-      _executeUndo();
+      appModel.undo();
       return;
     }
 
     if (appModel.availableUndos > 0) {
-      _executeUndo();
+      appModel.undo();
       appModel.decrementUndo();
     } else {
       _showOutOfUndosDialog(context);
-    }
-  }
-
-  /// Performs the actual undo move on the game board.
-  void _executeUndo() {
-    final controller = appModel.gameController;
-    if (controller != null) {
-      controller.cancelAIMove();
-      if (appModel.playingWithAI) {
-        final moveStack = controller.board.moveStack;
-        if (moveStack.isEmpty) return;
-
-        final lastMovePlayer = moveStack.last.movedPiece?.player;
-        if (lastMovePlayer == appModel.playerSide) {
-          controller.undoMove();
-        } else if (moveStack.length >= 2) {
-          controller.undoTwoMoves();
-        } else {
-          controller.undoMove();
-        }
-      } else {
-        controller.undoMove();
-      }
     }
   }
 
@@ -357,23 +311,6 @@ class UndoRedoButtons extends StatelessWidget {
         );
       },
     );
-  }
-
-  // ── Redo ──
-
-  void _redo() {
-    final controller = appModel.gameController;
-    if (controller != null) {
-      if (appModel.playingWithAI) {
-        if (controller.board.redoStack.length == 1) {
-          controller.redoMove();
-        } else {
-          controller.redoTwoMoves();
-        }
-      } else {
-        controller.redoMove();
-      }
-    }
   }
 }
 

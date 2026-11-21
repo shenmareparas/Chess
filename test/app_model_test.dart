@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../lib/logic/ad_service.dart';
 import '../lib/logic/chess_piece.dart';
 import '../lib/logic/game_controller.dart';
 import '../lib/logic/game_state_storage.dart';
@@ -16,14 +17,10 @@ void main() {
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    AdService.instance.setAdFree(true);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(
-      const MethodChannel('xyz.luan/audioplayers.global'),
-      (MethodCall methodCall) async => null,
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-      const MethodChannel('xyz.luan/audioplayers'),
+      const MethodChannel('org.lichess/sound_effect'),
       (MethodCall methodCall) async => null,
     );
   });
@@ -194,6 +191,7 @@ void main() {
       await appModel.exitChessView();
       expect(appModel.isExiting, isTrue);
       expect(await GameStateStorage.hasSavedGame(), isFalse);
+      expect(appModel.hasSavedGame, isFalse);
 
       // Attempting to save after exit should be blocked
       appModel.saveGameStateImmediate();
@@ -209,6 +207,7 @@ void main() {
       await appModel.saveAndExitChessView();
       expect(appModel.isExiting, isTrue);
       expect(await GameStateStorage.hasSavedGame(), isTrue);
+      expect(appModel.hasSavedGame, isTrue);
     });
 
     test('showCapturedPieces defaults to true and persists changes', () async {
@@ -360,6 +359,144 @@ void main() {
       expect(appModel.turn, Player.player1);
       expect(appModel.isAIsTurn, isFalse);
       expect(controller.board.moveStack, isEmpty);
+    });
+
+    test('ViewModel undo and redo properties reflect board state', () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+      appModel.playerCount = 2;
+
+      // Initially cannot undo or redo
+      expect(appModel.canUndo, isFalse);
+      expect(appModel.canRedo, isFalse);
+
+      // Play e2e4 (White, Player 1)
+      final meta = controller.board.push(Move(52, 36));
+      appModel.pushMoveMeta(meta);
+
+      // Should be able to undo
+      expect(appModel.canUndo, isTrue);
+      expect(appModel.canRedo, isFalse);
+
+      // Call appModel.undo()
+      appModel.undo();
+      expect(appModel.canUndo, isFalse);
+      expect(appModel.canRedo, isTrue);
+      expect(controller.board.moveStack, isEmpty);
+      expect(controller.board.redoStack.length, 1);
+    });
+
+    test('stepHistoryBackward and stepHistoryForward step through moves',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+      appModel.playerCount = 2;
+
+      // Create two moves: 1. e4 (52->36), 1... e5 (12->28)
+      final meta1 = MoveMeta(Move(52, 36), Player.player1, ChessPieceType.pawn);
+      final meta2 = MoveMeta(Move(12, 28), Player.player2, ChessPieceType.pawn);
+      controller.board.push(meta1.move!);
+      controller.board.push(meta2.move!);
+      appModel.moveMetaList.addAll([meta1, meta2]);
+
+      // Enter history at move 0
+      appModel.setHistoryViewIndex(0);
+      expect(appModel.historyViewIndex, 0);
+
+      // Stepping forward at the end of history returns to live state (null)
+      appModel.stepHistoryForward();
+      expect(appModel.historyViewIndex, isNull);
+    });
+
+    test(
+        'king check highlight (checkHintTile) is restored after undoing move in 2-player mode',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+      appModel.playerCount = 2;
+
+      // 1. e4 (52->36)
+      controller.handleTap(52);
+      controller.handleTap(36);
+      // 1... f6 (13->21)
+      controller.handleTap(13);
+      controller.handleTap(21);
+      // 2. Qh5+ (59->31) placing Black King (tile 4) in check
+      controller.handleTap(59);
+      controller.handleTap(31);
+
+      // Verify Black King is in check and highlighted
+      expect(controller.checkHintTile, 4);
+      expect(appModel.turn, Player.player2);
+
+      // Black plays 2... g6 (14->22) escaping check
+      controller.handleTap(14);
+      controller.handleTap(22);
+
+      // Verify check highlight is cleared
+      expect(controller.checkHintTile, isNull);
+      expect(appModel.turn, Player.player1);
+
+      // Black undos the move
+      appModel.undo();
+
+      // Verify check highlight is restored to Black King (tile 4)
+      expect(controller.checkHintTile, 4);
+      expect(appModel.turn, Player.player2);
+    });
+
+    test(
+        'king check highlight (checkHintTile) is restored after undoing moves in AI mode',
+        () async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      final appModel = AppModel(prefs: prefs);
+      final controller = GameController(appModel);
+      appModel.gameController = controller;
+      appModel.playerCount = 2;
+
+      // 1. e4 (52->36)
+      controller.handleTap(52);
+      controller.handleTap(36);
+      // 1... f6 (13->21)
+      controller.handleTap(13);
+      controller.handleTap(21);
+      // 2. Qh5+ (59->31) placing Black King (tile 4) in check
+      controller.handleTap(59);
+      controller.handleTap(31);
+
+      // Verify Black King is in check and highlighted
+      expect(controller.checkHintTile, 4);
+
+      // Black (Human) plays 2... g6 (14->22) escaping check
+      controller.handleTap(14);
+      controller.handleTap(22);
+      expect(controller.checkHintTile, isNull);
+
+      // Opponent moves Queen 31 -> 39 (Qh4)
+      controller.handleTap(31);
+      controller.handleTap(39);
+      expect(controller.checkHintTile, isNull);
+
+      // Set to AI mode with Human as Black so appModel.undo() triggers undoTwoMoves
+      appModel.playerCount = 1;
+      appModel.playerSide = Player.player2;
+
+      // Human undos in AI mode (undoes 2 moves: AI's move and Human's move)
+      appModel.undo();
+
+      // Verify check highlight is restored to Black King (tile 4)
+      expect(controller.checkHintTile, 4);
+      expect(appModel.turn, Player.player2);
     });
   });
 }

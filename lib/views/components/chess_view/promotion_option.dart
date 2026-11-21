@@ -18,11 +18,7 @@ class PromotionOption extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        if (appModel.gameController != null) {
-          appModel.gameController!.promote(promotionType);
-        } else {
-          debugPrint('Promotion selected: $promotionType (No active game)');
-        }
+        appModel.promote(promotionType);
         appModel.update();
         Navigator.pop(context);
       },

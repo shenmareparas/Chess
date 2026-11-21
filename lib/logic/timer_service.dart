@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 import '../model/player.dart';
 
 const timerAccuracyMs = 100;
-@Deprecated('Use timerAccuracyMs instead')
-const TIMER_ACCURACY_MS = timerAccuracyMs;
 
 /// Standard timer mode identifiers.
 class TimerModes {

@@ -2,8 +2,6 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../logic/ad_service.dart';
-import '../../../../logic/rating_service.dart';
 import '../../../../model/app_model.dart';
 import '../../../../model/app_themes.dart';
 import '../../../chess_view.dart';
@@ -191,24 +189,7 @@ class RestartExitButtons extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () {
               if (appModel.gameOver) {
-                void performExit() async {
-                  await appModel.exitChessView();
-                  AdService.instance.showExitInterstitialAd(
-                    onAdDismissed: () {
-                      if (context.mounted) Navigator.of(context).pop();
-                    },
-                  );
-                }
-
-                if (appModel.userWon && !appModel.hasRatedApp) {
-                  RatingService.instance.showRatingPrompt(
-                    context,
-                    prefs: appModel.prefs,
-                    onComplete: performExit,
-                  );
-                } else {
-                  performExit();
-                }
+                appModel.handleGameExit(context);
               } else {
                 showExitDialog(context);
               }

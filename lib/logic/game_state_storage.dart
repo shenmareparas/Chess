@@ -23,12 +23,8 @@ const String _timerIncrementKey = 'timerIncrement';
 const String _timerModeKey = 'timerMode';
 
 class GameStateStorage {
-  static SharedPreferences? _prefs;
-
-  static Future<SharedPreferences> _getPrefs() async {
-    _prefs ??= await SharedPreferences.getInstance();
-    return _prefs!;
-  }
+  static Future<SharedPreferences> _getPrefs() =>
+      SharedPreferences.getInstance();
 
   static Future<void> saveGameState(AppModel appModel) async {
     if (appModel.gameOver || appModel.isExiting) return;

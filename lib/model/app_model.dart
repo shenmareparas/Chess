@@ -14,6 +14,7 @@ import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/move_calculation/move_classes/move_stack_object.dart';
 import '../logic/notification_service.dart';
 import '../logic/play_games_service.dart';
+import '../logic/rating_service.dart';
 import '../logic/shared_functions.dart';
 import '../logic/stockfish_service.dart';
 import '../logic/timer_service.dart';
@@ -150,6 +151,65 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ── Undo / Redo (ViewModel commands & queries) ──
+
+  bool get canUndo {
+    final controller = gameController;
+    if (historyViewIndex != null || controller == null) return false;
+    final moveStack = controller.board.moveStack;
+    if (moveStack.isEmpty) return false;
+
+    if (playingWithAI) {
+      final lastMovePlayer = moveStack.last.movedPiece?.player;
+      if (lastMovePlayer == playerSide) {
+        return moveStack.isNotEmpty;
+      }
+      return moveStack.length >= 2;
+    }
+    return true;
+  }
+
+  bool get canRedo {
+    final controller = gameController;
+    if (historyViewIndex != null || controller == null) return false;
+    return controller.board.redoStack.isNotEmpty;
+  }
+
+  /// Performs the correct undo (1 move in 2P, 2 moves in AI mode).
+  void undo() {
+    final controller = gameController;
+    if (controller == null) return;
+    controller.cancelAIMove();
+    if (playingWithAI) {
+      final moveStack = controller.board.moveStack;
+      if (moveStack.isEmpty) return;
+
+      final lastMovePlayer = moveStack.last.movedPiece?.player;
+      if (lastMovePlayer == playerSide) {
+        controller.undoMove();
+      } else if (moveStack.length >= 2) {
+        controller.undoTwoMoves();
+      } else {
+        controller.undoMove();
+      }
+    } else {
+      controller.undoMove();
+    }
+  }
+
+  /// Redoes 1 move in 2P, 2 moves in AI mode (when two redos are queued).
+  void redo() {
+    final controller = gameController;
+    if (controller == null) return;
+    final redoStack = controller.board.redoStack;
+    if (redoStack.isEmpty) return;
+    if (playingWithAI && redoStack.length >= 2) {
+      controller.redoTwoMoves();
+    } else {
+      controller.redoMove();
+    }
+  }
+
   // Used to prevent AnimatedRotation from sweeping across the screen when first loading the board.
   bool animateBoardRotation = false;
   bool? _gameOverInvertedState;
@@ -175,6 +235,18 @@ class AppModel extends ChangeNotifier {
         turn == Player.player2;
   }
 
+  // ── Saved Game Availability (Reactive) ──
+  bool _hasSavedGame = false;
+  bool get hasSavedGame => _hasSavedGame;
+
+  Future<void> refreshHasSavedGame() async {
+    final has = await GameStateStorage.hasSavedGame();
+    if (_hasSavedGame != has) {
+      _hasSavedGame = has;
+      notifyListeners();
+    }
+  }
+
   AppModel({UserPreferences? prefs}) : prefs = prefs ?? UserPreferences() {
     // Wire up service callbacks
     this.prefs.onChanged = () => notifyListeners();
@@ -182,6 +254,9 @@ class AppModel extends ChangeNotifier {
     audio.enabled = this.prefs.soundEnabled;
     audio.initialize();
     haptic.enabled = this.prefs.hapticEnabled;
+
+    // Check saved game availability asynchronously on start
+    refreshHasSavedGame();
 
     // Note: prefs.load() is intentionally NOT called here. The caller
     // (main.dart) awaits prefs.load() before constructing AppModel so that
@@ -197,6 +272,7 @@ class AppModel extends ChangeNotifier {
     gameController?.cancelAIMove();
     timerService.stop();
     GameStateStorage.clearGameState();
+    refreshHasSavedGame();
     _gameOverInvertedState = null;
     _gameState.reset(); // reset all pure-model game state in one call
     promotionRequested = false;
@@ -262,6 +338,7 @@ class AppModel extends ChangeNotifier {
     gameController?.cancelAIMove();
     timerService.stop();
     await GameStateStorage.clearGameState();
+    await refreshHasSavedGame();
     historyViewIndex = null;
     notifyListeners();
   }
@@ -275,10 +352,35 @@ class AppModel extends ChangeNotifier {
     if (!gameOver) {
       await GameStateStorage.saveGameState(this);
     }
+    await refreshHasSavedGame();
     isExiting = true;
     gameController?.cancelAIMove();
     timerService.stop();
     notifyListeners();
+  }
+
+  /// Handles the full exit flow: rating prompt (if applicable) then interstitial ad.
+  Future<void> handleGameExit(BuildContext context) async {
+    Future<void> performExit() async {
+      await exitChessView();
+      if (context.mounted) {
+        AdService.instance.showExitInterstitialAd(
+          onAdDismissed: () {
+            if (context.mounted) Navigator.of(context).pop();
+          },
+        );
+      }
+    }
+
+    if (userWon && !hasRatedApp) {
+      RatingService.instance.showRatingPrompt(
+        context,
+        prefs: prefs,
+        onComplete: performExit,
+      );
+    } else {
+      await performExit();
+    }
   }
 
   // ── Move State Management ──
@@ -420,6 +522,37 @@ class AppModel extends ChangeNotifier {
     });
   }
 
+  // ── Move History Navigation (ViewModel Commands) ──
+
+  /// Steps one half-move backward in the history viewer.
+  void stepHistoryBackward() {
+    final idx = historyViewIndex;
+    if (idx == null || idx <= 0) return;
+    haptic.light();
+    final int currentTurnIndex = (idx / 2).floor();
+    if (idx == 1) {
+      selectHistoryTurn(0);
+    } else if (currentTurnIndex > 0) {
+      selectHistoryTurn(currentTurnIndex - 1);
+    } else {
+      setHistoryViewIndex(0, snap: true, playAudio: false);
+    }
+  }
+
+  /// Steps one half-move forward in the history viewer, or exits history mode.
+  void stepHistoryForward() {
+    final idx = historyViewIndex;
+    if (idx == null) return;
+    haptic.light();
+    final int currentTurnIndex = idx < 0 ? -1 : (idx / 2).floor();
+    final int totalTurns = (moveMetaList.length / 2).ceil();
+    if (currentTurnIndex < totalTurns - 1) {
+      selectHistoryTurn(currentTurnIndex + 1);
+    } else {
+      setHistoryViewIndex(null);
+    }
+  }
+
   void endGame({
     bool silent = false,
     Player? winner,
@@ -536,6 +669,9 @@ class AppModel extends ChangeNotifier {
     promotionRequested = true;
     notifyListeners();
   }
+
+  /// Delegates pawn promotion to the active GameController.
+  void promote(ChessPieceType type) => gameController?.promote(type);
 
   // ── Game Options ──
 
@@ -789,6 +925,7 @@ class AppModel extends ChangeNotifier {
     timerService.start(() => turn, () => gameOver);
 
     moveListUpdated = true;
+    refreshHasSavedGame();
     notifyListeners();
 
     // Trigger AI move if it's AI's turn
