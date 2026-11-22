@@ -1,3 +1,6 @@
+import 'dart:math' as math;
+import 'dart:ui' show DisplayFeature, DisplayFeatureType;
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +12,16 @@ import '../model/app_themes.dart';
 import 'components/chess_view/piece_guide/piece_descriptions.dart';
 import 'components/chess_view/piece_guide/piece_selector_item.dart';
 import 'components/shared/glass_panel.dart';
+
+bool _isFoldableOrWideScreen(BuildContext context) {
+  final mediaQuery = MediaQuery.of(context);
+  final hasFoldFeature = mediaQuery.displayFeatures.any(
+    (f) =>
+        f.type == DisplayFeatureType.fold || f.type == DisplayFeatureType.hinge,
+  );
+  final isLargeOrUnfolded = mediaQuery.size.shortestSide >= 600;
+  return (hasFoldFeature || isLargeOrUnfolded) && mediaQuery.size.width >= 560;
+}
 
 class PieceGuideView extends StatefulWidget {
   final ChessPieceType initialPiece;
@@ -74,233 +87,534 @@ class _PieceGuideViewState extends State<PieceGuideView> {
             ? theme.moveHint
             : theme.lightTile;
 
-        return Scaffold(
-          body: Stack(
-            children: [
-              // ── Background Gradient with Dot Grid ──
-              RepaintBoundary(
-                child: Container(
-                  decoration: BoxDecoration(gradient: theme.background),
-                  child: CustomPaint(
-                    painter: DotGridPainter(
-                      color: theme.lightTile.withValues(alpha: 0.05),
-                    ),
-                    child: const SizedBox.expand(),
+        final isWideOrFoldable = _isFoldableOrWideScreen(context);
+
+        if (isWideOrFoldable) {
+          final mediaQuery = MediaQuery.of(context);
+          DisplayFeature? horizontalFold;
+          DisplayFeature? verticalFold;
+
+          for (final feature in mediaQuery.displayFeatures) {
+            if (feature.type == DisplayFeatureType.fold ||
+                feature.type == DisplayFeatureType.hinge) {
+              if (feature.bounds.height >= mediaQuery.size.height * 0.4) {
+                verticalFold = feature;
+              } else if (feature.bounds.width >= mediaQuery.size.width * 0.4) {
+                horizontalFold = feature;
+              }
+            }
+          }
+
+          if (horizontalFold != null && verticalFold == null) {
+            return _buildTabletopLayout(
+              context: context,
+              theme: theme,
+              pieceTheme: pieceTheme,
+              info: info,
+              heroAssetPath: heroAssetPath,
+              highlightColor: highlightColor,
+              appModel: appModel,
+              horizontalFold: horizontalFold,
+            );
+          }
+
+          return _buildFoldableDualPaneLayout(
+            context: context,
+            theme: theme,
+            pieceTheme: pieceTheme,
+            info: info,
+            heroAssetPath: heroAssetPath,
+            highlightColor: highlightColor,
+            appModel: appModel,
+            verticalFold: verticalFold,
+          );
+        }
+
+        return _buildPhoneLayout(
+          context: context,
+          theme: theme,
+          pieceTheme: pieceTheme,
+          info: info,
+          heroAssetPath: heroAssetPath,
+          highlightColor: highlightColor,
+          appModel: appModel,
+        );
+      },
+    );
+  }
+
+  // ── Top Header Bar (Left: Back, Middle: Piece Name, Right: Color Switcher) ──
+
+  Widget _buildTopHeader(
+    AppTheme theme,
+    PieceInfo info,
+    Color highlightColor,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 8.0,
+      ),
+      child: Row(
+        children: [
+          // Left Wing: Back button (like in Settings)
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Tooltip(
+                message: 'Back',
+                child: CupertinoButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => Navigator.pop(context),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: theme.lightTile,
+                    size: 22,
                   ),
                 ),
               ),
+            ),
+          ),
 
-              SafeArea(
-                child: Column(
-                  children: [
-                    // ── Top App Bar (Color Toggle, Centered Piece Name, Close Button) ──
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: Row(
+          // Center Wing: Exactly in the middle of the screen
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.15),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            ),
+            child: Text(
+              info.name,
+              key: ValueKey('title-${info.name}'),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+                color: Color(0xFFE5E2E1),
+              ),
+            ),
+          ),
+
+          // Right Wing: Color Switcher aligned to far right
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _buildColorToggle(highlightColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(
+    AppTheme theme,
+    String pieceTheme,
+    String heroAssetPath,
+  ) {
+    return Center(
+      child: RepaintBoundary(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.94, end: 1.0).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: Padding(
+            key: ValueKey('$_selectedPiece-$_selectedColor-$pieceTheme'),
+            padding: const EdgeInsets.symmetric(vertical: 12.0),
+            child: Container(
+              decoration: _selectedColor == 'black'
+                  ? BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.lightTile.withValues(alpha: 0.28),
+                          blurRadius: 36,
+                          spreadRadius: 8,
+                        ),
+                      ],
+                    )
+                  : null,
+              child: Image.asset(
+                heroAssetPath,
+                width: 190,
+                height: 190,
+                fit: BoxFit.contain,
+                gaplessPlayback: true,
+                filterQuality: FilterQuality.medium,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPieceSelector(
+    String pieceTheme,
+    Color highlightColor,
+    AppTheme theme,
+    AppModel appModel,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: pieceGuideOrder.map((pieceType) {
+          final isSelected = pieceType == _selectedPiece;
+          return PieceSelectorItem(
+            type: pieceType,
+            isSelected: isSelected,
+            pieceTheme: pieceTheme,
+            pieceColor: _selectedColor,
+            activeRingColor: highlightColor,
+            glowColor: theme.lightTile,
+            onTap: () {
+              if (_selectedPiece != pieceType) {
+                appModel.haptic.selection();
+                setState(() {
+                  _selectedPiece = pieceType;
+                });
+              }
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDescriptionPanel(AppTheme theme, Color highlightColor) {
+    return RepaintBoundary(
+      child: GlassPanel(
+        borderRadius: 24,
+        padding: const EdgeInsets.fromLTRB(18, 18, 8, 18),
+        color: const Color(0x80201F1F),
+        child: SizedBox.expand(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: child,
+              );
+            },
+            child: _PieceDescriptionCard(
+              key: ValueKey(_selectedPiece),
+              piece: _selectedPiece,
+              theme: theme,
+              highlightColor: highlightColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Closed Mode Layout (Standard Phone / Folded Outer Screen) ──
+
+  Widget _buildPhoneLayout({
+    required BuildContext context,
+    required AppTheme theme,
+    required String pieceTheme,
+    required PieceInfo info,
+    required String heroAssetPath,
+    required Color highlightColor,
+    required AppModel appModel,
+  }) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // ── Background Gradient with Dot Grid ──
+          RepaintBoundary(
+            child: Container(
+              decoration: BoxDecoration(gradient: theme.background),
+              child: CustomPaint(
+                painter: DotGridPainter(
+                  color: theme.lightTile.withValues(alpha: 0.05),
+                ),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // ── Top Bar: Left Back, Middle Name, Right Color Switcher ──
+                _buildTopHeader(theme, info, highlightColor),
+
+                // ── Hero Section (Piece Graphic) ──
+                Expanded(
+                  flex: 4,
+                  child: _buildHeroSection(theme, pieceTheme, heroAssetPath),
+                ),
+
+                // ── Horizontal Piece Selector Bar ──
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12.0,
+                    vertical: 10.0,
+                  ),
+                  child: _buildPieceSelector(
+                    pieceTheme,
+                    highlightColor,
+                    theme,
+                    appModel,
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // ── Description Glass Panel ──
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: _buildDescriptionPanel(theme, highlightColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Open Mode Layout (Unfolded Foldable Screen / Wide Viewport) ──
+
+  Widget _buildFoldableDualPaneLayout({
+    required BuildContext context,
+    required AppTheme theme,
+    required String pieceTheme,
+    required PieceInfo info,
+    required String heroAssetPath,
+    required Color highlightColor,
+    required AppModel appModel,
+    required DisplayFeature? verticalFold,
+  }) {
+    final mediaQuery = MediaQuery.of(context);
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // ── Background Gradient with Dot Grid ──
+          RepaintBoundary(
+            child: Container(
+              decoration: BoxDecoration(gradient: theme.background),
+              child: CustomPaint(
+                painter: DotGridPainter(
+                  color: theme.lightTile.withValues(alpha: 0.05),
+                ),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1100),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final totalWidth = constraints.maxWidth;
+                      final safePaddingLeft = mediaQuery.padding.left;
+
+                      double? leftPaneWidth;
+                      double? rightPaneWidth;
+                      double hingeGap = 16.0;
+
+                      if (verticalFold != null) {
+                        final hingeLeftInView =
+                            verticalFold.bounds.left - safePaddingLeft;
+                        final hingeRightInView =
+                            verticalFold.bounds.right - safePaddingLeft;
+
+                        if (hingeLeftInView > 250 &&
+                            hingeRightInView < totalWidth - 250) {
+                          leftPaneWidth = math.max(
+                            240.0,
+                            hingeLeftInView - 16.0 - 10.0,
+                          );
+                          hingeGap = math.max(
+                            16.0,
+                            (hingeRightInView - hingeLeftInView) + 16.0,
+                          );
+                          rightPaneWidth = math.max(
+                            260.0,
+                            totalWidth - leftPaneWidth - hingeGap,
+                          );
+                        }
+                      }
+
+                      // Left side screen:
+                      // left back, middle chess piece name, right color switcher,
+                      // hero graphic, piece selector
+                      final leftPane = SizedBox(
+                        width: leftPaneWidth,
+                        child: Column(
+                          children: [
+                            _buildTopHeader(theme, info, highlightColor),
+                            Expanded(
+                              child: _buildHeroSection(
+                                theme,
+                                pieceTheme,
+                                heroAssetPath,
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0,
+                                vertical: 10.0,
+                              ),
+                              child: _buildPieceSelector(
+                                pieceTheme,
+                                highlightColor,
+                                theme,
+                                appModel,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+
+                      // Right side screen:
+                      // whole content
+                      final rightPane = SizedBox(
+                        width: rightPaneWidth,
+                        child: _buildDescriptionPanel(
+                          theme,
+                          highlightColor,
+                        ),
+                      );
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Left Wing: Color Switcher aligned to far left
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: _buildColorToggle(highlightColor),
-                            ),
-                          ),
-
-                          // Center Wing: Exactly in the middle of the screen
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            transitionBuilder: (child, animation) =>
-                                FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(0, 0.15),
-                                  end: Offset.zero,
-                                ).animate(animation),
-                                child: child,
-                              ),
-                            ),
-                            child: Text(
-                              info.name,
-                              key: ValueKey('title-${info.name}'),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0.5,
-                                color: Color(0xFFE5E2E1),
-                              ),
-                            ),
-                          ),
-
-                          // Right Wing: Close Button aligned to far right (equal weight to Left Wing)
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: Tooltip(
-                                message: 'Close',
-                                child: CupertinoButton(
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  child: Container(
-                                    width: 38,
-                                    height: 38,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color:
-                                          Colors.white.withValues(alpha: 0.08),
-                                      border: Border.all(
-                                        color: Colors.white
-                                            .withValues(alpha: 0.12),
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      Icons.close_rounded,
-                                      color: theme.lightTile,
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          if (leftPaneWidth != null)
+                            leftPane
+                          else
+                            Expanded(flex: 46, child: leftPane),
+                          SizedBox(width: hingeGap),
+                          if (rightPaneWidth != null)
+                            rightPane
+                          else
+                            Expanded(flex: 54, child: rightPane),
                         ],
-                      ),
-                    ),
-
-                    // ── Hero Section (Piece Graphic) ──
-                    Expanded(
-                      flex: 4,
-                      child: Center(
-                        child: RepaintBoundary(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 220),
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            transitionBuilder: (child, animation) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: ScaleTransition(
-                                  scale: Tween<double>(begin: 0.94, end: 1.0)
-                                      .animate(animation),
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: Padding(
-                              key: ValueKey(
-                                  '$_selectedPiece-$_selectedColor-$pieceTheme'),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12.0),
-                              child: Container(
-                                decoration: _selectedColor == 'black'
-                                    ? BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: theme.lightTile
-                                                .withValues(alpha: 0.28),
-                                            blurRadius: 36,
-                                            spreadRadius: 8,
-                                          ),
-                                        ],
-                                      )
-                                    : null,
-                                child: Image.asset(
-                                  heroAssetPath,
-                                  width: 190,
-                                  height: 190,
-                                  fit: BoxFit.contain,
-                                  gaplessPlayback: true,
-                                  filterQuality: FilterQuality.medium,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // ── Horizontal Piece Selector Bar ──
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0,
-                        vertical: 10.0,
-                      ),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: pieceGuideOrder.map((pieceType) {
-                            final isSelected = pieceType == _selectedPiece;
-                            return PieceSelectorItem(
-                              type: pieceType,
-                              isSelected: isSelected,
-                              pieceTheme: pieceTheme,
-                              pieceColor: _selectedColor,
-                              activeRingColor: highlightColor,
-                              glowColor: theme.lightTile,
-                              onTap: () {
-                                if (_selectedPiece != pieceType) {
-                                  appModel.haptic.selection();
-                                  setState(() {
-                                    _selectedPiece = pieceType;
-                                  });
-                                }
-                              },
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // ── Description Glass Panel ──
-                    Expanded(
-                      flex: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: RepaintBoundary(
-                          child: GlassPanel(
-                            borderRadius: 24,
-                            padding: const EdgeInsets.fromLTRB(18, 18, 8, 18),
-                            color: const Color(0x80201F1F),
-                            child: SizedBox.expand(
-                              child: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
-                                switchInCurve: Curves.easeOutCubic,
-                                switchOutCurve: Curves.easeInCubic,
-                                transitionBuilder: (child, animation) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                                child: _PieceDescriptionCard(
-                                  key: ValueKey(_selectedPiece),
-                                  piece: _selectedPiece,
-                                  theme: theme,
-                                  highlightColor: highlightColor,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                      );
+                    },
+                  ),
                 ),
               ),
-            ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
+    );
+  }
+
+  // ── Tabletop / Flex Mode Layout (Horizontal Crease) ──
+
+  Widget _buildTabletopLayout({
+    required BuildContext context,
+    required AppTheme theme,
+    required String pieceTheme,
+    required PieceInfo info,
+    required String heroAssetPath,
+    required Color highlightColor,
+    required AppModel appModel,
+    required DisplayFeature horizontalFold,
+  }) {
+    final mediaQuery = MediaQuery.of(context);
+    final safePaddingTop = mediaQuery.padding.top;
+    final hingeTopInView = horizontalFold.bounds.top - safePaddingTop;
+    final hingeBottomInView = horizontalFold.bounds.bottom - safePaddingTop;
+    final hingeHeight = math.max(
+      16.0,
+      (hingeBottomInView - hingeTopInView) + 12.0,
+    );
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          RepaintBoundary(
+            child: Container(
+              decoration: BoxDecoration(gradient: theme.background),
+              child: CustomPaint(
+                painter: DotGridPainter(
+                  color: theme.lightTile.withValues(alpha: 0.05),
+                ),
+                child: const SizedBox.expand(),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                // Top Screen (Hero & Selector with Header)
+                Expanded(
+                  child: Column(
+                    children: [
+                      _buildTopHeader(theme, info, highlightColor),
+                      Expanded(
+                        child: _buildHeroSection(
+                          theme,
+                          pieceTheme,
+                          heroAssetPath,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12.0,
+                          vertical: 6.0,
+                        ),
+                        child: _buildPieceSelector(
+                          pieceTheme,
+                          highlightColor,
+                          theme,
+                          appModel,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Crease gap
+                SizedBox(height: hingeHeight),
+
+                // Bottom Screen (Description Panel - whole content)
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    child: _buildDescriptionPanel(theme, highlightColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -446,6 +760,7 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
     final info = pieceDescriptions[widget.piece]!;
     final theme = widget.theme;
     final highlightColor = widget.highlightColor;
+    final isKing = widget.piece == ChessPieceType.king;
 
     return Align(
       alignment: Alignment.topCenter,
@@ -475,149 +790,238 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Row: Summary & Points Pill Badge
+                    // ── Header: Role Tag & Material Value Pill ──
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Tactical Role Tag
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.12),
-                                  ),
-                                ),
-                                child: Text(
-                                  info.role.toUpperCase(),
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    color:
-                                        theme.lightTile.withValues(alpha: 0.85),
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                info.summary,
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFFE5E2E1),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
+                        // Tactical Role Tag
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 11,
-                            vertical: 6,
+                            horizontal: 10,
+                            vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: highlightColor.withValues(alpha: 0.16),
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            info.role.toUpperCase(),
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.w700,
+                              color: theme.lightTile.withValues(alpha: 0.9),
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+
+                        // Material Value Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isKing
+                                ? Colors.amber.withValues(alpha: 0.16)
+                                : highlightColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: highlightColor.withValues(alpha: 0.4),
+                              color: isKing
+                                  ? Colors.amber.withValues(alpha: 0.45)
+                                  : highlightColor.withValues(alpha: 0.4),
                               width: 1.2,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: highlightColor.withValues(alpha: 0.2),
-                                blurRadius: 8,
+                                color: isKing
+                                    ? Colors.amber.withValues(alpha: 0.25)
+                                    : highlightColor.withValues(alpha: 0.2),
+                                blurRadius: 10,
                                 spreadRadius: 0,
                               ),
                             ],
                           ),
-                          child: Text(
-                            info.valueText,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: highlightColor,
-                              letterSpacing: 0.5,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isKing
+                                    ? Icons.workspace_premium_rounded
+                                    : Icons.diamond_outlined,
+                                size: 14,
+                                color: isKing ? Colors.amber : highlightColor,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                info.valueText,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: isKing ? Colors.amber : highlightColor,
+                                  letterSpacing: 0.4,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
 
+                    const SizedBox(height: 12),
+
+                    // ── Summary Description ──
+                    Text(
+                      info.summary,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFE5E2E1),
+                        height: 1.45,
+                      ),
+                    ),
+
+                    // ── Quick Spec Chips ──
+                    if (info.quickStats.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: info.quickStats.map((stat) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.09),
+                                width: 0.8,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 4.5,
+                                  height: 4.5,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color:
+                                        highlightColor.withValues(alpha: 0.8),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  stat,
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        theme.lightTile.withValues(alpha: 0.82),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+
                     const SizedBox(height: 14),
 
-                    // Movement Pattern Card
+                    // ── Movement & Mechanics Card ──
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.04),
-                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.white.withValues(alpha: 0.035),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08),
+                          color: highlightColor.withValues(alpha: 0.22),
+                          width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Row(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 30,
-                            height: 30,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: highlightColor.withValues(alpha: 0.15),
-                              border: Border.all(
-                                color: highlightColor.withValues(alpha: 0.3),
-                                width: 1,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.navigation_rounded,
-                              size: 16,
-                              color: highlightColor,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'MOVEMENT PATTERN',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.0,
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: highlightColor.withValues(alpha: 0.15),
+                                  border: Border.all(
                                     color:
-                                        theme.lightTile.withValues(alpha: 0.7),
+                                        highlightColor.withValues(alpha: 0.35),
+                                    width: 1,
                                   ),
                                 ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  info.movePattern,
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFFE5E2E1),
-                                    height: 1.35,
-                                  ),
+                                child: Icon(
+                                  Icons.navigation_rounded,
+                                  size: 15,
+                                  color: highlightColor,
                                 ),
-                              ],
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'MOVEMENT & MECHANICS',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                  color: highlightColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            info.movePattern,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFFF1F0EF),
+                              height: 1.4,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Divider(
+                            height: 1,
+                            thickness: 1,
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            info.details,
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.5,
+                              color: Color(0xFFC3C8C2),
+                              height: 1.5,
                             ),
                           ),
                         ],
@@ -626,145 +1030,220 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
 
                     const SizedBox(height: 12),
 
-                    // Detailed Explanation Card
+                    // ── Grandmaster Strategy Card ──
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.03),
-                        borderRadius: BorderRadius.circular(14),
+                        color: Colors.amber.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.06),
+                          color: Colors.amber.withValues(alpha: 0.25),
+                          width: 1,
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        info.details,
-                        textAlign: TextAlign.justify,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 12.5,
-                          color: Color(0xFFC3C8C2),
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Strategy / Combat Tip Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.22),
-                        ),
-                      ),
-                      child: Row(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            width: 28,
-                            height: 28,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.amber.withValues(alpha: 0.15),
-                            ),
-                            child: const Icon(
-                              Icons.lightbulb_outline_rounded,
-                              size: 16,
-                              color: Colors.amber,
-                            ),
+                          Row(
+                            children: [
+                              Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.amber.withValues(alpha: 0.15),
+                                  border: Border.all(
+                                    color: Colors.amber.withValues(alpha: 0.35),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.lightbulb_rounded,
+                                  size: 15,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const Text(
+                                'GRANDMASTER STRATEGY',
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.0,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'STRATEGY & TACTICS',
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 0.8,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  info.combatTip,
-                                  textAlign: TextAlign.justify,
-                                  style: TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 12,
-                                    color: Colors.white.withValues(alpha: 0.88),
-                                    height: 1.45,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
+                          const SizedBox(height: 10),
+                          Text(
+                            info.combatTip,
+                            style: TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 12.5,
+                              color: Colors.white.withValues(alpha: 0.9),
+                              height: 1.5,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    // Special Rules Card (Castling, En Passant, Promotion, Leaping)
-                    if (info.specialRule != null) ...[
+                    // ── Special Rules & Key Powers Card ──
+                    if (info.specialRules.isNotEmpty ||
+                        info.specialRule != null) ...[
                       const SizedBox(height: 12),
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: highlightColor.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(14),
+                          color:
+                              const Color(0xFF6366F1).withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: highlightColor.withValues(alpha: 0.28),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.25),
+                            width: 1,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        child: Row(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.stars_rounded,
-                              size: 18,
-                              color: highlightColor,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (info.specialRuleTitle != null) ...[
-                                    Text(
-                                      info.specialRuleTitle!,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.w700,
-                                        color: highlightColor,
-                                        letterSpacing: 0.3,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                  ],
-                                  Text(
-                                    info.specialRule!,
-                                    textAlign: TextAlign.justify,
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 12,
-                                      color:
-                                          Colors.white.withValues(alpha: 0.85),
-                                      height: 1.45,
-                                      fontWeight: FontWeight.w400,
+                            Row(
+                              children: [
+                                Container(
+                                  width: 28,
+                                  height: 28,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: const Color(0xFF6366F1)
+                                        .withValues(alpha: 0.15),
+                                    border: Border.all(
+                                      color: const Color(0xFF6366F1)
+                                          .withValues(alpha: 0.35),
+                                      width: 1,
                                     ),
                                   ),
-                                ],
-                              ),
+                                  child: const Icon(
+                                    Icons.stars_rounded,
+                                    size: 16,
+                                    color: Color(0xFF818CF8),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  (info.specialRuleTitle ??
+                                          'SPECIAL RULES & POWERS')
+                                      .toUpperCase(),
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 1.0,
+                                    color: Color(0xFF818CF8),
+                                  ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 12),
+                            if (info.specialRules.isNotEmpty)
+                              ...info.specialRules.asMap().entries.map((entry) {
+                                final idx = entry.key;
+                                final rule = entry.value;
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (idx > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 10.0),
+                                        child: Divider(
+                                          height: 1,
+                                          thickness: 1,
+                                          color: Colors.white
+                                              .withValues(alpha: 0.08),
+                                        ),
+                                      ),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          margin: const EdgeInsets.only(top: 2),
+                                          width: 22,
+                                          height: 22,
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF6366F1)
+                                                .withValues(alpha: 0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                          ),
+                                          child: Icon(
+                                            rule.icon,
+                                            size: 13,
+                                            color: const Color(0xFFA5B4FC),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                rule.title,
+                                                style: const TextStyle(
+                                                  fontFamily: 'Inter',
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w700,
+                                                  color: Color(0xFFE5E2E1),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                rule.description,
+                                                style: const TextStyle(
+                                                  fontFamily: 'Inter',
+                                                  fontSize: 12,
+                                                  color: Color(0xFFC3C8C2),
+                                                  height: 1.45,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                );
+                              })
+                            else
+                              Text(
+                                info.specialRule!,
+                                style: const TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: Color(0xFFC3C8C2),
+                                  height: 1.45,
+                                ),
+                              ),
                           ],
                         ),
                       ),
