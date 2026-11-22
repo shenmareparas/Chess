@@ -111,14 +111,55 @@ class AppModel extends ChangeNotifier {
   bool _isFullscreen = false;
   bool get isFullscreen => _isFullscreen;
 
+  /// In fullscreen mode, whether captured pieces are positioned on the left/right
+  /// sides instead of top/bottom to maximize vertical board size.
+  bool _sideCapturedPieces = false;
+  bool get sideCapturedPieces => _sideCapturedPieces;
+
+  /// In fullscreen mode with side captured pieces, whether the left and right sides are flipped.
+  bool _flipSideCapturedPieces = false;
+  bool get flipSideCapturedPieces => _flipSideCapturedPieces;
+
   void toggleFullscreen() {
     _isFullscreen = !_isFullscreen;
+    if (!_isFullscreen) {
+      _sideCapturedPieces = false;
+      _flipSideCapturedPieces = false;
+    }
     notifyListeners();
   }
 
   void setFullscreen(bool value) {
     if (_isFullscreen != value) {
       _isFullscreen = value;
+      if (!_isFullscreen) {
+        _sideCapturedPieces = false;
+        _flipSideCapturedPieces = false;
+      }
+      notifyListeners();
+    }
+  }
+
+  void toggleSideCapturedPieces() {
+    _sideCapturedPieces = !_sideCapturedPieces;
+    notifyListeners();
+  }
+
+  void setSideCapturedPieces(bool value) {
+    if (_sideCapturedPieces != value) {
+      _sideCapturedPieces = value;
+      notifyListeners();
+    }
+  }
+
+  void toggleFlipSideCapturedPieces() {
+    _flipSideCapturedPieces = !_flipSideCapturedPieces;
+    notifyListeners();
+  }
+
+  void setFlipSideCapturedPieces(bool value) {
+    if (_flipSideCapturedPieces != value) {
+      _flipSideCapturedPieces = value;
       notifyListeners();
     }
   }
@@ -350,6 +391,8 @@ class AppModel extends ChangeNotifier {
   Future<void> exitChessView() async {
     isExiting = true;
     _isFullscreen = false;
+    _sideCapturedPieces = false;
+    _flipSideCapturedPieces = false;
     _saveDebounceTimer?.cancel();
     _saveDebounceTimer = null;
     gameController?.cancelAIMove();
@@ -372,6 +415,8 @@ class AppModel extends ChangeNotifier {
     await refreshHasSavedGame();
     isExiting = true;
     _isFullscreen = false;
+    _sideCapturedPieces = false;
+    _flipSideCapturedPieces = false;
     gameController?.cancelAIMove();
     timerService.stop();
     notifyListeners();

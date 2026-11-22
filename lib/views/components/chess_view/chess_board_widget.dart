@@ -12,12 +12,16 @@ class ChessBoardWidget extends StatelessWidget {
   final ChessGame chessGame;
   final Widget? topWidget;
   final Widget? bottomWidget;
+  final Widget? leftWidget;
+  final Widget? rightWidget;
 
   ChessBoardWidget(
     this.appModel,
     this.chessGame, {
     this.topWidget,
     this.bottomWidget,
+    this.leftWidget,
+    this.rightWidget,
   });
 
   @override
@@ -26,12 +30,70 @@ class ChessBoardWidget extends StatelessWidget {
       builder: (context, constraints) {
         final double verticalReserve = (topWidget != null ? 42.0 : 0.0) +
             (bottomWidget != null ? 42.0 : 0.0);
+        final double horizontalReserve = (leftWidget != null ? 44.0 : 0.0) +
+            (rightWidget != null ? 44.0 : 0.0);
         final double maxSide = math.min(
-            constraints.maxWidth, constraints.maxHeight - verticalReserve);
+          constraints.maxWidth - horizontalReserve,
+          constraints.maxHeight - verticalReserve,
+        );
         final double boardSize = maxSide.clamp(0.0, double.infinity);
 
-        return Center(
-          child: Column(
+        final Widget board = SizedBox(
+          width: boardSize,
+          height: boardSize,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: AnimatedRotation(
+                  turns: appModel.isBoardInverted ? 0.5 : 0,
+                  duration: appModel.animateBoardRotation
+                      ? const Duration(milliseconds: 600)
+                      : Duration.zero,
+                  curve: Curves.easeInOut,
+                  child: SizedBox(
+                    width: boardSize,
+                    height: boardSize,
+                    child: GameWidget(game: chessGame),
+                  ),
+                ),
+              ),
+              if (appModel.showNotation)
+                Positioned.fill(
+                  child: _NotationOverlay(
+                    lightTileColor: appModel.theme.lightTile,
+                    darkTileColor: appModel.theme.darkTile,
+                    isRotated: appModel.isBoardInverted,
+                    size: boardSize,
+                  ),
+                ),
+            ],
+          ),
+        );
+
+        Widget boardLayout = board;
+
+        if (leftWidget != null || rightWidget != null) {
+          boardLayout = Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (leftWidget != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: leftWidget,
+                ),
+              board,
+              if (rightWidget != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: rightWidget,
+                ),
+            ],
+          );
+        }
+
+        if (topWidget != null || bottomWidget != null) {
+          boardLayout = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (topWidget != null)
@@ -39,44 +101,18 @@ class ChessBoardWidget extends StatelessWidget {
                   width: boardSize,
                   child: topWidget,
                 ),
-              SizedBox(
-                width: boardSize,
-                height: boardSize,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: AnimatedRotation(
-                        turns: appModel.isBoardInverted ? 0.5 : 0,
-                        duration: appModel.animateBoardRotation
-                            ? const Duration(milliseconds: 600)
-                            : Duration.zero,
-                        curve: Curves.easeInOut,
-                        child: SizedBox(
-                          width: boardSize,
-                          height: boardSize,
-                          child: GameWidget(game: chessGame),
-                        ),
-                      ),
-                    ),
-                    if (appModel.showNotation)
-                      Positioned.fill(
-                        child: _NotationOverlay(
-                          lightTileColor: appModel.theme.lightTile,
-                          darkTileColor: appModel.theme.darkTile,
-                          isRotated: appModel.isBoardInverted,
-                          size: boardSize,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
+              boardLayout,
               if (bottomWidget != null)
                 SizedBox(
                   width: boardSize,
                   child: bottomWidget,
                 ),
             ],
-          ),
+          );
+        }
+
+        return Center(
+          child: boardLayout,
         );
       },
     );

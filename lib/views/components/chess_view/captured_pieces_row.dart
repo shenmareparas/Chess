@@ -14,6 +14,7 @@ class CapturedPiecesRow extends StatelessWidget {
   final AppTheme theme;
   final bool flipped;
   final bool rotatePieces;
+  final bool isVertical;
 
   const CapturedPiecesRow({
     required this.appModel,
@@ -22,6 +23,7 @@ class CapturedPiecesRow extends StatelessWidget {
     required this.theme,
     this.flipped = false,
     this.rotatePieces = false,
+    this.isVertical = false,
     super.key,
   });
 
@@ -29,7 +31,9 @@ class CapturedPiecesRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final captured = appModel.capturedPiecesFor(player);
     if (captured.isEmpty) {
-      return const SizedBox(height: 34);
+      return isVertical
+          ? const SizedBox(width: 36)
+          : const SizedBox(height: 34);
     }
 
     // Group captured pieces by piece type preserving the canonical order
@@ -52,6 +56,54 @@ class CapturedPiecesRow extends StatelessWidget {
             theme.darkTile.withValues(alpha: 0.22),
             const Color(0xB8141416),
           );
+
+    final tombstoneWidgets = displayedEntries
+        .map((entry) => _PieceGroupTombstone(
+              pieceType: entry.key,
+              count: entry.value,
+              player: player,
+              pieceTheme: pieceTheme,
+              theme: theme,
+              rotate: rotatePieces,
+              isVertical: isVertical,
+            ))
+        .toList();
+
+    if (isVertical) {
+      return SizedBox(
+        width: 36,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+            decoration: BoxDecoration(
+              color: pillBg,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isBlack
+                    ? theme.lightTile.withValues(alpha: 0.35)
+                    : theme.lightTile.withValues(alpha: 0.20),
+                width: 1.0,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x55000000),
+                  blurRadius: 10,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: tombstoneWidgets,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return SizedBox(
       height: 34,
@@ -80,16 +132,7 @@ class CapturedPiecesRow extends StatelessWidget {
             physics: const BouncingScrollPhysics(),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: displayedEntries
-                  .map((entry) => _PieceGroupTombstone(
-                        pieceType: entry.key,
-                        count: entry.value,
-                        player: player,
-                        pieceTheme: pieceTheme,
-                        theme: theme,
-                        rotate: rotatePieces,
-                      ))
-                  .toList(),
+              children: tombstoneWidgets,
             ),
           ),
         ),
@@ -105,6 +148,7 @@ class _PieceGroupTombstone extends StatelessWidget {
   final String pieceTheme;
   final AppTheme theme;
   final bool rotate;
+  final bool isVertical;
 
   const _PieceGroupTombstone({
     required this.pieceType,
@@ -113,6 +157,7 @@ class _PieceGroupTombstone extends StatelessWidget {
     required this.pieceTheme,
     required this.theme,
     this.rotate = false,
+    this.isVertical = false,
   });
 
   @override
@@ -123,57 +168,66 @@ class _PieceGroupTombstone extends StatelessWidget {
     final imagePath =
         'assets/images/pieces/${formatPieceTheme(pieceTheme)}/${name}_$color.png';
 
-    // Black pieces receive a subtle soft ambient glow so their dark silhouettes
-    // are crisp and unmistakably distinct against any dark theme background.
+    final Widget pieceImage = Container(
+      decoration: isWhite
+          ? null
+          : BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: theme.lightTile.withValues(alpha: 0.28),
+                  blurRadius: 6,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+      child: Image.asset(
+        imagePath,
+        width: isVertical ? 22 : 24,
+        height: isVertical ? 22 : 24,
+        errorBuilder: (_, __, ___) =>
+            SizedBox(width: isVertical ? 22 : 24, height: isVertical ? 22 : 24),
+      ),
+    );
+
+    final TextStyle countStyle = TextStyle(
+      fontSize: isVertical ? 11 : 13,
+      fontWeight: FontWeight.bold,
+      color: isWhite ? theme.lightTile : theme.lightTile.withValues(alpha: 0.9),
+      shadows: const [
+        Shadow(
+          color: Color(0x99000000),
+          offset: Offset(0, 1),
+          blurRadius: 2,
+        ),
+      ],
+    );
+
     return RotatedBox(
       quarterTurns: rotate ? 2 : 0,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              decoration: isWhite
-                  ? null
-                  : BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: theme.lightTile.withValues(alpha: 0.28),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-              child: Image.asset(
-                imagePath,
-                width: 24,
-                height: 24,
-                errorBuilder: (_, __, ___) =>
-                    const SizedBox(width: 24, height: 24),
-              ),
-            ),
-            const SizedBox(width: 3),
-            Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isWhite
-                    ? theme.lightTile
-                    : theme.lightTile.withValues(alpha: 0.9),
-                shadows: const [
-                  Shadow(
-                    color: Color(0x99000000),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                  ),
+        padding: isVertical
+            ? const EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0)
+            : const EdgeInsets.symmetric(horizontal: 4.0),
+        child: isVertical
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  pieceImage,
+                  const SizedBox(height: 1),
+                  Text('$count', style: countStyle),
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  pieceImage,
+                  const SizedBox(width: 3),
+                  Text('$count', style: countStyle),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

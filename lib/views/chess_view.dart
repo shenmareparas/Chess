@@ -11,6 +11,7 @@ import '../logic/chess_game.dart';
 import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
+import '../model/player.dart';
 import 'components/chess_view/captured_pieces_row.dart';
 import 'components/chess_view/chess_board_widget.dart';
 import 'components/chess_view/game_info_and_controls.dart';
@@ -224,113 +225,102 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
               ),
 
               // ── Game content ───────────────────────────────────────────
-              SafeArea(
-                child: Column(
-                  children: [
-                    Selector<AppModel, (AppTheme, int)>(
-                      selector: (_, m) => (m.theme, m.aiDifficulty),
-                      builder: (_, data, __) => _buildTopBar(data.$1),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Selector<AppModel, (bool, bool, AppTheme, bool)>(
-                          selector: (_, m) => (
-                            m.showCapturedPieces,
-                            m.isBoardInverted,
-                            m.theme,
-                            m.showNotation,
+              Selector<AppModel, bool>(
+                selector: (_, m) => m.isFullscreen,
+                builder: (context, isFullscreen, _) {
+                  return SafeArea(
+                    top: !isFullscreen,
+                    child: Column(
+                      children: [
+                        if (!isFullscreen)
+                          Selector<AppModel, (AppTheme, int)>(
+                            selector: (_, m) => (m.theme, m.aiDifficulty),
+                            builder: (_, data, __) => _buildTopBar(data.$1),
                           ),
-                          builder: (_, boardData, ___) {
-                            final showCapturedPieces = boardData.$1;
-                            return ChessBoardWidget(
-                              appModel,
-                              chessGame!,
-                              topWidget: showCapturedPieces
-                                  ? Selector<AppModel,
-                                      (int, bool, int?, AppTheme, String)>(
-                                      selector: (_, m) => (
-                                        m.moveMetaList.length,
-                                        m.isPieceRotated,
-                                        m.historyViewIndex,
-                                        m.theme,
-                                        m.pieceTheme,
-                                      ),
-                                      builder: (_, data, ___) {
-                                        final isPieceRotated = data.$2;
-                                        final currentTheme = data.$4;
-                                        final currentPieceTheme = data.$5;
-                                        final topPlayer =
-                                            appModel.isBoardInverted
-                                                ? appModel.playerSide
-                                                : oppositePlayer(
-                                                    appModel.playerSide);
-                                        return Padding(
-                                          padding:
-                                              const EdgeInsets.only(bottom: 6),
-                                          child: CapturedPiecesRow(
-                                            appModel: appModel,
-                                            player: topPlayer,
-                                            pieceTheme: currentPieceTheme,
-                                            theme: currentTheme,
-                                            // Only reverse icon order when
-                                            // the pill itself spins 180°
-                                            // (piece-rotation mode).
-                                            // Board rotation keeps the pill
-                                            // upright — no order flip needed.
-                                            flipped: isPieceRotated,
-                                            rotatePieces: isPieceRotated,
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : null,
-                              bottomWidget: showCapturedPieces
-                                  ? Selector<AppModel,
-                                      (int, bool, int?, AppTheme, String)>(
-                                      selector: (_, m) => (
-                                        m.moveMetaList.length,
-                                        m.isPieceRotated,
-                                        m.historyViewIndex,
-                                        m.theme,
-                                        m.pieceTheme,
-                                      ),
-                                      builder: (_, data, ___) {
-                                        final isPieceRotated = data.$2;
-                                        final currentTheme = data.$4;
-                                        final currentPieceTheme = data.$5;
-                                        final bottomPlayer =
-                                            appModel.isBoardInverted
-                                                ? oppositePlayer(
-                                                    appModel.playerSide)
-                                                : appModel.playerSide;
-                                        return Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 6),
-                                          child: CapturedPiecesRow(
-                                            appModel: appModel,
-                                            player: bottomPlayer,
-                                            pieceTheme: currentPieceTheme,
-                                            theme: currentTheme,
-                                            flipped: isPieceRotated,
-                                            rotatePieces: isPieceRotated,
-                                          ),
-                                        );
-                                      },
-                                    )
-                                  : null,
-                            );
-                          },
+                        Expanded(
+                          child: Align(
+                            alignment: isFullscreen
+                                ? Alignment.topCenter
+                                : Alignment.center,
+                            child: Selector<AppModel,
+                                (bool, bool, AppTheme, bool, bool, bool)>(
+                              selector: (_, m) => (
+                                m.showCapturedPieces,
+                                m.isBoardInverted,
+                                m.theme,
+                                m.showNotation,
+                                m.sideCapturedPieces && isFullscreen,
+                                m.flipSideCapturedPieces,
+                              ),
+                              builder: (_, boardData, ___) {
+                                final showCapturedPieces = boardData.$1;
+                                final isSideCaptured = boardData.$5;
+                                final isFlipped = boardData.$6;
+                                final topPlayer = appModel.isBoardInverted
+                                    ? appModel.playerSide
+                                    : oppositePlayer(appModel.playerSide);
+                                final bottomPlayer = appModel.isBoardInverted
+                                    ? oppositePlayer(appModel.playerSide)
+                                    : appModel.playerSide;
+
+                                final leftSidePlayer =
+                                    isFlipped ? topPlayer : bottomPlayer;
+                                final rightSidePlayer =
+                                    isFlipped ? bottomPlayer : topPlayer;
+
+                                return Padding(
+                                  padding: EdgeInsets.only(
+                                    top: isFullscreen ? 8.0 : 0.0,
+                                  ),
+                                  child: ChessBoardWidget(
+                                    appModel,
+                                    chessGame!,
+                                    topWidget:
+                                        showCapturedPieces && !isSideCaptured
+                                            ? _buildCapturedPiecesWidget(
+                                                player: topPlayer,
+                                                isVertical: false,
+                                                isTop: true,
+                                              )
+                                            : null,
+                                    bottomWidget:
+                                        showCapturedPieces && !isSideCaptured
+                                            ? _buildCapturedPiecesWidget(
+                                                player: bottomPlayer,
+                                                isVertical: false,
+                                                isBottom: true,
+                                              )
+                                            : null,
+                                    leftWidget:
+                                        showCapturedPieces && isSideCaptured
+                                            ? _buildCapturedPiecesWidget(
+                                                player: leftSidePlayer,
+                                                isVertical: true,
+                                              )
+                                            : null,
+                                    rightWidget:
+                                        showCapturedPieces && isSideCaptured
+                                            ? _buildCapturedPiecesWidget(
+                                                player: rightSidePlayer,
+                                                isVertical: true,
+                                              )
+                                            : null,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          child: GameInfoAndControls(appModel),
+                        ),
+                        BottomPadding(),
+                      ],
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      child: GameInfoAndControls(appModel),
-                    ),
-                    BottomPadding(),
-                  ],
-                ),
+                  );
+                },
               ),
 
               Selector<AppModel, AppTheme>(
@@ -344,6 +334,42 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                     shouldLoop: false,
                     colors: _getConfettiColors(currentTheme),
                   ),
+                ),
+              ),
+
+              // ── Floating Action Buttons on Right Side (Fullscreen) ─────
+              Positioned(
+                top: 14,
+                right: 16,
+                child: Selector<AppModel, (bool, AppTheme, bool, bool)>(
+                  selector: (_, m) => (
+                    m.isFullscreen,
+                    m.theme,
+                    m.sideCapturedPieces,
+                    m.flipSideCapturedPieces,
+                  ),
+                  builder: (_, data, __) {
+                    final isFullscreen = data.$1;
+                    final theme = data.$2;
+                    final sideCaptured = data.$3;
+                    final flipSideCaptured = data.$4;
+                    if (!isFullscreen) return const SizedBox.shrink();
+                    return SafeArea(
+                      bottom: false,
+                      left: false,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildExitFullscreenButton(theme),
+                          const SizedBox(height: 10),
+                          _buildSideCapturedPiecesButton(theme, sideCaptured),
+                          const SizedBox(height: 10),
+                          _buildFlipSideCapturedPiecesButton(
+                              theme, flipSideCaptured),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -395,28 +421,21 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_isFoldableOrLargeScreen(context)) ...[
-                Selector<AppModel, bool>(
-                  selector: (_, m) => m.isFullscreen,
-                  builder: (_, isFullscreen, __) {
-                    return Tooltip(
-                      message: isFullscreen ? 'Exit Fullscreen' : 'Fullscreen',
-                      child: CupertinoButton(
-                        padding: EdgeInsets.zero,
-                        onPressed: () {
-                          appModel.haptic.light();
-                          appModel.toggleFullscreen();
-                        },
-                        minimumSize: const Size(36, 36),
-                        child: Icon(
-                          isFullscreen
-                              ? Icons.fullscreen_exit_rounded
-                              : Icons.fullscreen_rounded,
-                          color: theme.lightTile,
-                          size: 24,
-                        ),
-                      ),
-                    );
-                  },
+                Tooltip(
+                  message: 'Fullscreen',
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () {
+                      appModel.haptic.light();
+                      appModel.toggleFullscreen();
+                    },
+                    minimumSize: const Size(36, 36),
+                    child: Icon(
+                      Icons.fullscreen_rounded,
+                      color: theme.lightTile,
+                      size: 24,
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -438,7 +457,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                     color: theme.lightTile,
                     size: 24,
                   ),
-                  minimumSize: Size(36, 36),
+                  minimumSize: const Size(36, 36),
                 ),
               ),
               const SizedBox(width: 8),
@@ -459,13 +478,184 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                     color: theme.lightTile,
                     size: 24,
                   ),
-                  minimumSize: Size(36, 36),
+                  minimumSize: const Size(36, 36),
                 ),
               ),
             ],
           ),
           centerMiddle: true,
           middleSpacing: 8.0,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCapturedPiecesWidget({
+    required Player player,
+    required bool isVertical,
+    bool isTop = false,
+    bool isBottom = false,
+  }) {
+    return Selector<AppModel, (int, bool, int?, AppTheme, String)>(
+      selector: (_, m) => (
+        m.moveMetaList.length,
+        m.isPieceRotated,
+        m.historyViewIndex,
+        m.theme,
+        m.pieceTheme,
+      ),
+      builder: (_, data, ___) {
+        final isPieceRotated = data.$2;
+        final currentTheme = data.$4;
+        final currentPieceTheme = data.$5;
+        final row = CapturedPiecesRow(
+          appModel: appModel,
+          player: player,
+          pieceTheme: currentPieceTheme,
+          theme: currentTheme,
+          isVertical: isVertical,
+          flipped: isPieceRotated,
+          rotatePieces: isPieceRotated,
+        );
+        if (isTop) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: row,
+          );
+        }
+        if (isBottom) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: row,
+          );
+        }
+        return row;
+      },
+    );
+  }
+
+  Widget _buildExitFullscreenButton(AppTheme theme) {
+    return Tooltip(
+      message: 'Exit Fullscreen',
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0x80201F1F),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black38,
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            appModel.haptic.light();
+            appModel.toggleFullscreen();
+          },
+          child: Icon(
+            Icons.fullscreen_exit_rounded,
+            color: theme.lightTile,
+            size: 24,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSideCapturedPiecesButton(AppTheme theme, bool sideCaptured) {
+    return Tooltip(
+      message: sideCaptured
+          ? 'Move dead pieces to top/bottom'
+          : 'Move dead pieces to sides',
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: sideCaptured
+              ? theme.lightTile.withValues(alpha: 0.25)
+              : const Color(0x80201F1F),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: sideCaptured
+                ? theme.lightTile.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black38,
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            appModel.haptic.light();
+            appModel.toggleSideCapturedPieces();
+          },
+          child: Icon(
+            sideCaptured
+                ? Icons.table_rows_rounded
+                : Icons.view_sidebar_rounded,
+            color: theme.lightTile,
+            size: 20,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlipSideCapturedPiecesButton(AppTheme theme, bool flipped) {
+    return Tooltip(
+      message: 'Flip left and right dead pieces',
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: flipped
+              ? theme.lightTile.withValues(alpha: 0.25)
+              : const Color(0x80201F1F),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: flipped
+                ? theme.lightTile.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.15),
+            width: 1,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black38,
+              blurRadius: 8,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            appModel.haptic.light();
+            if (!appModel.sideCapturedPieces) {
+              appModel.setSideCapturedPieces(true);
+            } else {
+              appModel.toggleFlipSideCapturedPieces();
+            }
+          },
+          child: Icon(
+            Icons.swap_horiz_rounded,
+            color: theme.lightTile,
+            size: 22,
+          ),
         ),
       ),
     );

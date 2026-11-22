@@ -940,313 +940,189 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
                       ),
                     ],
 
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                    const SizedBox(height: 16),
 
-                    // ── Movement & Mechanics Card ──
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.035),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: highlightColor.withValues(alpha: 0.22),
-                          width: 1,
+                    // ── Movement & Mechanics ──
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.navigation_rounded,
+                          size: 15,
+                          color: highlightColor,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                        const SizedBox(width: 8),
+                        Text(
+                          'MOVEMENT & MECHANICS',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
+                            color: highlightColor,
                           ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      info.movePattern,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF1F0EF),
+                        height: 1.45,
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: highlightColor.withValues(alpha: 0.15),
-                                  border: Border.all(
-                                    color:
-                                        highlightColor.withValues(alpha: 0.35),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Icon(
-                                  Icons.navigation_rounded,
-                                  size: 15,
-                                  color: highlightColor,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Text(
-                                'MOVEMENT & MECHANICS',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
-                                  color: highlightColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            info.movePattern,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFFF1F0EF),
-                              height: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Divider(
-                            height: 1,
-                            thickness: 1,
-                            color: Colors.white.withValues(alpha: 0.08),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            info.details,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12.5,
-                              color: Color(0xFFC3C8C2),
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      info.details,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12.5,
+                        color: Color(0xFFC3C8C2),
+                        height: 1.5,
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: Colors.white.withValues(alpha: 0.08),
+                    ),
+                    const SizedBox(height: 16),
 
-                    // ── Grandmaster Strategy Card ──
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.amber.withValues(alpha: 0.25),
-                          width: 1,
+                    // ── Grandmaster Strategy ──
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.lightbulb_rounded,
+                          size: 15,
+                          color: Colors.amber,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'GRANDMASTER STRATEGY',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.0,
+                            color: Colors.amber,
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 28,
-                                height: 28,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.amber.withValues(alpha: 0.15),
-                                  border: Border.all(
-                                    color: Colors.amber.withValues(alpha: 0.35),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.lightbulb_rounded,
-                                  size: 15,
-                                  color: Colors.amber,
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              const Text(
-                                'GRANDMASTER STRATEGY',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 1.0,
-                                  color: Colors.amber,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            info.combatTip,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 12.5,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              height: 1.5,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      info.combatTip,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12.5,
+                        color: Colors.white.withValues(alpha: 0.9),
+                        height: 1.5,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
 
-                    // ── Special Rules & Key Powers Card ──
+                    // ── Special Rules & Key Powers ──
                     if (info.specialRules.isNotEmpty ||
                         info.specialRule != null) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color:
-                              const Color(0xFF6366F1).withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.25),
-                            width: 1,
+                      const SizedBox(height: 16),
+                      Divider(
+                        height: 1,
+                        thickness: 1,
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.stars_rounded,
+                            size: 15,
+                            color: Color(0xFF818CF8),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                          const SizedBox(width: 8),
+                          Text(
+                            (info.specialRuleTitle ?? 'SPECIAL RULES & POWERS')
+                                .toUpperCase(),
+                            style: const TextStyle(
+                              fontFamily: 'Inter',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 1.0,
+                              color: Color(0xFF818CF8),
                             ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (info.specialRules.isNotEmpty)
+                        ...info.specialRules.asMap().entries.map((entry) {
+                          final idx = entry.key;
+                          final rule = entry.value;
+                          return Padding(
+                            padding: EdgeInsets.only(top: idx > 0 ? 10.0 : 0.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF6366F1)
-                                        .withValues(alpha: 0.15),
-                                    border: Border.all(
-                                      color: const Color(0xFF6366F1)
-                                          .withValues(alpha: 0.35),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: const Icon(
-                                    Icons.stars_rounded,
-                                    size: 16,
-                                    color: Color(0xFF818CF8),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Icon(
+                                    rule.icon,
+                                    size: 15,
+                                    color: const Color(0xFFA5B4FC),
                                   ),
                                 ),
-                                const SizedBox(width: 10),
-                                Text(
-                                  (info.specialRuleTitle ??
-                                          'SPECIAL RULES & POWERS')
-                                      .toUpperCase(),
-                                  style: const TextStyle(
-                                    fontFamily: 'Inter',
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: 1.0,
-                                    color: Color(0xFF818CF8),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        rule.title,
+                                        style: const TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.w700,
+                                          color: Color(0xFFE5E2E1),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 3),
+                                      Text(
+                                        rule.description,
+                                        style: const TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 12,
+                                          color: Color(0xFFC3C8C2),
+                                          height: 1.45,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            if (info.specialRules.isNotEmpty)
-                              ...info.specialRules.asMap().entries.map((entry) {
-                                final idx = entry.key;
-                                final rule = entry.value;
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (idx > 0)
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 10.0),
-                                        child: Divider(
-                                          height: 1,
-                                          thickness: 1,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.08),
-                                        ),
-                                      ),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          margin: const EdgeInsets.only(top: 2),
-                                          width: 22,
-                                          height: 22,
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFF6366F1)
-                                                .withValues(alpha: 0.15),
-                                            borderRadius:
-                                                BorderRadius.circular(6),
-                                          ),
-                                          child: Icon(
-                                            rule.icon,
-                                            size: 13,
-                                            color: const Color(0xFFA5B4FC),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                rule.title,
-                                                style: const TextStyle(
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 12.5,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Color(0xFFE5E2E1),
-                                                ),
-                                              ),
-                                              const SizedBox(height: 3),
-                                              Text(
-                                                rule.description,
-                                                style: const TextStyle(
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 12,
-                                                  color: Color(0xFFC3C8C2),
-                                                  height: 1.45,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                );
-                              })
-                            else
-                              Text(
-                                info.specialRule!,
-                                style: const TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 12,
-                                  color: Color(0xFFC3C8C2),
-                                  height: 1.45,
-                                ),
-                              ),
-                          ],
+                          );
+                        })
+                      else
+                        Text(
+                          info.specialRule!,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            color: Color(0xFFC3C8C2),
+                            height: 1.45,
+                          ),
                         ),
-                      ),
                     ],
                   ],
                 ),
