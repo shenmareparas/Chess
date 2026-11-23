@@ -127,7 +127,7 @@ A feature-rich chess application built with **Flutter** and the **Flame** engine
 -   **[flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications)** — Local scheduled reminders for daily practice
 -   **[in_app_purchase](https://pub.dev/packages/in_app_purchase)** — In-app purchases / monetization
 -   **[async](https://pub.dev/packages/async)** — `CancelableOperation` for cancellable AI compute tasks
--   **[in_app_update](https://pub.dev/packages/in_app_update)** — Google Play Store in-app updates for Android
+-   **[in_app_update_flutter](https://pub.dev/packages/in_app_update_flutter)** — Cross-platform native in-app updates for Android (Google Play flexible background updates) and iOS (StoreKit)
 -   **[in_app_review](https://pub.dev/packages/in_app_review)** — Google Play Store & App Store native rating prompt
 
 ## 📦 Installation
@@ -219,7 +219,7 @@ lib/
 │   ├── notification_service.dart  # Daily practice notification scheduling & permission handling
 │   ├── ad_service.dart            # RewardedInterstitialAd singleton ("1 Ad = 1 Undo") & UMP consent
 │   ├── play_games_service.dart    # GPGS/Game Center achievements singleton
-│   ├── in_app_update_service.dart # In-app updates via Google Play Store (Android only)
+│   ├── in_app_update_service.dart # In-app updates via Google Play (Android flexible) & StoreKit (iOS)
 │   ├── rating_service.dart        # Google Play Store / App Store rating prompt (in_app_review)
 │   └── move_calculation/
 │       └── move_classes/

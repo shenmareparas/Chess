@@ -53,7 +53,7 @@ void main() async {
   // Initialize In-App Purchase service to listen for purchases and cache product details
   Future.microtask(() => InAppPurchaseService.instance.initialize(prefs));
 
-  // Check for Google Play Store updates on Android
+  // Check for in-app updates (Google Play on Android / App Store on iOS)
   InAppUpdateService.instance.checkForUpdate();
 
   // Initialize notifications and schedule daily practice reminder in the background.

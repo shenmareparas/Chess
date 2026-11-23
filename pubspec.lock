@@ -365,14 +365,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.5"
-  in_app_update:
+  in_app_update_flutter:
     dependency: "direct main"
     description:
-      name: in_app_update
-      sha256: c55b4da41baf34b440ba627843932aa6f1689b5c499cfac98aec156b3113d89e
+      name: in_app_update_flutter
+      sha256: d9703cf0cedcec428b82016a19421dd0ff7c646d2b3eb861f64d990893c4430b
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.0"
+    version: "4.1.3"
   intl:
     dependency: transitive
     description:
