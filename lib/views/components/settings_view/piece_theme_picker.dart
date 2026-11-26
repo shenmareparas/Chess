@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 import '../../../model/app_model.dart';
+import '../../../model/app_themes.dart';
 import '../chess_view/promotion_dialog.dart';
 import '../shared/glass_panel.dart';
 import 'piece_preview.dart';
@@ -150,15 +151,17 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
       ),
     );
 
-    return Consumer<AppModel>(
-      builder: (context, appModel, child) {
-        final theme = appModel.theme;
+    return Selector<AppModel, (AppTheme, int)>(
+      selector: (_, m) => (m.theme, m.pieceThemeIndex),
+      child: picker,
+      builder: (context, data, child) {
+        final (theme, pieceThemeIndex) = data;
 
         if (_scrollController.hasClients &&
-            _scrollController.selectedItem != appModel.pieceThemeIndex) {
+            _scrollController.selectedItem != pieceThemeIndex) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (_scrollController.hasClients) {
-              _scrollController.jumpToItem(appModel.pieceThemeIndex);
+              _scrollController.jumpToItem(pieceThemeIndex);
             }
           });
         }
@@ -183,7 +186,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
               child: Row(
                 children: [
                   Expanded(
-                    child: picker,
+                    child: child!,
                   ),
                   const SizedBox(width: 16),
                   GestureDetector(

@@ -254,19 +254,19 @@ class _SettingsViewState extends State<SettingsView> {
                                       ),
                                     ),
                                   ),
-                                  Consumer<AppModel>(
-                                    builder: (context, appModel, child) =>
-                                        Tooltip(
-                                      message: 'Reset Settings',
-                                      child: CupertinoButton(
-                                        padding: EdgeInsets.zero,
-                                        onPressed: () => _showResetConfirmation(
-                                            context, appModel),
-                                        child: Icon(
-                                          Icons.refresh_rounded,
-                                          color: theme.lightTile,
-                                          size: 26,
-                                        ),
+                                  Tooltip(
+                                    message: 'Reset Settings',
+                                    child: CupertinoButton(
+                                      padding: EdgeInsets.zero,
+                                      onPressed: () => _showResetConfirmation(
+                                        context,
+                                        Provider.of<AppModel>(context,
+                                            listen: false),
+                                      ),
+                                      child: Icon(
+                                        Icons.refresh_rounded,
+                                        color: theme.lightTile,
+                                        size: 26,
                                       ),
                                     ),
                                   ),
@@ -284,9 +284,42 @@ class _SettingsViewState extends State<SettingsView> {
                                   const SizedBox(height: 24),
                                   const PieceThemePicker(),
                                   const SizedBox(height: 24),
-                                  Consumer<AppModel>(
-                                    builder: (context, appModel, child) =>
-                                        Toggles(appModel),
+                                  Selector<
+                                      AppModel,
+                                      (
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        bool,
+                                        AppTheme
+                                      )>(
+                                    selector: (_, m) => (
+                                      m.enableRotation,
+                                      m.enablePieceRotation,
+                                      m.enableRotationAnimation,
+                                      m.showHints,
+                                      m.showNotation,
+                                      m.allowUndoRedo,
+                                      m.showMoveHistory,
+                                      m.showCapturedPieces,
+                                      m.soundEnabled,
+                                      m.hapticEnabled,
+                                      m.dailyPracticeNotification,
+                                      m.isAdFree,
+                                      m.theme,
+                                    ),
+                                    builder: (context, _, __) => Toggles(
+                                      Provider.of<AppModel>(context,
+                                          listen: false),
+                                    ),
                                   ),
                                   const SizedBox(height: 32),
                                   Row(

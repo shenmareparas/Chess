@@ -1,7 +1,5 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
-import '../../../logic/ad_service.dart';
-import '../../../logic/notification_service.dart';
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
 import 'toggle.dart';
@@ -88,8 +86,7 @@ class Toggles extends StatelessWidget {
                             padding: EdgeInsets.zero,
                             onPressed: () {
                               Navigator.pop(dialogContext);
-                              NotificationService.instance
-                                  .openNotificationSettings();
+                              appModel.openNotificationSettings();
                             },
                             child: Container(
                               height: 46,
@@ -149,6 +146,14 @@ class Toggles extends StatelessWidget {
                 appModel.enableRotation ? false : appModel.enablePieceRotation,
             setFunc: appModel.setEnablePieceRotation,
             enabled: !appModel.enableRotation,
+          ),
+          Divider(height: 1, color: themeColor, thickness: 1),
+          Toggle(
+            'Rotation Animation',
+            subtitle: 'Smoothly animate board and piece rotation',
+            icon: Icons.animation_rounded,
+            toggle: appModel.enableRotationAnimation,
+            setFunc: appModel.setEnableRotationAnimation,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
@@ -212,7 +217,7 @@ class Toggles extends StatelessWidget {
 
                 // Check if system notifications are already granted
                 final alreadyGranted =
-                    await NotificationService.instance.arePermissionsGranted();
+                    await appModel.areNotificationPermissionsGranted();
                 if (alreadyGranted) {
                   appModel.setDailyPracticeNotification(true);
                   return;
@@ -221,8 +226,7 @@ class Toggles extends StatelessWidget {
                 // Try requesting permissions (works on first-ever prompt).
                 // After the OS has suppressed further prompts, this returns
                 // false immediately without showing any system dialog.
-                final granted =
-                    await NotificationService.instance.requestPermissions();
+                final granted = await appModel.requestNotificationPermissions();
                 if (granted) {
                   appModel.setDailyPracticeNotification(true);
                   return;
@@ -250,7 +254,7 @@ class Toggles extends StatelessWidget {
           // Privacy Options (Consent Management for EEA, UK & Switzerland)
           if (!appModel.isAdFree) ...[
             FutureBuilder<bool>(
-              future: AdService.instance.isPrivacyOptionsRequired(),
+              future: appModel.isPrivacyOptionsRequired(),
               builder: (context, snapshot) {
                 if (snapshot.data == true) {
                   return Column(
@@ -262,8 +266,7 @@ class Toggles extends StatelessWidget {
                         icon: Icons.privacy_tip_outlined,
                         subtitle: 'Review or update your ad consent choices',
                         theme: theme,
-                        onTap: () =>
-                            AdService.instance.showPrivacyOptionsForm(),
+                        onTap: appModel.showPrivacyOptionsForm,
                       ),
                     ],
                   );

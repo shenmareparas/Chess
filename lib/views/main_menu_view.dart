@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
+import '../model/player.dart';
 import 'components/main_menu_view/game_options.dart';
 import 'components/main_menu_view/main_menu_buttons.dart';
 import 'components/main_menu_view/remove_ads_button.dart';
@@ -83,11 +84,31 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
-                // 3. Main Content — uses Consumer so picker changes (difficulty,
-                // time limit, side, etc.) trigger rebuilds of the interactive
-                // content while the static background layers above stay isolated.
-                Consumer<AppModel>(
-                  builder: (context, appModel, _) => SafeArea(
+                // 3. Main Content — uses Selector so only option/theme changes
+                // rebuild the interactive content while static background layers stay isolated.
+                Selector<
+                    AppModel,
+                    (
+                      int,
+                      int,
+                      Player,
+                      Player,
+                      int,
+                      int,
+                      String,
+                      AppTheme,
+                    )>(
+                  selector: (_, m) => (
+                    m.playerCount,
+                    m.aiDifficulty,
+                    m.selectedSide,
+                    m.selectedSideP1,
+                    m.timeLimit,
+                    m.timerIncrement,
+                    m.timerMode,
+                    m.theme,
+                  ),
+                  builder: (context, _, __) => SafeArea(
                     bottom: false,
                     child: Align(
                       alignment: Alignment.topCenter,
@@ -161,14 +182,16 @@ class _MainMenuViewState extends State<MainMenuView> {
                   ),
                 ),
 
-                // 4. Floating Bottom Action Buttons — also inside Consumer so
-                // the imagesReady spinner and hasSavedGame state update correctly.
+                // 4. Floating Bottom Action Buttons — uses Selector so only
+                // imagesReady, hasSavedGame, or theme changes rebuild it.
                 Positioned(
                   bottom: 0,
                   left: 0,
                   right: 0,
-                  child: Consumer<AppModel>(
-                    builder: (context, appModel, _) => Container(
+                  child: Selector<AppModel, (bool, bool, AppTheme)>(
+                    selector: (_, m) =>
+                        (m.imagesReady, m.hasSavedGame, m.theme),
+                    builder: (context, _, __) => Container(
                       color: Colors.transparent,
                       padding: const EdgeInsets.fromLTRB(20, 24, 20, 10),
                       child: Center(

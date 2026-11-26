@@ -290,7 +290,7 @@ class GameController {
     bool changeTurn = true,
     bool updateMetaList = true,
     bool triggerAI = true,
-  }) async {
+  }) {
     if (clearRedo) {
       board.redoStack = [];
     }

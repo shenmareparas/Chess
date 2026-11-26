@@ -111,20 +111,6 @@ class TimerService {
     _lastTurn = null;
   }
 
-  void reset() {
-    pause();
-    int initialExtra =
-        (timerMode == TimerModes.increment) ? _incrementSeconds : 0;
-    player1TimeLeft.value =
-        Duration(minutes: _timeLimit) + Duration(seconds: initialExtra);
-    player2TimeLeft.value =
-        Duration(minutes: _timeLimit) + Duration(seconds: initialExtra);
-    player1DelayLeft.value =
-        (timerMode == TimerModes.delay) ? _incrementSeconds * 1000 : 0;
-    player2DelayLeft.value = 0;
-    _lastTurn = null;
-  }
-
   void _decrementPlayer1() {
     if (timerMode == TimerModes.delay && player1DelayLeft.value > 0) {
       player1DelayLeft.value =

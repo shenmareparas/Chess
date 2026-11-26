@@ -139,16 +139,12 @@ void main() {
       appModel.turn = Player.player1;
 
       // When game ends with time remaining on both sides
-      final userWon = appModel.audio.didUserWin(
-        playingWithAI: appModel.playingWithAI,
-        playerSide: appModel.playerSide,
-        turn: appModel.turn,
-        player1TimeLeft: const Duration(minutes: 5),
-        player2TimeLeft: const Duration(minutes: 5),
-      );
+      appModel.player1TimeLeft.value = const Duration(minutes: 5);
+      appModel.player2TimeLeft.value = const Duration(minutes: 5);
+      appModel.endGame(silent: true);
 
       // User (White) delivered checkmate on their turn, so they should win
-      expect(userWon, isTrue);
+      expect(appModel.userWon, isTrue);
     });
 
     test(
@@ -164,16 +160,12 @@ void main() {
       appModel.turn = Player.player1;
 
       // In an untimed game, both time left values are Duration.zero
-      final userWon = appModel.audio.didUserWin(
-        playingWithAI: appModel.playingWithAI,
-        playerSide: appModel.playerSide,
-        turn: appModel.turn,
-        player1TimeLeft: Duration.zero,
-        player2TimeLeft: Duration.zero,
-      );
+      appModel.player1TimeLeft.value = Duration.zero;
+      appModel.player2TimeLeft.value = Duration.zero;
+      appModel.endGame(silent: true);
 
       // User (White) delivered checkmate, so they should win
-      expect(userWon, isTrue);
+      expect(appModel.userWon, isTrue);
     });
 
     test('exitChessView clears saved game and prevents subsequent saves',

@@ -16,7 +16,7 @@ class InAppPurchaseService {
   static const String removeAdsProductId = 'remove_ads';
   static const Set<String> _productIds = {removeAdsProductId};
 
-  final InAppPurchase _iap = InAppPurchase.instance;
+  InAppPurchase get _iap => InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   UserPreferences? _prefs;

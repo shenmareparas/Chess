@@ -74,10 +74,6 @@ class ChessBoard {
     _addPiecesForPlayer(Player.player2);
   }
 
-  /// Creates an empty board with no pieces.
-  /// Used by [checkmateIsolateEntry] to reconstruct state from a serialized snapshot.
-  ChessBoard.blank();
-
   void _addPiecesForPlayer(Player player) {
     var kingRowOffset = player == Player.player1 ? 56 : 0;
     var pawnRowOffset = player == Player.player1 ? -8 : 8;

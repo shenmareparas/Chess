@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
 
 import '../logic/ad_service.dart';
 import '../logic/audio_service.dart';
@@ -10,6 +10,7 @@ import '../logic/chess_piece.dart';
 import '../logic/game_controller.dart';
 import '../logic/game_state_storage.dart';
 import '../logic/haptic_service.dart';
+import '../logic/in_app_purchase_service.dart';
 import '../logic/move_calculation/move_classes/move_meta.dart';
 import '../logic/move_calculation/move_classes/move_stack_object.dart';
 import '../logic/notification_service.dart';
@@ -50,6 +51,7 @@ class AppModel extends ChangeNotifier {
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
   bool get enablePieceRotation => prefs.enablePieceRotation;
+  bool get enableRotationAnimation => prefs.enableRotationAnimation;
   bool get hapticEnabled => prefs.hapticEnabled;
   bool get showCapturedPieces => prefs.showCapturedPieces;
   bool get isAdFree => prefs.isAdFree;
@@ -94,7 +96,6 @@ class AppModel extends ChangeNotifier {
   // ── ViewModel-layer game state ──
   GameController? gameController;
   bool promotionRequested = false;
-  bool moveListUpdated = false;
   int? historyViewIndex;
   final List<MoveStackObject> historyRedoStack = [];
   Timer? _historyAnimationTimer;
@@ -157,13 +158,6 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setFlipSideCapturedPieces(bool value) {
-    if (_flipSideCapturedPieces != value) {
-      _flipSideCapturedPieces = value;
-      notifyListeners();
-    }
-  }
-
   // ── Computed Properties ──
   Player get aiTurn => oppositePlayer(playerSide);
   bool get isAIsTurn =>
@@ -183,11 +177,6 @@ class AppModel extends ChangeNotifier {
   /// Starts at 1 for each new game. Players can earn 1 more by watching an ad.
   int _availableUndos = 1;
   int get availableUndos => isAdFree ? 999 : _availableUndos;
-
-  void resetUndos() {
-    _availableUndos = 1;
-    notifyListeners();
-  }
 
   void decrementUndo() {
     if (isAdFree) return;
@@ -311,6 +300,8 @@ class AppModel extends ChangeNotifier {
     audio.enabled = this.prefs.soundEnabled;
     audio.initialize();
     haptic.enabled = this.prefs.hapticEnabled;
+    InAppPurchaseService.instance.purchaseStateNotifier
+        .addListener(_onPurchaseStateChanged);
 
     // Check saved game availability asynchronously on start
     refreshHasSavedGame();
@@ -333,7 +324,6 @@ class AppModel extends ChangeNotifier {
     _gameOverInvertedState = null;
     _gameState.reset(); // reset all pure-model game state in one call
     promotionRequested = false;
-    moveListUpdated = false;
     historyViewIndex = null;
     historyRedoStack.clear();
     _historyAnimationTimer?.cancel();
@@ -422,22 +412,58 @@ class AppModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void _onPurchaseStateChanged() {
+    notifyListeners();
+  }
+
+  // ── In-App Purchases & Ads Delegation ──
+
+  bool get isPurchasePending => InAppPurchaseService.instance.isPurchasePending;
+
+  String get removeAdsPriceLabel =>
+      InAppPurchaseService.instance.removeAdsProduct?.price ?? 'Buy';
+
+  Future<bool> buyRemoveAds() => InAppPurchaseService.instance.buyRemoveAds();
+
+  void showExitInterstitialAd({required VoidCallback onAdDismissed}) {
+    AdService.instance.showExitInterstitialAd(onAdDismissed: onAdDismissed);
+  }
+
+  void requestRewardedUndo({
+    required VoidCallback onRewardEarned,
+    required VoidCallback onAdNotAvailable,
+  }) {
+    AdService.instance.showRewardedUndoAd(
+      onRewardEarned: onRewardEarned,
+      onAdNotAvailable: onAdNotAvailable,
+    );
+  }
+
+  Future<bool> isPrivacyOptionsRequired() =>
+      AdService.instance.isPrivacyOptionsRequired();
+
+  void showPrivacyOptionsForm() => AdService.instance.showPrivacyOptionsForm();
+
+  // ── Notification Permissions Delegation ──
+
+  Future<bool> areNotificationPermissionsGranted() =>
+      NotificationService.instance.arePermissionsGranted();
+
+  Future<bool> requestNotificationPermissions() =>
+      NotificationService.instance.requestPermissions();
+
+  void openNotificationSettings() =>
+      NotificationService.instance.openNotificationSettings();
+
   /// Handles the full exit flow: rating prompt (if applicable) then interstitial ad.
-  Future<void> handleGameExit(BuildContext context) async {
+  Future<void> handleGameExit({required VoidCallback onNavigateBack}) async {
     Future<void> performExit() async {
       await exitChessView();
-      if (context.mounted) {
-        AdService.instance.showExitInterstitialAd(
-          onAdDismissed: () {
-            if (context.mounted) Navigator.of(context).pop();
-          },
-        );
-      }
+      showExitInterstitialAd(onAdDismissed: onNavigateBack);
     }
 
     if (userWon && !hasRatedApp) {
       RatingService.instance.showRatingPrompt(
-        context,
         prefs: prefs,
         onComplete: performExit,
       );
@@ -450,14 +476,12 @@ class AppModel extends ChangeNotifier {
 
   void pushMoveMeta(MoveMeta meta, {bool silent = false}) {
     moveMetaList.add(meta);
-    moveListUpdated = true;
     if (!silent) notifyListeners();
     saveGameState();
   }
 
   void popMoveMeta({bool silent = false}) {
     moveMetaList.removeLast();
-    moveListUpdated = true;
     if (!silent) notifyListeners();
     saveGameState();
   }
@@ -481,7 +505,6 @@ class AppModel extends ChangeNotifier {
         gameController!.board.pushMSO(historyRedoStack.removeLast());
       }
       historyViewIndex = null;
-      moveListUpdated = true;
       if (moveMetaList.isNotEmpty) {
         gameController!.latestMove = moveMetaList.last.move;
         if (gameController!.board.kingInCheck(turn)) {
@@ -630,23 +653,26 @@ class AppModel extends ChangeNotifier {
       this.drawReason = drawReason ?? FideDrawReason.stalemate;
     }
 
-    final actualWinner = winner ?? turn;
+    final Player actualWinner;
+    if (winner != null) {
+      actualWinner = winner;
+    } else if (player1TimeLeft.value == Duration.zero &&
+        player2TimeLeft.value == Duration.zero) {
+      actualWinner = turn;
+    } else if (player1TimeLeft.value == Duration.zero) {
+      actualWinner = Player.player2;
+    } else if (player2TimeLeft.value == Duration.zero) {
+      actualWinner = Player.player1;
+    } else {
+      actualWinner = turn;
+    }
 
-    userWon = audio.didUserWin(
-      playingWithAI: playingWithAI,
-      playerSide: playerSide,
-      turn: actualWinner,
-      player1TimeLeft: player1TimeLeft.value,
-      player2TimeLeft: player2TimeLeft.value,
-    );
+    userWon = playingWithAI ? (actualWinner == playerSide) : true;
 
     audio.playGameEndSound(
+      userWon: userWon,
       stalemate: this.stalemate,
       playingWithAI: playingWithAI,
-      playerSide: playerSide,
-      turn: actualWinner,
-      player1TimeLeft: player1TimeLeft.value,
-      player2TimeLeft: player2TimeLeft.value,
     );
 
     // Play Games: unlock win achievements
@@ -841,6 +867,11 @@ class AppModel extends ChangeNotifier {
     prefs.setEnablePieceRotation(enable);
   }
 
+  void setEnableRotationAnimation(bool enable) {
+    haptic.light();
+    prefs.setEnableRotationAnimation(enable);
+  }
+
   void setShowCapturedPieces(bool show) {
     haptic.light();
     prefs.setShowCapturedPieces(show);
@@ -854,7 +885,6 @@ class AppModel extends ChangeNotifier {
     } else {
       NotificationService.instance.cancelDailyReminder();
     }
-    notifyListeners();
   }
 
   void setAllowUndoRedo(bool allow) {
@@ -987,7 +1017,6 @@ class AppModel extends ChangeNotifier {
 
     timerService.start(() => turn, () => gameOver);
 
-    moveListUpdated = true;
     refreshHasSavedGame();
     notifyListeners();
 
@@ -1005,6 +1034,10 @@ class AppModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    InAppPurchaseService.instance.purchaseStateNotifier
+        .removeListener(_onPurchaseStateChanged);
+    _saveDebounceTimer?.cancel();
+    _historyAnimationTimer?.cancel();
     audio.dispose();
     gameController?.dispose();
     StockfishService.instance.dispose();

@@ -26,6 +26,7 @@ class UserPreferences {
   bool showNotation = false;
   bool enableRotation = true;
   bool enablePieceRotation = true;
+  bool enableRotationAnimation = true;
   bool hapticEnabled = true;
   bool showCapturedPieces = true;
   bool isAdFree = false;
@@ -64,6 +65,8 @@ class UserPreferences {
     showNotation = _prefs!.getBool('showNotation') ?? false;
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
     enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
+    enableRotationAnimation =
+        _prefs!.getBool('enableRotationAnimation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
     hapticEnabled = _prefs!.getBool('hapticEnabled') ?? true;
     showCapturedPieces = _prefs!.getBool('showCapturedPieces') ?? true;
@@ -147,6 +150,13 @@ class UserPreferences {
     onChanged?.call();
   }
 
+  Future<void> setEnableRotationAnimation(bool enable) async {
+    enableRotationAnimation = enable;
+    _prefs ??= await SharedPreferences.getInstance();
+    _prefs!.setBool('enableRotationAnimation', enable);
+    onChanged?.call();
+  }
+
   Future<void> setAllowUndoRedo(bool allow) async {
     allowUndoRedo = allow;
     _prefs ??= await SharedPreferences.getInstance();
@@ -198,6 +208,7 @@ class UserPreferences {
     showNotation = false;
     enableRotation = true;
     enablePieceRotation = true;
+    enableRotationAnimation = true;
     allowUndoRedo = true;
     hapticEnabled = true;
     showCapturedPieces = true;
@@ -215,6 +226,7 @@ class UserPreferences {
       _prefs!.setBool('showNotation', showNotation),
       _prefs!.setBool('enableRotation', enableRotation),
       _prefs!.setBool('enablePieceRotation', enablePieceRotation),
+      _prefs!.setBool('enableRotationAnimation', enableRotationAnimation),
       _prefs!.setBool('allowUndoRedo', allowUndoRedo),
       _prefs!.setBool('hapticEnabled', hapticEnabled),
       _prefs!.setBool('showCapturedPieces', showCapturedPieces),

@@ -2,6 +2,7 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import '../../../../model/app_model.dart';
+import '../../../../model/app_themes.dart';
 import '../../shared/glass_panel.dart';
 
 class TimeLimitPicker extends StatelessWidget {
@@ -196,13 +197,13 @@ class TimeLimitPicker extends StatelessWidget {
           ),
         );
       },
-    );
+    ).then((_) => controller.dispose());
   }
 
   @override
   Widget build(BuildContext context) {
-    final appModel = Provider.of<AppModel>(context);
-    final theme = appModel.theme;
+    final appModel = Provider.of<AppModel>(context, listen: false);
+    final theme = context.select<AppModel, AppTheme>((m) => m.theme);
     final primaryColor = theme.lightTile;
     final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
 

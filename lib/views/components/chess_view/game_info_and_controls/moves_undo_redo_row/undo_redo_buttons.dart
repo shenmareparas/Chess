@@ -2,7 +2,6 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../logic/ad_service.dart';
 import '../../../../../model/app_model.dart';
 import '../../../shared/glass_panel.dart';
 import 'rounded_icon_button.dart';
@@ -208,11 +207,11 @@ class UndoRedoButtons extends StatelessWidget {
     );
   }
 
-  /// Asks [AdService] to show a rewarded interstitial ad.
+  /// Asks [AppModel] to show a rewarded interstitial ad.
   /// On reward earned: grants an undo in the model, allowing the player
   /// to execute it manually when they are ready.
   void _requestAdUndo(BuildContext context) {
-    AdService.instance.showRewardedUndoAd(
+    appModel.requestRewardedUndo(
       onRewardEarned: () {
         // Grant the undo from the ad to the bank.
         appModel.grantUndoFromAd();

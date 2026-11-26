@@ -1,7 +1,5 @@
 import 'package:sound_effect/sound_effect.dart';
 
-import '../model/player.dart';
-
 /// Centralized audio playback service.
 /// Extracted from AppModel to follow single-responsibility principle.
 class AudioService {
@@ -49,12 +47,9 @@ class AudioService {
   }
 
   void playGameEndSound({
+    required bool userWon,
     required bool stalemate,
     required bool playingWithAI,
-    required Player playerSide,
-    required Player turn,
-    required Duration player1TimeLeft,
-    required Duration player2TimeLeft,
   }) {
     if (!_enabled) return;
 
@@ -63,19 +58,8 @@ class AudioService {
       return;
     }
 
-    Player winner;
-    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
-      winner = turn;
-    } else if (player1TimeLeft == Duration.zero) {
-      winner = Player.player2;
-    } else if (player2TimeLeft == Duration.zero) {
-      winner = Player.player1;
-    } else {
-      winner = turn;
-    }
-
     if (playingWithAI) {
-      if (winner == playerSide) {
+      if (userWon) {
         _playWin();
       } else {
         _playLose();
@@ -83,29 +67,5 @@ class AudioService {
     } else {
       _playWin();
     }
-  }
-
-  /// Returns true if the user won (for confetti, etc.)
-  bool didUserWin({
-    required bool playingWithAI,
-    required Player playerSide,
-    required Player turn,
-    required Duration player1TimeLeft,
-    required Duration player2TimeLeft,
-  }) {
-    Player winner;
-    if (player1TimeLeft == Duration.zero && player2TimeLeft == Duration.zero) {
-      winner = turn;
-    } else if (player1TimeLeft == Duration.zero) {
-      winner = Player.player2;
-    } else if (player2TimeLeft == Duration.zero) {
-      winner = Player.player1;
-    } else {
-      winner = turn;
-    }
-    if (playingWithAI) {
-      return winner == playerSide;
-    }
-    return true;
   }
 }

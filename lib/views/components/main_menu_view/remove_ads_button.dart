@@ -1,48 +1,24 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:provider/provider.dart';
 
-import '../../../logic/in_app_purchase_service.dart';
 import '../../../model/app_model.dart';
+import '../../../model/app_themes.dart';
 import '../shared/glass_panel.dart';
 
 /// Top-left button on MainMenuView that triggers the Remove Ads purchase flow.
 /// Automatically hides itself when ads have already been removed.
-class RemoveAdsButton extends StatefulWidget {
+class RemoveAdsButton extends StatelessWidget {
   final AppModel appModel;
 
   const RemoveAdsButton(this.appModel, {Key? key}) : super(key: key);
 
-  @override
-  State<RemoveAdsButton> createState() => _RemoveAdsButtonState();
-}
-
-class _RemoveAdsButtonState extends State<RemoveAdsButton> {
-  late final FToast _fToast;
-
-  @override
-  void initState() {
-    super.initState();
-    _fToast = FToast()..init(context);
-    InAppPurchaseService.instance.purchaseStateNotifier
-        .addListener(_onPurchaseStateChanged);
-  }
-
-  @override
-  void dispose() {
-    InAppPurchaseService.instance.purchaseStateNotifier
-        .removeListener(_onPurchaseStateChanged);
-    super.dispose();
-  }
-
-  void _onPurchaseStateChanged() {
-    if (mounted) setState(() {});
-  }
-
-  void _showToast(String message) {
-    final theme = widget.appModel.theme;
-    _fToast.removeCustomToast();
-    _fToast.showToast(
+  void _showToast(BuildContext context, String message) {
+    final theme = appModel.theme;
+    final fToast = FToast()..init(context);
+    fToast.removeCustomToast();
+    fToast.showToast(
       gravity: ToastGravity.BOTTOM,
       toastDuration: const Duration(milliseconds: 2500),
       child: GlassPanel(
@@ -72,11 +48,8 @@ class _RemoveAdsButtonState extends State<RemoveAdsButton> {
     );
   }
 
-  void _showPurchaseDialog(BuildContext context) {
-    final theme = widget.appModel.theme;
-    final iapService = InAppPurchaseService.instance;
-    final product = iapService.removeAdsProduct;
-    final String priceLabel = product?.price ?? 'Buy';
+  void _showPurchaseDialog(BuildContext context, String priceLabel) {
+    final theme = appModel.theme;
 
     showGeneralDialog<void>(
       context: context,
@@ -168,10 +141,15 @@ class _RemoveAdsButtonState extends State<RemoveAdsButton> {
                             padding: EdgeInsets.zero,
                             onPressed: () async {
                               Navigator.pop(dialogContext);
-                              widget.appModel.haptic.light();
-                              final success = await iapService.buyRemoveAds();
-                              if (!success && !widget.appModel.isAdFree) {
-                                _showToast('Purchase unavailable or canceled.');
+                              appModel.haptic.light();
+                              final success = await appModel.buyRemoveAds();
+                              if (!success &&
+                                  !appModel.isAdFree &&
+                                  context.mounted) {
+                                _showToast(
+                                  context,
+                                  'Purchase unavailable or canceled.',
+                                );
                               }
                             },
                             child: Container(
@@ -212,45 +190,52 @@ class _RemoveAdsButtonState extends State<RemoveAdsButton> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.appModel.isAdFree) {
-      return const SizedBox.shrink();
-    }
-
-    final theme = widget.appModel.theme;
-    final iapService = InAppPurchaseService.instance;
-    final isPending = iapService.isPurchasePending;
-
-    final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
-    final isDarkBg =
-        ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
-    final defaultColor =
-        isDarkBg ? const Color(0xFFC3C8C2) : const Color(0xFF313030);
-
-    return Tooltip(
-      message: 'Unlimited Undos Pack',
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: isPending
-            ? null
-            : () {
-                widget.appModel.haptic.light();
-                _showPurchaseDialog(context);
-              },
-        child: isPending
-            ? SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.2,
-                  valueColor: AlwaysStoppedAnimation<Color>(defaultColor),
-                ),
-              )
-            : Icon(
-                Icons.workspace_premium_rounded,
-                color: defaultColor,
-                size: 24,
-              ),
+    return Selector<AppModel, (bool, bool, String, AppTheme)>(
+      selector: (_, m) => (
+        m.isAdFree,
+        m.isPurchasePending,
+        m.removeAdsPriceLabel,
+        m.theme,
       ),
+      builder: (context, data, _) {
+        final (isAdFree, isPending, priceLabel, theme) = data;
+        if (isAdFree) {
+          return const SizedBox.shrink();
+        }
+
+        final bgTop = theme.background?.colors.first ?? const Color(0xFF0A0F0C);
+        final isDarkBg =
+            ThemeData.estimateBrightnessForColor(bgTop) == Brightness.dark;
+        final defaultColor =
+            isDarkBg ? const Color(0xFFC3C8C2) : const Color(0xFF313030);
+
+        return Tooltip(
+          message: 'Unlimited Undos Pack',
+          child: CupertinoButton(
+            padding: EdgeInsets.zero,
+            onPressed: isPending
+                ? null
+                : () {
+                    appModel.haptic.light();
+                    _showPurchaseDialog(context, priceLabel);
+                  },
+            child: isPending
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation<Color>(defaultColor),
+                    ),
+                  )
+                : Icon(
+                    Icons.workspace_premium_rounded,
+                    color: defaultColor,
+                    size: 24,
+                  ),
+          ),
+        );
+      },
     );
   }
 }

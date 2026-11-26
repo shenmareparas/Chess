@@ -116,13 +116,11 @@ class _MoveListState extends State<MoveList> {
           });
         }
 
-        final turns = <Widget>[];
         final list = appModel.moveMetaList;
+        final int totalMoves = list.length;
+        final int turnCount = (totalMoves / 2).ceil();
 
-        int totalMoves = list.length;
-        int turnCount = (totalMoves / 2).ceil();
-
-        for (int i = 0; i < turnCount; i++) {
+        Widget buildTurnTile(int i) {
           final turnNum = i + 1;
           final whiteMove = list[i * 2];
           final blackMove = (i * 2 + 1 < totalMoves) ? list[i * 2 + 1] : null;
@@ -141,101 +139,81 @@ class _MoveListState extends State<MoveList> {
 
           final isBlockActive = isWhiteSelected || isBlackSelected;
 
-          turns.add(
-            Opacity(
-              opacity: isBlockActive ? 1.0 : 0.5,
-              child: GestureDetector(
-                onTap: () {
-                  appModel.haptic.light();
-                  appModel.selectHistoryTurn(i);
-                },
-                child: Container(
-                  margin: const EdgeInsets.only(right: 12),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0x662A2A2A),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border(
-                      left: BorderSide(
-                        color: isBlockActive
-                            ? theme.moveHint
-                            : CupertinoColors.transparent,
-                        width: 4,
-                      ),
+          return Opacity(
+            opacity: isBlockActive ? 1.0 : 0.5,
+            child: GestureDetector(
+              onTap: () {
+                appModel.haptic.light();
+                appModel.selectHistoryTurn(i);
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0x662A2A2A),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border(
+                    left: BorderSide(
+                      color: isBlockActive
+                          ? theme.moveHint
+                          : CupertinoColors.transparent,
+                      width: 4,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '$turnNum.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isBlockActive
-                              ? theme.moveHint
-                              : const Color(0xFF8D928C),
-                          fontFamily: 'monospace',
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        _moveToString(whiteMove),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isWhiteSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: isWhiteSelected
-                              ? theme.moveHint
-                              : const Color(0xFFE5E2E1),
-                          fontFamily: 'monospace',
-                          decoration: isWhiteSelected
-                              ? TextDecoration.underline
-                              : TextDecoration.none,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        blackMove != null ? _moveToString(blackMove) : '___',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isBlackSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
-                          color: blackMove != null
-                              ? (isBlackSelected
-                                  ? theme.moveHint
-                                  : const Color(0xFFC3C8C2))
-                              : const Color(0xFF8D928C),
-                          fontStyle: blackMove != null
-                              ? FontStyle.normal
-                              : FontStyle.italic,
-                          fontFamily: 'monospace',
-                          decoration: isBlackSelected
-                              ? TextDecoration.underline
-                              : TextDecoration.none,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
-              ),
-            ),
-          );
-        }
-
-        if (turns.isEmpty) {
-          turns.add(
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Text(
-                'Waiting for first move',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: theme.lightTile.withValues(alpha: 0.6),
-                  fontStyle: FontStyle.italic,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '$turnNum.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isBlockActive
+                            ? theme.moveHint
+                            : const Color(0xFF8D928C),
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      _moveToString(whiteMove),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight:
+                            isWhiteSelected ? FontWeight.bold : FontWeight.w500,
+                        color: isWhiteSelected
+                            ? theme.moveHint
+                            : const Color(0xFFE5E2E1),
+                        fontFamily: 'monospace',
+                        decoration: isWhiteSelected
+                            ? TextDecoration.underline
+                            : TextDecoration.none,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      blackMove != null ? _moveToString(blackMove) : '___',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight:
+                            isBlackSelected ? FontWeight.bold : FontWeight.w500,
+                        color: blackMove != null
+                            ? (isBlackSelected
+                                ? theme.moveHint
+                                : const Color(0xFFC3C8C2))
+                            : const Color(0xFF8D928C),
+                        fontStyle: blackMove != null
+                            ? FontStyle.normal
+                            : FontStyle.italic,
+                        fontFamily: 'monospace',
+                        decoration: isBlackSelected
+                            ? TextDecoration.underline
+                            : TextDecoration.none,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -261,15 +239,27 @@ class _MoveListState extends State<MoveList> {
             child: Container(
               height: 56,
               alignment: Alignment.centerLeft,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                controller: scrollController,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: turns,
-                ),
-              ),
+              child: turnCount == 0
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Waiting for first move',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: theme.lightTile.withValues(alpha: 0.6),
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: turnCount,
+                      itemBuilder: (context, index) => buildTurnTile(index),
+                    ),
             ),
           ),
         );

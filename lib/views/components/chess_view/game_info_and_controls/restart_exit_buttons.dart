@@ -189,7 +189,11 @@ class RestartExitButtons extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () {
               if (appModel.gameOver) {
-                appModel.handleGameExit(context);
+                appModel.handleGameExit(
+                  onNavigateBack: () {
+                    if (context.mounted) Navigator.of(context).pop();
+                  },
+                );
               } else {
                 showExitDialog(context);
               }

@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:in_app_review/in_app_review.dart';
 
 import '../model/user_preferences.dart';
@@ -12,8 +12,7 @@ class RatingService {
 
   /// Directly triggers the native Google Play Store in-app rating prompt
   /// after a win before exiting back to the main menu.
-  Future<void> showRatingPrompt(
-    BuildContext context, {
+  Future<void> showRatingPrompt({
     required UserPreferences prefs,
     required VoidCallback onComplete,
   }) async {

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../logic/ad_service.dart';
 import '../logic/chess_game.dart';
 import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
@@ -207,7 +206,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           onPopInvokedWithResult: (didPop, result) async {
             if (didPop) return;
             if (appModel.gameOver) {
-              appModel.handleGameExit(context);
+              appModel.handleGameExit(
+                onNavigateBack: () {
+                  if (context.mounted) Navigator.of(context).pop();
+                },
+              );
             } else {
               showExitDialog(context);
             }
@@ -243,7 +246,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                 ? Alignment.topCenter
                                 : Alignment.center,
                             child: Selector<AppModel,
-                                (bool, bool, AppTheme, bool, bool, bool)>(
+                                (bool, bool, AppTheme, bool, bool, bool, bool)>(
                               selector: (_, m) => (
                                 m.showCapturedPieces,
                                 m.isBoardInverted,
@@ -251,6 +254,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                 m.showNotation,
                                 m.sideCapturedPieces && isFullscreen,
                                 m.flipSideCapturedPieces,
+                                m.enableRotationAnimation,
                               ),
                               builder: (_, boardData, ___) {
                                 final showCapturedPieces = boardData.$1;
@@ -838,7 +842,7 @@ void showExitDialog(BuildContext context) {
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
                             await appModel.saveAndExitChessView();
-                            AdService.instance.showExitInterstitialAd(
+                            appModel.showExitInterstitialAd(
                               onAdDismissed: () {
                                 if (context.mounted)
                                   Navigator.of(context).pop();
@@ -886,7 +890,7 @@ void showExitDialog(BuildContext context) {
                             final appModel =
                                 Provider.of<AppModel>(context, listen: false);
                             await appModel.exitChessView();
-                            AdService.instance.showExitInterstitialAd(
+                            appModel.showExitInterstitialAd(
                               onAdDismissed: () {
                                 if (context.mounted)
                                   Navigator.of(context).pop();

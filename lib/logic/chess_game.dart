@@ -197,24 +197,31 @@ class ChessGame extends FlameGame with TapCallbacks {
       newTargetRotation = 0;
     }
 
-    if (newTargetRotation != targetRotation) {
+    if (!appModel.enableRotationAnimation) {
       targetRotation = newTargetRotation;
-      startRotation = currentRotation;
-      animationProgress = 0;
-    }
-
-    if (animationProgress < 1.0) {
-      animationProgress += t / animationDuration;
-      if (animationProgress > 1.0) animationProgress = 1.0;
-
-      double curviness = animationProgress < 0.5
-          ? 4 * animationProgress * animationProgress * animationProgress
-          : 1 - math.pow(-2 * animationProgress + 2, 3) / 2;
-
-      currentRotation =
-          startRotation + (targetRotation - startRotation) * curviness;
+      startRotation = newTargetRotation;
+      currentRotation = newTargetRotation;
+      animationProgress = 1.0;
     } else {
-      currentRotation = targetRotation;
+      if (newTargetRotation != targetRotation) {
+        targetRotation = newTargetRotation;
+        startRotation = currentRotation;
+        animationProgress = 0;
+      }
+
+      if (animationProgress < 1.0) {
+        animationProgress += t / animationDuration;
+        if (animationProgress > 1.0) animationProgress = 1.0;
+
+        double curviness = animationProgress < 0.5
+            ? 4 * animationProgress * animationProgress * animationProgress
+            : 1 - math.pow(-2 * animationProgress + 2, 3) / 2;
+
+        currentRotation =
+            startRotation + (targetRotation - startRotation) * curviness;
+      } else {
+        currentRotation = targetRotation;
+      }
     }
 
     // Rebuild the piece list if the count changed (capture / promotion).
@@ -253,7 +260,7 @@ class ChessGame extends FlameGame with TapCallbacks {
 
   void _initSpritePositions() {
     for (var piece in _allPieces) {
-      spriteMap[piece]?.initSpritePosition(tileSize ?? 0, appModel);
+      spriteMap[piece]?.initSpritePosition(tileSize ?? 0);
     }
   }
 
@@ -261,7 +268,7 @@ class ChessGame extends FlameGame with TapCallbacks {
     _rebuildPieceCache();
     if (snap) {
       for (var piece in _allPieces) {
-        spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0, appModel);
+        spriteMap[piece]?.snapToPiece(piece, tileSize ?? 0);
       }
     }
   }

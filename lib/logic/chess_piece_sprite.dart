@@ -71,12 +71,12 @@ class ChessPieceSprite {
     }
   }
 
-  void initSpritePosition(double tileSize, AppModel appModel) {
+  void initSpritePosition(double tileSize) {
     spriteX = getXFromTile(tile ?? 0, tileSize);
     spriteY = getYFromTile(tile ?? 0, tileSize);
   }
 
-  void snapToPiece(ChessPiece piece, double tileSize, AppModel appModel) {
+  void snapToPiece(ChessPiece piece, double tileSize) {
     type = piece.type;
     tile = piece.tile;
     spriteX = getXFromTile(tile ?? 0, tileSize);

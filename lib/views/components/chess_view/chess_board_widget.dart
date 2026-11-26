@@ -46,7 +46,8 @@ class ChessBoardWidget extends StatelessWidget {
               Positioned.fill(
                 child: AnimatedRotation(
                   turns: appModel.isBoardInverted ? 0.5 : 0,
-                  duration: appModel.animateBoardRotation
+                  duration: (appModel.animateBoardRotation &&
+                          appModel.enableRotationAnimation)
                       ? const Duration(milliseconds: 600)
                       : Duration.zero,
                   curve: Curves.easeInOut,

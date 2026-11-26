@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import '../../../../model/app_model.dart';
+import '../../../../model/app_themes.dart';
 import '../../../../model/player.dart';
 
 class SidePicker extends StatelessWidget {
@@ -19,7 +20,7 @@ class SidePicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<AppModel>(context).theme;
+    final theme = context.select<AppModel, AppTheme>((m) => m.theme);
     final primaryColor = theme.lightTile;
     final activeBgColor = theme.darkTile.withValues(alpha: 0.4);
 
