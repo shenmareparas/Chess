@@ -59,7 +59,7 @@ class PieceSelectorItem extends StatelessWidget {
                       color: activeRingColor.withValues(alpha: 0.4),
                       blurRadius: 10,
                       spreadRadius: 1,
-                    )
+                    ),
                   ]
                 : null,
           ),

@@ -29,10 +29,7 @@ class PositionOutcome {
   final bool isCheckmate;
   final FideDrawReason? drawReason;
 
-  const PositionOutcome({
-    this.isCheckmate = false,
-    this.drawReason,
-  });
+  const PositionOutcome({this.isCheckmate = false, this.drawReason});
 
   bool get isStalemate => drawReason == FideDrawReason.stalemate;
   bool get isDraw => drawReason != null;
@@ -97,7 +94,8 @@ class ChessNotationService {
 
     if (position.isInsufficientMaterial) {
       return const PositionOutcome(
-          drawReason: FideDrawReason.insufficientMaterial);
+        drawReason: FideDrawReason.insufficientMaterial,
+      );
     }
 
     // 50-move rule: 100 half-moves without a pawn move or capture
@@ -113,7 +111,8 @@ class ChessNotationService {
         occurrences++;
         if (occurrences >= 3) {
           return const PositionOutcome(
-              drawReason: FideDrawReason.threefoldRepetition);
+            drawReason: FideDrawReason.threefoldRepetition,
+          );
         }
       }
     }

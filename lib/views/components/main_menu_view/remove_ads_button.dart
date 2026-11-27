@@ -191,12 +191,8 @@ class RemoveAdsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<AppModel, (bool, bool, String, AppTheme)>(
-      selector: (_, m) => (
-        m.isAdFree,
-        m.isPurchasePending,
-        m.removeAdsPriceLabel,
-        m.theme,
-      ),
+      selector: (_, m) =>
+          (m.isAdFree, m.isPurchasePending, m.removeAdsPriceLabel, m.theme),
       builder: (context, data, _) {
         final (isAdFree, isPending, priceLabel, theme) = data;
         if (isAdFree) {

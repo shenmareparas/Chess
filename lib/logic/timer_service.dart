@@ -30,8 +30,11 @@ class TimerService {
 
   int get timeLimit => _timeLimit;
 
-  void configure(int timeLimitMinutes,
-      {int incrementSeconds = 0, String mode = TimerModes.increment}) {
+  void configure(
+    int timeLimitMinutes, {
+    int incrementSeconds = 0,
+    String mode = TimerModes.increment,
+  }) {
     _timeLimit = timeLimitMinutes;
     _incrementSeconds = incrementSeconds;
     timerMode = mode;
@@ -60,33 +63,35 @@ class TimerService {
 
   void _startPeriodicTimer() {
     _timer?.cancel();
-    _timer = async.Timer.periodic(const Duration(milliseconds: timerAccuracyMs),
-        (_) {
-      if (_isGameOver?.call() ?? true) {
-        stop();
-        return;
-      }
-      var turn = _getCurrentTurn?.call() ?? Player.player1;
-      if (_lastTurn != turn) {
-        _lastTurn = turn;
-        if (timerMode == TimerModes.delay) {
-          if (turn == Player.player1) {
-            player1DelayLeft.value = _incrementSeconds * 1000;
-          } else {
-            player2DelayLeft.value = _incrementSeconds * 1000;
+    _timer = async.Timer.periodic(
+      const Duration(milliseconds: timerAccuracyMs),
+      (_) {
+        if (_isGameOver?.call() ?? true) {
+          stop();
+          return;
+        }
+        var turn = _getCurrentTurn?.call() ?? Player.player1;
+        if (_lastTurn != turn) {
+          _lastTurn = turn;
+          if (timerMode == TimerModes.delay) {
+            if (turn == Player.player1) {
+              player1DelayLeft.value = _incrementSeconds * 1000;
+            } else {
+              player2DelayLeft.value = _incrementSeconds * 1000;
+            }
           }
         }
-      }
-      if (turn == Player.player1) {
-        _decrementPlayer1();
-      } else {
-        _decrementPlayer2();
-      }
-      if (player1TimeLeft.value == Duration.zero ||
-          player2TimeLeft.value == Duration.zero) {
-        onExpired?.call();
-      }
-    });
+        if (turn == Player.player1) {
+          _decrementPlayer1();
+        } else {
+          _decrementPlayer2();
+        }
+        if (player1TimeLeft.value == Duration.zero ||
+            player2TimeLeft.value == Duration.zero) {
+          onExpired?.call();
+        }
+      },
+    );
   }
 
   void pause() {
@@ -119,7 +124,8 @@ class TimerService {
     }
     if (player1TimeLeft.value.inMilliseconds > 0) {
       player1TimeLeft.value = Duration(
-          milliseconds: player1TimeLeft.value.inMilliseconds - timerAccuracyMs);
+        milliseconds: player1TimeLeft.value.inMilliseconds - timerAccuracyMs,
+      );
     }
   }
 
@@ -131,7 +137,8 @@ class TimerService {
     }
     if (player2TimeLeft.value.inMilliseconds > 0) {
       player2TimeLeft.value = Duration(
-          milliseconds: player2TimeLeft.value.inMilliseconds - timerAccuracyMs);
+        milliseconds: player2TimeLeft.value.inMilliseconds - timerAccuracyMs,
+      );
     }
   }
 

@@ -1,23 +1,23 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:flame/game.dart';
+import 'package:chessground/chessground.dart';
+import 'package:dartchess/dartchess.dart' as dc;
 import 'package:material_ui/material_ui.dart';
 
-import '../../../logic/chess_game.dart';
+import '../../../logic/chessground_adapter.dart';
 import '../../../model/app_model.dart';
 
-class ChessBoardWidget extends StatelessWidget {
+class ChessBoardWidget extends StatefulWidget {
   final AppModel appModel;
-  final ChessGame chessGame;
   final Widget? topWidget;
   final Widget? bottomWidget;
   final Widget? leftWidget;
   final Widget? rightWidget;
 
-  ChessBoardWidget(
-    this.appModel,
-    this.chessGame, {
+  const ChessBoardWidget(
+    this.appModel, {
+    super.key,
     this.topWidget,
     this.bottomWidget,
     this.leftWidget,
@@ -25,18 +25,149 @@ class ChessBoardWidget extends StatelessWidget {
   });
 
   @override
+  State<ChessBoardWidget> createState() => _ChessBoardWidgetState();
+}
+
+class _ChessBoardWidgetState extends State<ChessBoardWidget> {
+  late final ChessboardController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = ChessboardController(
+      game: ChessgroundAdapter.buildGameData(widget.appModel),
+    );
+    widget.appModel.addListener(_onAppModelChanged);
+    _ensurePieceThemeLoaded(widget.appModel.pieceTheme);
+  }
+
+  void _ensurePieceThemeLoaded(String pieceTheme) {
+    ChessgroundAdapter.preloadPieceTheme(pieceTheme).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void didUpdateWidget(ChessBoardWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.appModel != widget.appModel) {
+      oldWidget.appModel.removeListener(_onAppModelChanged);
+      widget.appModel.addListener(_onAppModelChanged);
+    }
+    _syncController(animate: false);
+  }
+
+  @override
+  void dispose() {
+    widget.appModel.removeListener(_onAppModelChanged);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onAppModelChanged() {
+    if (!mounted) return;
+    _ensurePieceThemeLoaded(widget.appModel.pieceTheme);
+    final bool shouldAnimate = !widget.appModel.snapNextBoardUpdate;
+    widget.appModel.snapNextBoardUpdate = false;
+    _syncController(animate: shouldAnimate);
+    setState(() {});
+  }
+
+  void _syncController({required bool animate}) {
+    final newGame = ChessgroundAdapter.buildGameData(widget.appModel);
+    final oldGame = _controller.game;
+    if (newGame.fen != oldGame.fen ||
+        newGame.playerSide != oldGame.playerSide ||
+        newGame.sideToMove != oldGame.sideToMove ||
+        newGame.lastMove != oldGame.lastMove ||
+        newGame.kingSquareInCheck != oldGame.kingSquareInCheck ||
+        newGame.validMoves.length != oldGame.validMoves.length) {
+      _controller.updatePosition(
+        newGame,
+        animate: animate,
+        resetPremove: widget.appModel.historyViewIndex != null ||
+            widget.appModel.gameOver,
+      );
+    }
+  }
+
+  void _handleMove(dc.Move move, {bool? viaDragAndDrop}) {
+    final controller = widget.appModel.gameController;
+    if (controller == null || move is! dc.NormalMove) return;
+
+    final (
+      fromTile,
+      toTile,
+    ) = ChessgroundAdapter.chessgroundMoveToInternalTiles(
+      move,
+      controller.board,
+    );
+
+    // autoQueenPromotion is enabled on ChessboardSettings solely to suppress
+    // chessground's inline PromotionSelector; passing promotionType: null
+    // triggers the GlassPanel PromotionDialog.
+    controller.executeMove(fromTile, toTile, promotionType: null);
+  }
+
+  void _handleTouchedSquare(dc.Square square) {
+    final appModel = widget.appModel;
+    final controller = appModel.gameController;
+    if (controller == null ||
+        appModel.gameOver ||
+        appModel.isAIsTurn ||
+        appModel.historyViewIndex != null) {
+      return;
+    }
+
+    final tile = ChessgroundAdapter.squareToTile(square);
+    final piece = controller.board.tiles[tile];
+    if (piece != null && piece.player == appModel.turn) {
+      final moves = controller.board.movesForPiece(piece);
+      if (moves.isEmpty) {
+        controller.triggerWarningTile(tile);
+      } else {
+        appModel.haptic.selection();
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final appModel = widget.appModel;
+    final warningTile = appModel.gameController?.warningTile;
+    final checkHintTile =
+        appModel.showHints ? appModel.gameController?.checkHintTile : null;
+
     return LayoutBuilder(
       builder: (context, constraints) {
-        final double verticalReserve = (topWidget != null ? 42.0 : 0.0) +
-            (bottomWidget != null ? 42.0 : 0.0);
-        final double horizontalReserve = (leftWidget != null ? 44.0 : 0.0) +
-            (rightWidget != null ? 44.0 : 0.0);
+        final double verticalReserve = (widget.topWidget != null ? 42.0 : 0.0) +
+            (widget.bottomWidget != null ? 42.0 : 0.0);
+        final double horizontalReserve =
+            (widget.leftWidget != null ? 44.0 : 0.0) +
+                (widget.rightWidget != null ? 44.0 : 0.0);
         final double maxSide = math.min(
           constraints.maxWidth - horizontalReserve,
           constraints.maxHeight - verticalReserve,
         );
         final double boardSize = maxSide.clamp(0.0, double.infinity);
+
+        final settings = ChessboardSettings(
+          pieceAssets: ChessgroundAdapter.buildPieceAssets(appModel.pieceTheme),
+          colorScheme: ChessgroundAdapter.buildColorScheme(appModel.theme),
+          enableCoordinates: false,
+          animationDuration: const Duration(milliseconds: 200),
+          showLastMove: appModel.showHints,
+          showValidMoves: appModel.showHints,
+          pieceOrientationBehavior: ChessgroundAdapter.buildPieceOrientation(
+            appModel,
+          ),
+          pieceShiftMethod: PieceShiftMethod.either,
+          autoQueenPromotion: true,
+          enablePremoves: appModel.playingWithAI,
+          dragFeedbackOffset: appModel.isBoardInverted
+              ? const Offset(0.0, 1.0)
+              : const Offset(0.0, -1.0),
+        );
 
         final Widget board = SizedBox(
           width: boardSize,
@@ -51,10 +182,27 @@ class ChessBoardWidget extends StatelessWidget {
                       ? const Duration(milliseconds: 600)
                       : Duration.zero,
                   curve: Curves.easeInOut,
-                  child: SizedBox(
-                    width: boardSize,
-                    height: boardSize,
-                    child: GameWidget(game: chessGame),
+                  child: Stack(
+                    children: [
+                      Chessboard(
+                        size: boardSize,
+                        orientation: dc.Side.white,
+                        controller: _controller,
+                        settings: settings,
+                        onMove: appModel.historyViewIndex == null
+                            ? _handleMove
+                            : null,
+                        onTouchedSquare: _handleTouchedSquare,
+                      ),
+                      if (checkHintTile != null)
+                        _buildCheckOverlay(
+                          checkHintTile,
+                          boardSize,
+                          appModel.theme.checkHint,
+                        ),
+                      if (warningTile != null)
+                        _buildWarningOverlay(warningTile, boardSize),
+                    ],
                   ),
                 ),
               ),
@@ -73,49 +221,74 @@ class ChessBoardWidget extends StatelessWidget {
 
         Widget boardLayout = board;
 
-        if (leftWidget != null || rightWidget != null) {
+        if (widget.leftWidget != null || widget.rightWidget != null) {
           boardLayout = Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (leftWidget != null)
+              if (widget.leftWidget != null)
                 Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: leftWidget,
+                  child: widget.leftWidget,
                 ),
               board,
-              if (rightWidget != null)
+              if (widget.rightWidget != null)
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
-                  child: rightWidget,
+                  child: widget.rightWidget,
                 ),
             ],
           );
         }
 
-        if (topWidget != null || bottomWidget != null) {
+        if (widget.topWidget != null || widget.bottomWidget != null) {
           boardLayout = Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (topWidget != null)
-                SizedBox(
-                  width: boardSize,
-                  child: topWidget,
-                ),
+              if (widget.topWidget != null)
+                SizedBox(width: boardSize, child: widget.topWidget),
               boardLayout,
-              if (bottomWidget != null)
-                SizedBox(
-                  width: boardSize,
-                  child: bottomWidget,
-                ),
+              if (widget.bottomWidget != null)
+                SizedBox(width: boardSize, child: widget.bottomWidget),
             ],
           );
         }
 
-        return Center(
-          child: boardLayout,
-        );
+        return Center(child: boardLayout);
       },
+    );
+  }
+
+  Widget _buildCheckOverlay(int tile, double boardSize, Color checkColor) {
+    final tileSize = boardSize / 8;
+    final col = tile % 8;
+    final row = tile ~/ 8;
+    return Positioned(
+      left: col * tileSize,
+      top: row * tileSize,
+      width: tileSize,
+      height: tileSize,
+      child: IgnorePointer(
+        child: Container(
+          decoration: BoxDecoration(
+            color: checkColor.withValues(alpha: 0.45),
+            border: Border.all(color: checkColor, width: 2.0),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWarningOverlay(int tile, double boardSize) {
+    final tileSize = boardSize / 8;
+    final col = tile % 8;
+    final row = tile ~/ 8;
+    return Positioned(
+      left: col * tileSize,
+      top: row * tileSize,
+      width: tileSize,
+      height: tileSize,
+      child: IgnorePointer(child: Container(color: const Color(0xAAFF3B30))),
     );
   }
 }
@@ -213,8 +386,10 @@ class _NotationOverlayState extends State<_NotationOverlay> {
       bottom: 2,
       width: widget.size / 8 - 2,
       child: Text(
-        String.fromCharCode((_visibleRotated ? 'h' : 'a').codeUnitAt(0) +
-            (_visibleRotated ? -i : i)),
+        String.fromCharCode(
+          (_visibleRotated ? 'h' : 'a').codeUnitAt(0) +
+              (_visibleRotated ? -i : i),
+        ),
         style: TextStyle(
           color: textColor,
           fontSize: 10,

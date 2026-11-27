@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
@@ -65,7 +66,8 @@ class TimerWidget extends StatelessWidget {
                   ? [
                       BoxShadow(
                         color: activeColor.withValues(
-                            alpha: isLowTime ? 0.25 : 0.15),
+                          alpha: isLowTime ? 0.25 : 0.15,
+                        ),
                         blurRadius: isLowTime ? 12 : 8,
                         spreadRadius: 1,
                       ),
@@ -137,8 +139,9 @@ class TimerWidget extends StatelessWidget {
                                           ? (isLowTime
                                               ? const Color(0xFFFC5C5C)
                                               : theme.lightTile)
-                                          : theme.lightTile
-                                              .withValues(alpha: 0.45),
+                                          : theme.lightTile.withValues(
+                                              alpha: 0.45,
+                                            ),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,

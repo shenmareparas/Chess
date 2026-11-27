@@ -12,5 +12,9 @@ class MoveStackObject {
   bool enPassant = false;
 
   MoveStackObject(
-      this.move, this.movedPiece, this.takenPiece, this.enPassantPiece);
+    this.move,
+    this.movedPiece,
+    this.takenPiece,
+    this.enPassantPiece,
+  );
 }

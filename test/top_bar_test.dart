@@ -30,8 +30,9 @@ void main() {
   });
 
   for (final width in [320.0, 360.0, 375.0, 390.0, 414.0]) {
-    testWidgets('Top bar renders GameStatus properly at width $width',
-        (tester) async {
+    testWidgets('Top bar renders GameStatus properly at width $width', (
+      tester,
+    ) async {
       final prefs = UserPreferences();
       await prefs.load();
       final appModel = AppModel(prefs: prefs);
@@ -43,9 +44,7 @@ void main() {
           child: CupertinoApp(
             home: MediaQuery(
               data: MediaQueryData(size: Size(width, 812)),
-              child: Scaffold(
-                body: ChessView(appModel),
-              ),
+              child: Scaffold(body: ChessView(appModel)),
             ),
           ),
         ),

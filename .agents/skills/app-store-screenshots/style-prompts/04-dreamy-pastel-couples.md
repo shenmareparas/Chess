@@ -21,11 +21,13 @@ feel: tender, dreamy, kawaii-romantic, "your shared little world"
 - **Use the default iPhone bezel.** Use the template's stock `Phone` device frame (the iPhone mockup PNG). Add a soft navy drop-shadow `drop-shadow(0 24px 40px rgba(27,34,64,0.18))` around it, but do NOT strip the bezel. The dream comes from the cotton-candy bg + kawaii mascot + lilac italic emphasis — not from skinning the phone.
 
 ## Vibe summary
+
 This is the visual language of a quiet love letter rendered as a screen. Each slide feels like the inside of a shared diary written in pastel highlighter — cotton-candy skies, hand-shaped 3D globes the color of mint ice cream, and chubby kawaii pets that look like plush toys. The mood is unmistakably Korean/Japanese romance-app: tender, intimate, second-person, and obsessed with tiny gestures (a heart counter, a chat bubble, a paw print on a map). The single most identifiable signature is the italic serif emphasis word in lilac dropped into an otherwise clean sans-serif headline — that ONE word does all the emotional heavy lifting and must be present on every slide that has a title.
 
 ## Global palette
 
 ### Sky / background gradient stops
+
 - Sky top (cool blue): `#DDEBFA`
 - Sky mid (lilac haze): `#F5E0F0`
 - Sky bottom (peach cream): `#FCEFD6`
@@ -33,6 +35,7 @@ This is the visual language of a quiet love letter rendered as a screen. Each sl
 - Alt background — peach pink (Miss You slide): `#FBE3D7` to `#F7C9D6`
 
 ### Text colors
+
 - Primary headline: deep navy `#1B2240`
 - Emphasis word (italic serif): lilac/violet `#B49BE6`
 - Alternate emphasis (coral, allowed once per mosaic): `#F39A9A`
@@ -41,6 +44,7 @@ This is the visual language of a quiet love letter rendered as a screen. Each sl
 - Wordmark microtype: `#A7B0C4` at 70% opacity
 
 ### Globe colors
+
 - Ocean / sea: pale baby blue `#BAD4F2`
 - Land mass: mint sherbet `#BDE3C9`
 - Land mass shadow (terminator side): muted sage `#9CCDB1`
@@ -48,6 +52,7 @@ This is the visual language of a quiet love letter rendered as a screen. Each sl
 - Drop shadow under globe: `#1B2240` at 12% opacity, 40px blur, y-offset 24px
 
 ### Sticker / accent colors
+
 - Lavender chat bubble fill: `#B49BE6`
 - Lavender chat bubble shadow: `#7E66B5` at 22%
 - Hot pink heart sticker: `#FF6FA3` (with neon glow `#FF6FA3` at 50% opacity, 28px blur)
@@ -57,6 +62,7 @@ This is the visual language of a quiet love letter rendered as a screen. Each sl
 - White card fills: pure `#FFFFFF` with `#1B2240` 8% drop shadow
 
 ### Pet illustration palette
+
 - Husky grey: `#C9D2DA` body, `#FFFFFF` chest, `#3A4154` nose
 - Cinnamon-brown pup (Shiba-style): `#E8A86A` body, `#FFE9CC` muzzle
 - Panda monochrome: `#FFFFFF` body, `#2A2E3D` patches
@@ -65,6 +71,7 @@ This is the visual language of a quiet love letter rendered as a screen. Each sl
 - Pet eye dots: `#1B2240` with `#FFFFFF` catchlight
 
 ## Gradient & atmospheric treatment
+
 The dominant background is a smooth vertical 3-stop gradient: cool sky-blue at the top, transitioning through a lilac haze in the middle, into a peach cream at the bottom. The gradient runs strictly 180deg (top to bottom). Stops sit roughly at 0% (`#DDEBFA`), 55% (`#F5E0F0`), 100% (`#FCEFD6`).
 
 Layer a subtle film grain on top: 1.5% monochrome noise at `mix-blend-mode: overlay` — just enough to break up banding.
@@ -78,6 +85,7 @@ The pets slide swaps the sky for a flat butter-yellow `#FFF8D4` with a stylized 
 ## Typography
 
 ### Font stack
+
 - Headlines (sans): Pretendard, Apple SD Gothic Neo, Inter, system-ui — weight 600 (Semibold), letter-spacing -0.01em
 - Emphasis word (serif italic): Newsreader Italic, Tiempos Italic, Source Serif Pro Italic — weight 400, italic, letter-spacing -0.005em
 - Subtitle: same sans stack, weight 500, color dusty grey `#8A8FA3`
@@ -85,27 +93,32 @@ The pets slide swaps the sky for a flat butter-yellow `#FFF8D4` with a stylized 
 - Microcopy under headline (cover wordmark "Couples Use"): tracking +0.12em, ALL CAPS, weight 500, 11px
 
 ### Headline size hierarchy
+
 - Cover headline (3 lines): 56–64px, line-height 1.05
 - Interior slide headlines (2 lines): 40–46px, line-height 1.1
 - Subtitle: 18–20px, line-height 1.4
 - Microcopy: 11–13px
 
 ### Title case rules
+
 Headlines use Title Case (every major word capitalized). Subtitles use sentence case. Quoted phrases inside headlines wrap in straight double quotes `"Miss You"`.
 
 ## Headline emphasis (signature)
+
 Exactly ONE word per headline receives the dual transformation: it switches to **italic serif** AND changes color to **lilac `#B49BE6`**. This word is almost always an adjective ("exclusive", "real", "together") or a verb that carries the emotional payload ("connect", "miss", "share").
 
 Examples:
-- "The *exclusive* app for couples." → "exclusive" in italic lilac
-- "Connect With *Your* Lover" → "Your" in italic lilac (rendering choice — pick the word that carries possessiveness)
-- "*Real* Time Location Sharing" → "Real" in italic lilac
-- "Raising Pets *Together*" → "Together" in italic lilac
-- "Send A Sw *'Miss You'*" → the quoted "Miss You" phrase in italic lilac
+
+- "The _exclusive_ app for couples." → "exclusive" in italic lilac
+- "Connect With _Your_ Lover" → "Your" in italic lilac (rendering choice — pick the word that carries possessiveness)
+- "_Real_ Time Location Sharing" → "Real" in italic lilac
+- "Raising Pets _Together_" → "Together" in italic lilac
+- "Send A Sw _'Miss You'_" → the quoted "Miss You" phrase in italic lilac
 
 The italic word is rendered slightly larger (1.05x of the surrounding sans) and has a tiny negative letter-spacing (-0.01em) to feel like a handwritten flourish. No underline. No shadow. Color alone + italic + serif does the work.
 
 ## Phone / device frame treatment
+
 Slim iPhone 14/15 frame — black titanium bezel (`#1B1B1F`), 3px even border, 48px corner radius, no Dynamic Island detail visible (or a tiny pill dock). Phones are upright, dead center horizontally on their slide. Drop shadow: `#1B2240` at 14% opacity, 40px blur, y-offset 16px — soft and floaty, never crisp.
 
 Phone scale: phone is approximately 62% of the slide width on phone-hero slides, 48% on globe-hero slides where the globe overlaps in front of (or behind) it.
@@ -130,6 +143,7 @@ The globe is the visual anchor of the brand. Specs:
 These are sprinkled around the globe and phone like a confetti of intimacy. Each is its own micro-component:
 
 ### Lavender chat bubble ("I love you" / "Miss you")
+
 - Shape: rounded squircle, corner radius 18px, with a small triangular chat tail at the bottom-left or bottom-right
 - Fill: `#B49BE6`
 - Text: `#FFFFFF`, Pretendard 14–16px, weight 500
@@ -138,6 +152,7 @@ These are sprinkled around the globe and phone like a confetti of intimacy. Each
 - Position on "Connect With Your Lover": two stacked bubbles upper-right of globe, slight 4deg rotation alternating directions
 
 ### Heart counter card ("214 days" / "Happy forever")
+
 - Shape: rounded rectangle card, corner radius 20px
 - Fill: `#FFFFFF`
 - Inside: large soft-pink heart `#FFD7E1` with the count number `214` overlaid in navy bold serif (Tiempos or Newsreader Bold), 48px
@@ -145,17 +160,20 @@ These are sprinkled around the globe and phone like a confetti of intimacy. Each
 - Shadow: `#1B2240` 8% opacity, 24px blur
 
 ### Neon pink heart (Miss You slide)
+
 - Hot pink filled heart `#FF6FA3`, ~140px tall
 - Neon glow: `#FF6FA3` at 50% opacity, 28px blur, expanding 12px outside heart silhouette
 - Small "x214" or "x280" counter rendered above heart in chunky outlined display serif, navy stroke 2px, no fill (or off-white fill)
 - Sits inside the phone screen, centered
 
 ### Yellow smiley / yellow heart sticker
+
 - Buttercup `#FFE27A` heart or chat sticker, ~36px
 - 2-tone shading (lighter top-left)
 - Used as accent confetti — never more than 1 per slide
 
 ### "Choose" or CTA mini-pill
+
 - White pill button with navy text, drop shadow — sits on the globe near the avatar pin on cover slide
 - Border radius 999px, padding 8px 16px
 
@@ -184,6 +202,7 @@ The Raising Pets Together slide centerpiece. Style rules:
 ## Map treatment (location sharing slide)
 
 The "Real Time Location Sharing" slide phone screen shows a soft minimal map:
+
 - **Base color**: cream `#FBF6E8`
 - **Roads**: thin white `#FFFFFF` strokes, 2–3px, no labels
 - **Parks / greenery**: soft sage blobs `#D5E8D0`, irregular organic shapes
@@ -193,6 +212,7 @@ The "Real Time Location Sharing" slide phone screen shows a soft minimal map:
 - **Address card at bottom of phone screen**: white rounded card with "Jack" name in bold, an address line in grey, tiny phone/message icons on the right. Card has 24px corner radius and soft shadow.
 
 The Raising Pets slide uses a different map style:
+
 - **Base**: butter yellow `#FFF8D4`
 - **Greenery patches**: same sage `#D5E8D0` in larger irregular shapes
 - **Tiny path**: dotted brown `#A88962` 2px line meandering between pet positions
@@ -215,13 +235,15 @@ NEVER use sharp geometric shapes (triangles, hard polygons), thin outlines on te
 Tone is soft, romantic, second-person, simple. Every word feels like a whisper or a sticky-note. Avoid corporate verbs ("optimize", "leverage"). Prefer warm verbs ("share", "connect", "miss", "raise", "send").
 
 Headline examples from this mosaic:
-- "10M+ Couples Use The *exclusive* app for couples."
-- "Connect With *Your* Lover"
-- "*Real* Time Location Sharing"
-- "Raising Pets *Together*"
-- "Send A Sw *'Miss You'*"
+
+- "10M+ Couples Use The _exclusive_ app for couples."
+- "Connect With _Your_ Lover"
+- "_Real_ Time Location Sharing"
+- "Raising Pets _Together_"
+- "Send A Sw _'Miss You'_"
 
 Subtitle examples (when used):
+
 - "Always within a tap, wherever you are."
 - "Track each other's location in real time."
 - "Adopt and raise a pet together."
@@ -231,15 +253,17 @@ Heart emojis allowed sparingly (max 1 per slide). Lowercase ok inside speech bub
 ## Per-slide breakdown
 
 ### Slide 1 — Cover ("10M+ Couples Use The exclusive app for couples.")
+
 - **Background**: full 3-stop sky gradient (`#DDEBFA` → `#F5E0F0` → `#FCEFD6`). 3 cotton-puff clouds drifting in upper third.
-- **Headline**: top-aligned, navy `#1B2240`. Reads "The" → "*exclusive*" (italic lilac serif) → "app for couples." across 3 lines. Above the headline, a tiny medallion: ribbon laurels flanking "10M+" text with 5 mini stars and "Couples Use" microcaps below. The medallion is rendered in lilac line art `#B49BE6`.
+- **Headline**: top-aligned, navy `#1B2240`. Reads "The" → "_exclusive_" (italic lilac serif) → "app for couples." across 3 lines. Above the headline, a tiny medallion: ribbon laurels flanking "10M+" text with 5 mini stars and "Couples Use" microcaps below. The medallion is rendered in lilac line art `#B49BE6`.
 - **Hero element**: the 3D globe occupies the lower 60% of the slide, centered. Globe is ~52% of slide width. Two avatar pins visible — one on a top-left continent, one on a lower-right continent. A "Day 4" white sticker sits near the top-left pin. White dotted journey line curves between them. Faint white outlined continent silhouette floats just off the globe's upper-left as decoration.
 - **Floating elements**: 5–6 tiny `✦` stars scattered around globe. No chat bubbles on cover.
 - **Notable effects**: globe ground shadow below; sky has 2% noise; emphasis word "exclusive" sits at a slight optical-center bump (1px upward) to feel handwritten.
 
 ### Slide 2 — "Connect With Your Lover"
+
 - **Background**: same sky gradient. 2 clouds upper area.
-- **Headline**: top center, 2 lines. "Connect With" line 1, "*Your* Lover" line 2 (with "Your" italic lilac serif). Navy `#1B2240`.
+- **Headline**: top center, 2 lines. "Connect With" line 1, "_Your_ Lover" line 2 (with "Your" italic lilac serif). Navy `#1B2240`.
 - **Hero element**: 3D globe slightly lower-left, ~48% of slide width, ground shadow. Avatar pins on two continents, dotted journey line. A "12040km" white pill sticker sits on the globe surface near the journey line midpoint.
 - **Floating elements** (with approximate positions, slide measured as 100x100):
   - Lavender chat bubble "i love you" — upper-right of globe, position (68, 38), rotation +6deg
@@ -250,8 +274,9 @@ Heart emojis allowed sparingly (max 1 per slide). Lowercase ok inside speech bub
 - **Notable effects**: chat bubbles cast lavender shadows; globe overlaps slightly with the right edge of the chat bubble stack.
 
 ### Slide 3 — "Real Time Location Sharing"
+
 - **Background**: same sky gradient, slightly desaturated since the phone screen takes most attention. 1 cloud.
-- **Headline**: top center, 2 lines. "*Real* Time" line 1 (with "Real" italic lilac), "Location Sharing" line 2.
+- **Headline**: top center, 2 lines. "_Real_ Time" line 1 (with "Real" italic lilac), "Location Sharing" line 2.
 - **Hero element**: phone, ~62% of slide width, centered. Phone screen displays the soft minimal map (cream base, sage parks, white roads, baby-blue water blob). One avatar pin (teardrop with circular avatar) centered on the map.
 - **Phone screen UI**:
   - Top status bar minimal
@@ -262,8 +287,9 @@ Heart emojis allowed sparingly (max 1 per slide). Lowercase ok inside speech bub
 - **Notable effects**: phone has soft drop shadow; map inside phone has its own subtle inner shadow at the screen edges.
 
 ### Slide 4 — "Raising Pets Together"
+
 - **Background**: sky gradient transitions to slightly more peach (`#F5E0F0` → `#FCEFD6` dominant). 1 cloud.
-- **Headline**: top center, 2 lines. "Raising Pets" line 1, "*Together*" line 2 (italic lilac serif).
+- **Headline**: top center, 2 lines. "Raising Pets" line 1, "_Together_" line 2 (italic lilac serif).
 - **Hero element**: phone, ~62% of slide width, centered. Phone screen interior is a butter-yellow `#FFF8D4` map with sage green patches and a small house illustration in the upper-right.
 - **Phone screen contents**:
   - Top status pill showing a tiny pet name card ("Doghana" or similar) with `+` icon
@@ -273,8 +299,9 @@ Heart emojis allowed sparingly (max 1 per slide). Lowercase ok inside speech bub
 - **Notable effects**: pets have no outlines; small dotted brown path between pets; sky cloud overlaps just behind the top of the phone.
 
 ### Slide 5 — "Send A Sw 'Miss You'"
+
 - **Background**: warm peach-pink rotation of gradient (`#FBE3D7` → `#F7C9D6` → `#F3B6CC`). 1–2 clouds.
-- **Headline**: top right of phone, 2 lines. "Send A Sw" line 1, "*'Miss You'*" line 2 (quoted phrase in italic lilac serif). Slight left-margin offset because phone hugs the left edge.
+- **Headline**: top right of phone, 2 lines. "Send A Sw" line 1, "_'Miss You'_" line 2 (quoted phrase in italic lilac serif). Slight left-margin offset because phone hugs the left edge.
 - **Hero element**: phone, ~60% of slide width, positioned slightly left of center. Phone screen interior:
   - Top: "x214" or "x280" chunky outlined display-serif counter in navy
   - "Live Activities" tiny header row

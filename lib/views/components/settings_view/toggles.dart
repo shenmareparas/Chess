@@ -1,5 +1,6 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
+
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
 import 'toggle.dart';
@@ -120,8 +121,9 @@ class Toggles extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor =
-        const Color(0x1A424843); // outline-variant/10 (0x1A is ~10% opacity)
+    final themeColor = const Color(
+      0x1A424843,
+    ); // outline-variant/10 (0x1A is ~10% opacity)
 
     final platform = Theme.of(context).platform;
     final String achievementsSubtitle = 'Enables Google Play Games integration';
@@ -146,6 +148,15 @@ class Toggles extends StatelessWidget {
                 appModel.enableRotation ? false : appModel.enablePieceRotation,
             setFunc: appModel.setEnablePieceRotation,
             enabled: !appModel.enableRotation,
+          ),
+          Divider(height: 1, color: themeColor, thickness: 1),
+          Toggle(
+            'Flip Opponent Pieces (2P)',
+            subtitle: 'Always show opponent pieces upside down',
+            icon: Icons.swap_vert_rounded,
+            toggle: appModel.flipOpponentPieces,
+            setFunc: appModel.setFlipOpponentPieces,
+            enabled: !appModel.enableRotation && appModel.enablePieceRotation,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
@@ -307,11 +318,7 @@ class _SettingsTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: theme.lightTile,
-              size: 24,
-            ),
+            Icon(icon, color: theme.lightTile, size: 24),
             const SizedBox(width: 16),
             Expanded(
               child: Column(

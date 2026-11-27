@@ -33,10 +33,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF0F1B15),
-          Color(0xFF0A0F0D),
-        ],
+        colors: [Color(0xFF0F1B15), Color(0xFF0A0F0D)],
       ),
       lightTile: const Color(0xFFC2D9C8),
       darkTile: const Color(0xFF43614E),
@@ -51,10 +48,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF141923),
-          Color(0xFF0B0E14),
-        ],
+        colors: [Color(0xFF141923), Color(0xFF0B0E14)],
       ),
       lightTile: const Color(0xFFD2D8E0),
       darkTile: const Color(0xFF4C5E77),
@@ -69,10 +63,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF000000),
-          Color(0xFF000000),
-        ],
+        colors: [Color(0xFF000000), Color(0xFF000000)],
       ),
       lightTile: const Color(0xFFA4AFBA),
       darkTile: const Color(0xFF383F49),
@@ -87,10 +78,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF1E0E18),
-          Color(0xFF0F070C),
-        ],
+        colors: [Color(0xFF1E0E18), Color(0xFF0F070C)],
       ),
       lightTile: const Color(0xFFE5B2B8),
       darkTile: const Color(0xFF8C3E56),
@@ -105,10 +93,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF22150E),
-          Color(0xFF130B07),
-        ],
+        colors: [Color(0xFF22150E), Color(0xFF130B07)],
       ),
       lightTile: const Color(0xFFE2C4A2),
       darkTile: const Color(0xFF86553B),
@@ -123,10 +108,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF04191C),
-          Color(0xFF020C0E),
-        ],
+        colors: [Color(0xFF04191C), Color(0xFF020C0E)],
       ),
       lightTile: const Color(0xFF5C9E92),
       darkTile: const Color(0xFF1B555C),
@@ -141,10 +123,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF131E29),
-          Color(0xFF0B1118),
-        ],
+        colors: [Color(0xFF131E29), Color(0xFF0B1118)],
       ),
       lightTile: const Color(0xFFC9DCE8),
       darkTile: const Color(0xFF557C96),
@@ -159,10 +138,7 @@ List<AppTheme> _buildThemeList() {
       background: const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFF091624),
-          Color(0xFF040A10),
-        ],
+        colors: [Color(0xFF091624), Color(0xFF040A10)],
       ),
       lightTile: const Color(0xFFA5C3E2),
       darkTile: const Color(0xFF335880),

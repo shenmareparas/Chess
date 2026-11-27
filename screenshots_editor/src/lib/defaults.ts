@@ -82,7 +82,9 @@ function tabletStarter(kind: "7" | "10"): Slide[] {
       id: nid(),
       layout: "hero",
       label: en("MEET YOUR APP"),
-      headline: en(kind === "7" ? "Pocket-sized\npower." : "Made for\nthe big screen."),
+      headline: en(
+        kind === "7" ? "Pocket-sized\npower." : "Made for\nthe big screen.",
+      ),
       screenshot: "",
     },
     {

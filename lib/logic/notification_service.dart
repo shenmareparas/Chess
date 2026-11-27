@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
@@ -37,8 +38,9 @@ class NotificationService {
         debugPrint('NotificationService: fallback to local/UTC: $e');
       }
 
-      const androidInitSettings =
-          AndroidInitializationSettings('@mipmap/launcher_icon');
+      const androidInitSettings = AndroidInitializationSettings(
+        '@mipmap/launcher_icon',
+      );
       const darwinInitSettings = DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -193,8 +195,10 @@ class NotificationService {
   }
 
   /// Schedules the recurring daily chess practice notification.
-  Future<void> scheduleAdaptiveDailyReminder(
-      {int? customHour, int? customMinute}) async {
+  Future<void> scheduleAdaptiveDailyReminder({
+    int? customHour,
+    int? customMinute,
+  }) async {
     if (!_initialized) await initialize();
 
     try {
@@ -243,11 +247,11 @@ class NotificationService {
         ('Daily Chess Training', 'Time for your daily chess practice!'),
         (
           'Keep Your Mind Sharp',
-          'Your chessboard awaits! Jump in for a quick tactical match.'
+          'Your chessboard awaits! Jump in for a quick tactical match.',
         ),
         (
           'Daily Chess Match',
-          'Sharpen your tactics today. Challenge the engine and level up!'
+          'Sharpen your tactics today. Challenge the engine and level up!',
         ),
       ];
       final selectedMessage = messages[hour % messages.length];
@@ -263,10 +267,12 @@ class NotificationService {
       );
 
       debugPrint(
-          'NotificationService: Scheduled daily reminder for $hour:${minute.toString().padLeft(2, '0')}');
+        'NotificationService: Scheduled daily reminder for $hour:${minute.toString().padLeft(2, '0')}',
+      );
     } catch (e) {
       debugPrint(
-          'NotificationService: scheduleAdaptiveDailyReminder error: $e');
+        'NotificationService: scheduleAdaptiveDailyReminder error: $e',
+      );
     }
   }
 

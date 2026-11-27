@@ -64,7 +64,8 @@ class InAppUpdateService {
     } catch (e) {
       if (kDebugMode) {
         debugPrint(
-            'InAppUpdateService (Android): Failed to check/start update: $e');
+          'InAppUpdateService (Android): Failed to check/start update: $e',
+        );
       }
     }
   }
@@ -81,7 +82,8 @@ class InAppUpdateService {
           } catch (e) {
             if (kDebugMode) {
               debugPrint(
-                  'InAppUpdateService: Failed to complete flexible update: $e');
+                'InAppUpdateService: Failed to complete flexible update: $e',
+              );
             }
           }
         }
@@ -89,7 +91,8 @@ class InAppUpdateService {
       onError: (Object error) {
         if (kDebugMode) {
           debugPrint(
-              'InAppUpdateService: Flexible update stream error: $error');
+            'InAppUpdateService: Flexible update stream error: $error',
+          );
         }
         _flexibleUpdateSubscription?.cancel();
         _flexibleUpdateSubscription = null;

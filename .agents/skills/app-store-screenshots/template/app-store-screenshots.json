@@ -3,9 +3,7 @@
   "appName": "My App",
   "themeId": "clean-light",
   "connectedCanvas": true,
-  "locales": [
-    "en"
-  ],
+  "locales": ["en"],
   "locale": "en",
   "device": "iphone",
   "orientation": "portrait",

@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  chessground:
+    dependency: "direct main"
+    description:
+      name: chessground
+      sha256: "26393bc24dcf1af2368b35a9d783142722b153d1ef9a1a348772f433168df01a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "10.3.0"
   cli_util:
     dependency: transitive
     description:
@@ -161,14 +169,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-  flame:
-    dependency: "direct main"
-    description:
-      name: flame
-      sha256: b4d7e59b81f35a426f8b39dcec10175180b9c2984b2b2e619021660d8951307c
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.38.2"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -525,14 +525,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.6.4"
-  ordered_set:
-    dependency: transitive
-    description:
-      name: ordered_set
-      sha256: ca415a0e28b8e8f5e284af4b7d1b189d2d09af6d2082532ddaec54473f67d226
-      url: "https://pub.dev"
-    source: hosted
-    version: "8.0.1"
   package_config:
     dependency: transitive
     description:

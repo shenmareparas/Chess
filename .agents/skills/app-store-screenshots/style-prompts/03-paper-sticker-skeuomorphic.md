@@ -11,7 +11,7 @@ feel: tactile, crafty, "your school binder come to life", joyful nostalgia, dorm
 
 ## Hard quality rules (this style)
 
-- **Use the default iPhone bezel.** Use the template's stock `Phone` device frame (the iPhone mockup PNG). Do NOT replace it with a paper-cutout or cream cardboard border. The paper-craft world reads through the *background slab*, the *stickers*, the *marker headline*, and the *inside-phone sticker UI* — the iPhone itself stays as the default. You may tape washi-tape strips across the phone corner for the scrapbook feel, but the bezel is real iPhone.
+- **Use the default iPhone bezel.** Use the template's stock `Phone` device frame (the iPhone mockup PNG). Do NOT replace it with a paper-cutout or cream cardboard border. The paper-craft world reads through the _background slab_, the _stickers_, the _marker headline_, and the _inside-phone sticker UI_ — the iPhone itself stays as the default. You may tape washi-tape strips across the phone corner for the scrapbook feel, but the bezel is real iPhone.
 - **Phone size on phone-bearing slides**: phone height = **82–90%** of canvas height (≈ **2350–2580 px** on a 1320×2868 canvas). The phone MUST bleed off the bottom edge by 5–10% of its own height. **Concretely: render the phone at `height = canvas.height * 0.86` and crop the bottom.** Below 82% is a hard fail — the paper-craft world depends on a big anchored phone.
 - **Marker headline size**: **≥ 130 px (≈ 96pt)** on a 1320×2868 canvas. Slide 1 wordmark (e.g. "Bloom") **≥ 180 px (≈ 132pt)**. Smaller headlines read as bashful and fail the "binder/sticker book" energy. Use **140–160 px** as your default and only drop if the marker word genuinely cannot fit at 86% canvas width.
 - **Marker headline color is bg-dependent.** Marker blue `#3E8FD6` on cork green is medium-on-medium and reads faded.
@@ -34,11 +34,13 @@ feel: tactile, crafty, "your school binder come to life", joyful nostalgia, dorm
 - **Paper grain noise** at 7–10% opacity, `mix-blend-mode: multiply`. Without it, paper reads as plastic.
 
 ## Vibe summary
+
 A joyful, deeply tactile aesthetic that treats every surface as a real, physical piece of paper, cardboard, cork, or vinyl sticker pressed onto a school desk. Each slide is a flat-lay composition: a colored construction-paper or cork background slab, then layered paper-cutout cards (the iPhones themselves are rendered as paper rectangles), with marker-pen headline lettering and a scatter of pixel-art stickers, polka-dot stickers, polaroids, and folder tabs. The vibe sits between a Lisa-Frank trapper keeper, a Pinterest scrapbook, and a Studio Ghibli desk shot — playful, hand-made, joyfully chaotic but compositionally balanced. Every element casts a soft, short paper shadow so the viewer reads depth as "layered paper on a surface" rather than "UI on a screen."
 
 ## Global palette
 
 ### Background slabs (one per slide)
+
 - Slide 1 — Cork green / mint cork: base `#8FBE7C` with a tiled mosaic of `#A4D08D`, `#7FAE6C`, `#B3D69D`, `#94C283` (irregular ~80×80px tiles), white grout lines `#F4EBDD` at 2px.
 - Slide 2 — Peach pink: `#F4C6BB` (warm salmon-blush) with 8% paper grain.
 - Slide 3 — Dusty rose / coral pink: `#EFB1A4` (a touch deeper than slide 2) with 8% paper grain.
@@ -46,22 +48,26 @@ A joyful, deeply tactile aesthetic that treats every surface as a real, physical
 - Slide 5 — Mint sherbet: `#C9E6C2` (pale cool mint, lighter than slide 1 cork) with 8% paper grain.
 
 ### Paper white (cards, phones, notes)
+
 - Off-white cream: `#F8F0E2` primary paper color (NEVER pure white).
 - Edge highlight: `#FFFAF0` along top-left of each paper edge (1px subtle lift).
 - Notepad page: `#FAF3E5` with horizontal rule lines in `#E8DAB7` every 22px.
 
 ### Marker / headline color
+
 - Marker blue: `#3E8FD6` (bright but slightly faded, like a Crayola "blue" felt-tip).
 - Marker blue shadow / second pass: `#2E76B8` (used as a 1-2px offset behind headline for depth).
 - Marker red (accents, occasional words): `#E45A4A`.
 - Marker yellow highlighter band: `#FCE36A` at 60% opacity behind some words.
 
 ### Text dark
+
 - Body navy: `#1F2A44` (slightly warm, never pure black).
 - Secondary body: `#5B6478` (cool grey-blue).
 - Hint / placeholder: `#A0A4AE`.
 
 ### Sticker accent palette (vinyl stickers)
+
 - Alien green: `#7AD66B` with `#4EA644` shadow.
 - Hot pink: `#F25C8E`.
 - Retro yellow: `#FBD24B`.
@@ -72,15 +78,18 @@ A joyful, deeply tactile aesthetic that treats every surface as a real, physical
 - Washi-tape mint: `#A8E3C8` with white polka dots.
 
 ### Folder-tab palette (color-coded courses)
+
 - Tab red `#E96B59`, tab orange `#F2A14B`, tab yellow `#F4D04C`, tab green `#7BC47A`, tab teal `#5FB8C0`, tab blue `#5C9ADF`, tab purple `#A28BD0`, tab pink `#F19BB6`.
 
 ### Shadow tokens
+
 - Paper shadow (small): `0 2px 4px rgba(33, 28, 22, 0.10)`.
 - Paper shadow (card): `0 4px 8px rgba(33, 28, 22, 0.12), 0 1px 2px rgba(33, 28, 22, 0.08)`.
 - Paper shadow (phone): `0 10px 22px rgba(33, 28, 22, 0.18), 0 2px 4px rgba(33, 28, 22, 0.10)`.
 - Sticker shadow (vinyl, harder edge): `0 2px 2px rgba(33, 28, 22, 0.22)`.
 
 ## Background textures (signature)
+
 Every background is treated as a physical surface, never a flat fill. Layer ordering from bottom up:
 
 1. **Base color slab** — the slide's background color above.
@@ -88,6 +97,7 @@ Every background is treated as a physical surface, never a flat fill. Layer orde
 3. **Subtle vignette** — radial gradient from transparent at center to `rgba(33, 28, 22, 0.06)` at corners, very gentle.
 
 ### Per-surface texture rules
+
 - **Slide 1 cork mosaic**: Tile the canvas with irregular 60-100px squares, each rotated `-2°` to `+2°`. Each tile uses one of the four green hues randomly. Between tiles, 1.5-2px gaps in `#F4EBDD` (cream grout). Add 5% additional brown noise (`#6B4F2A` at 5% opacity multiply) so it reads as cork/grass mat, not tile. Tiles closer to edges should be partially cropped so it feels endless.
 - **Slide 2 & 3 peach/rose**: Flat construction paper. Add subtle horizontal "fiber" streaks: 1px lines of `rgba(255, 255, 255, 0.05)` every 6-9px irregularly, like recycled paper.
 - **Slide 4 putty grey**: Linen weave — two perpendicular sets of 1px lines at `rgba(0, 0, 0, 0.04)` every 3px, creating an extremely subtle crosshatch.
@@ -98,6 +108,7 @@ Every background is treated as a physical surface, never a flat fill. Layer orde
 ## Typography
 
 ### Headline (the wordmark / slide title)
+
 - Font: chunky hand-drawn marker — Caveat Brush, Permanent Marker, Reenie Beanie Bold, KG Happy Solid Bold, or Sketchnote Square. Strokes ~10-14% of x-height.
 - Weight: only one weight (the chunky marker weight).
 - Case: Title Case with capitalized first letter, or all-caps for short single words ("Courses", "To-do").
@@ -109,6 +120,7 @@ Every background is treated as a physical surface, never a flat fill. Layer orde
 - Underline: a hand-drawn squiggle — a wobbly horizontal stroke 4-6px thick in the same marker blue, running under the word, with 2-3 gentle waves. Often extends 8-16px past the word at one or both ends.
 
 ### Subtitle / body description
+
 - Font: clean rounded sans-serif — Inter, SF Pro Rounded, or Nunito Semibold.
 - Weight: 500-600.
 - Color: body navy `#1F2A44`.
@@ -118,16 +130,19 @@ Every background is treated as a physical surface, never a flat fill. Layer orde
 - Often sits directly under the headline with ~24px gap.
 
 ### UI body inside phones
+
 - iOS system / SF Pro Text / Inter at native iPhone sizing (16-17pt).
 - Colors and weights follow real iOS conventions inside the app screenshots, BUT every card container is given a cream/paper background instead of pure white.
 
 ### Wordmark (slide 1 "Folderly")
+
 - Same marker font as headlines but larger: 110-130pt.
 - Same marker blue.
 - Slightly heavier squiggle underline (6-8px stroke).
 - May include a tiny star sticker (`★` in retro yellow) as a dot on the "i" or floating beside the wordmark.
 
 ## Headline emphasis
+
 The headlines themselves ARE the emphasis. There is no separate accent word — the entire headline is the loud, joyful, marker-blue feature. Rules:
 
 - The single noun in quotes ("ID Card", "To-do", "Subto-dos", "Courses", "Folderly") is the headline, marker style.
@@ -137,6 +152,7 @@ The headlines themselves ARE the emphasis. There is no separate accent word — 
 - Optional `#FCE36A` highlighter band: a 60% opacity yellow rectangle behind the headline, slightly taller than the cap-height, with hand-drawn wavy top/bottom edges. Used sparingly (1 of 5 slides max).
 
 ## Phone / device frame treatment
+
 Phones are NOT real iPhone bezels. They are paper cutouts:
 
 - **Shape**: rounded rectangle, corner radius `48px` at ~620px phone width.
@@ -149,6 +165,7 @@ Phones are NOT real iPhone bezels. They are paper cutouts:
 - **No status bar**: keep the iOS status bar but recolor it to match the in-app cream theme.
 
 ## Background photo / image treatment
+
 There are NO photographs in this style. Every surface is either:
 
 - Flat paper texture (backgrounds).
@@ -161,6 +178,7 @@ If a real product photo is unavoidable, it MUST be styled as a polaroid: 12px wh
 ## Floating UI elements (stickers, doodles)
 
 ### Pixel-art stickers (small, scattered)
+
 All pixel-art stickers are rendered at integer pixel size with crisp `image-rendering: pixelated`. They are vinyl cutouts: matte interior color + 2px white "cut" outline + harder shadow (`0 2px 2px rgba(33,28,22,0.22)`).
 
 - **Alien sticker (Space Invader-style)**: 48×48px, green `#7AD66B` body, white outline, sits near phone bottom on slide 2 and slide 1. Rotation `-12°` to `+8°`.
@@ -170,6 +188,7 @@ All pixel-art stickers are rendered at integer pixel size with crisp `image-rend
 - **Pixel star**: 28×28px, retro yellow `#FBD24B`, scattered.
 
 ### Folder tabs
+
 - Trapezoidal or rectangular tabs sticking out the top edge of a paper card.
 - 80-120px wide, 32-40px tall (visible portion).
 - Each tab a different folder color (see folder-tab palette).
@@ -178,6 +197,7 @@ All pixel-art stickers are rendered at integer pixel size with crisp `image-rend
 - Often 4-6 tabs across the top of a notepad-like card (see slide 5 "Courses").
 
 ### Polka-dot stickers
+
 - Circles 14-28px diameter.
 - Solid color from sticker palette.
 - White 2px outline (vinyl die-cut).
@@ -185,6 +205,7 @@ All pixel-art stickers are rendered at integer pixel size with crisp `image-rend
 - Rotation N/A (circles), but offsets are random.
 
 ### Washi-tape strips
+
 - 90-130px long, 22-28px tall.
 - Translucent pastel color at 75% opacity (mint, pink, yellow).
 - Optional pattern overlay: white polka dots, diagonal stripes, or tiny stars.
@@ -192,6 +213,7 @@ All pixel-art stickers are rendered at integer pixel size with crisp `image-rend
 - Rotated `-25°` to `+25°`, placed across corners of polaroids and headlines.
 
 ### Polaroid frames
+
 - White paper `#F8F0E2`, 12px border, 24px bottom border.
 - Inner image area filled with sticker illustration (no real photos).
 - Tape strip across one or both top corners.
@@ -199,29 +221,34 @@ All pixel-art stickers are rendered at integer pixel size with crisp `image-rend
 - Shadow: card paper shadow token.
 
 ### Sticky notes (Post-it)
+
 - Square 100-140px, sticky-note yellow `#FAE680`.
 - Slight curl on bottom-right corner — a triangle of `#E6CC54` revealed.
 - Tiny handwritten marker text in navy.
 - Rotation `-6°` to `+6°`.
 
 ### Hand-drawn doodles
+
 - Stars (5-point, drawn with single marker stroke): 20-32px, marker blue or yellow.
 - Arrows (curved, with arrowhead): 60-100px, marker blue, 4px stroke.
 - Squiggles (3-wave horizontal lines): used as dividers under headlines and beside icons.
 - Tiny circles / dots clusters: 4-6 dots in marker red around a point of interest.
 
 ### Paper clip
+
 - Silver/grey `#C7CDD5` outlined paper clip, ~36×80px, 3px stroke.
 - Pinned at top of a paper card.
 - Rotation `+15°` to `+30°`.
 
 ### Receipt strip
+
 - Long narrow cream rectangle `#F8F0E2`, ~80px wide × 320px tall.
 - Bottom edge scalloped/zig-zag like a torn receipt.
 - Monospace text in navy: "Hello, Filomena" or order-receipt content.
 - Used as a personalized greeting strip (slide 3 & 4).
 
 ## Skeuomorphic UI inside phones
+
 The app UI itself continues the paper aesthetic. Real-iOS conventions are bent to match:
 
 - **Background of every screen**: cream `#F8F0E2` instead of system white.
@@ -246,6 +273,7 @@ The app UI itself continues the paper aesthetic. Real-iOS conventions are bent t
 - Scribble underlines, double underlines, and the occasional circled word.
 
 ## Copy tone
+
 Casual student / friendly best-friend voice. Conversational, never corporate. Sentences are short and end-stopped. Lowercase-friendly. Uses encouraging verbs ("Personalize", "Create", "Break down", "Choose"). Examples directly from this style:
 
 - "Personalize your own ID Card. Choose from existing logos or upload your own."
@@ -258,6 +286,7 @@ Tone notes: never uses exclamation marks aggressively (max 1 per slide). Avoids 
 ## Per-slide breakdown (mandatory)
 
 ### Slide 1 — "Folderly" Cover
+
 - **Background**: cork-tile mosaic on mint green base `#8FBE7C`. Irregular 60-100px green tiles with cream grout, rotated `-2°` to `+2°` each. Subtle brown noise overlay 5%.
 - **Headline / wordmark**: "Folderly" in marker blue `#3E8FD6`, 120pt Caveat Brush style, rotated `-2°`, sits in top-left at about (80px, 80px). Squiggle underline 6px thick extending past the "y". A small yellow star sticker `★` at top-right of the "F".
 - **Phone**: centered horizontally, ~620px wide, paper border 16px cream, tilt `0°` (straight). Phone shadow heavy (it's the hero). Screen content shows a To-Do home screen with cream background, "Hello, Filomena" greeting, a small alien sticker avatar, two cards (today's tasks), each with colored category tabs.
@@ -270,6 +299,7 @@ Tone notes: never uses exclamation marks aggressively (max 1 per slide). Avoids 
 - **Notable effects**: cork base reads as a wall pinboard. Phone feels pinned. Slight grain on entire slide.
 
 ### Slide 2 — "ID Card"
+
 - **Background**: peach pink `#F4C6BB` flat construction paper with 8% grain and faint horizontal fiber streaks.
 - **Headline**: "ID Card" in marker blue `#3E8FD6`, 76pt, rotated `+2°`, top-left at (80px, 80px). Squiggle underline. The quotes-style framing (no actual quotes) — just the words "ID Card" prominently.
 - **Subtitle**: "Personalize your own ID Card. Choose from existing logos or upload your own." in navy `#1F2A44`, 30pt Inter Semibold, left-aligned, max-width 720px, sits below headline with 28px gap.
@@ -281,6 +311,7 @@ Tone notes: never uses exclamation marks aggressively (max 1 per slide). Avoids 
 - **Notable effects**: the ID card on-screen has the rainbow holographic gradient at 30% opacity which is the slide's signature visual moment.
 
 ### Slide 3 — "To-do"
+
 - **Background**: dusty rose `#EFB1A4` flat construction paper with 8% grain.
 - **Headline**: "To-do" in marker blue, 80pt, rotated `-2°`, top-left. Squiggle underline extending past "o". Optionally a tiny marker-red checkmark doodle next to it.
 - **Subtitle**: "Create and organize to-dos. Filter them according to Ongoing, Missed and Completed." Navy, 30pt, below headline.
@@ -292,6 +323,7 @@ Tone notes: never uses exclamation marks aggressively (max 1 per slide). Avoids 
 - **Notable effects**: paper-strip task rows with category color edges are the readable detail.
 
 ### Slide 4 — "Subto-dos"
+
 - **Background**: putty grey `#C9C5BC` with linen crosshatch texture.
 - **Headline**: "Subto-dos" in marker blue, 72pt, rotated `+1°`. Squiggle underline. Slightly narrower kerning to fit the longer word.
 - **Subtitle**: "Break down tasks into smaller, manageable steps, ensuring better organization and progress tracking." Navy, 30pt, below headline.
@@ -303,6 +335,7 @@ Tone notes: never uses exclamation marks aggressively (max 1 per slide). Avoids 
 - **Notable effects**: the checkboxes are visibly hand-drawn (not perfect squares), and crayon ticks are the joyful detail.
 
 ### Slide 5 — "Courses"
+
 - **Background**: pale mint `#C9E6C2` flat paper with 8% grain.
 - **Headline**: "Courses" in marker blue, 78pt, rotated `-3°`, top-left. Squiggle underline extends well past the "s".
 - **Subtitle**: "Create a course folder to keep all of course-related materials in one place." Navy, 30pt.

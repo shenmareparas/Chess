@@ -23,9 +23,7 @@ class GameInfoAndControls extends StatelessWidget {
         : (screenHeight * 0.35 + extraHeight * 0.5).clamp(140.0, 280.0);
 
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: maxAllowedHeight,
-      ),
+      constraints: BoxConstraints(maxHeight: maxAllowedHeight),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

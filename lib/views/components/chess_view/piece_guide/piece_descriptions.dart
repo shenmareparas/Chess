@@ -74,11 +74,7 @@ const Map<ChessPieceType, PieceInfo> pieceDescriptions = {
     specialRule:
         '• Promotion: Reaching the enemy\'s back rank (8th rank) immediately transforms the pawn into a Queen, Rook, Bishop, or Knight of your choice.\n'
         '• En Passant: If an opposing pawn advances two squares and lands directly beside yours, you can capture it diagonally behind on your very next turn as if it had only moved one square.',
-    quickStats: [
-      '1 Sq Forward',
-      'Diagonal Capture',
-      'Promotion at Rank 8',
-    ],
+    quickStats: ['1 Sq Forward', 'Diagonal Capture', 'Promotion at Rank 8'],
     specialRules: [
       SpecialRuleItem(
         title: 'Pawn Promotion',
@@ -111,11 +107,7 @@ const Map<ChessPieceType, PieceInfo> pieceDescriptions = {
     specialRuleTitle: 'Leaping Ability',
     specialRule:
         'The knight is the only piece in chess that can jump over other pieces (both friendly and opponent). This unique ability lets knights develop on move 1 without moving any pawns first.',
-    quickStats: [
-      'L-Shape Leap',
-      'Jumps Over Pieces',
-      'Alternates Colors',
-    ],
+    quickStats: ['L-Shape Leap', 'Jumps Over Pieces', 'Alternates Colors'],
     specialRules: [
       SpecialRuleItem(
         title: 'Unrestricted Leaping',
@@ -148,11 +140,7 @@ const Map<ChessPieceType, PieceInfo> pieceDescriptions = {
     specialRuleTitle: 'Color Binding & Fianchetto',
     specialRule:
         'Because a bishop can only visit 32 of the 64 squares, placing it on the board\'s longest diagonals (fianchetto on b2/g2 or b7/g7) maximizes its scope and puts pressure on the center and opposing corners.',
-    quickStats: [
-      'Diagonal Reach',
-      'Color-Bound (32 Sq)',
-      'Open Board Power',
-    ],
+    quickStats: ['Diagonal Reach', 'Color-Bound (32 Sq)', 'Open Board Power'],
     specialRules: [
       SpecialRuleItem(
         title: 'Color Parity',
@@ -185,11 +173,7 @@ const Map<ChessPieceType, PieceInfo> pieceDescriptions = {
     specialRuleTitle: 'Castling Maneuver',
     specialRule:
         'The rook collaborates with an unmoved king to execute Castling: the king moves two squares toward the rook, and the rook hops directly over the king to the adjacent square, achieving king safety and rook activation in a single turn.',
-    quickStats: [
-      'Ranks & Files',
-      'Castling Partner',
-      '7th Rank Invasions',
-    ],
+    quickStats: ['Ranks & Files', 'Castling Partner', '7th Rank Invasions'],
     specialRules: [
       SpecialRuleItem(
         title: 'Castling Maneuver',
@@ -260,11 +244,7 @@ const Map<ChessPieceType, PieceInfo> pieceDescriptions = {
     specialRule:
         '• Castling: If the king and rook have not moved, intervening squares are empty, and the king does not move into, out of, or through check, you can castle kingside or queenside.\n'
         '• Checkmate: If the king is under direct attack with zero legal moves to resolve the threat, the game ends immediately in defeat.',
-    quickStats: [
-      '1 Sq Radius',
-      'Castling Right',
-      'Game Critical',
-    ],
+    quickStats: ['1 Sq Radius', 'Castling Right', 'Game Critical'],
     specialRules: [
       SpecialRuleItem(
         title: 'Castling Security',

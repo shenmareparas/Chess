@@ -109,7 +109,7 @@ void main() {
           '53-45',
           '12-28',
           '54-38',
-          '3-39'
+          '3-39',
         ], // Fool's Mate sequence placing White (Player.player1) in check
       });
 
@@ -119,7 +119,9 @@ void main() {
       // Verify that the game restored successfully and player1 (White) is in check
       expect(appModel.turn, Player.player1);
       expect(
-          appModel.gameController!.board.kingInCheck(Player.player1), isTrue);
+        appModel.gameController!.board.kingInCheck(Player.player1),
+        isTrue,
+      );
 
       // Check if the checkHintTile is correctly highlighted at the White king's tile (e1 = tile 60)
       final whiteKingTile =
@@ -127,25 +129,27 @@ void main() {
       expect(appModel.gameController!.checkHintTile, whiteKingTile);
     });
 
-    test('winner is correctly determined as the active player on checkmate',
-        () async {
-      final prefs = UserPreferences();
-      await prefs.load();
-      final appModel = AppModel(prefs: prefs);
+    test(
+      'winner is correctly determined as the active player on checkmate',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        final appModel = AppModel(prefs: prefs);
 
-      // Simulate human as White, playing with AI, and White delivers checkmate (turn = player1)
-      appModel.playerSide = Player.player1;
-      appModel.setPlayerCount(1); // Set playing with AI (playerCount = 1)
-      appModel.turn = Player.player1;
+        // Simulate human as White, playing with AI, and White delivers checkmate (turn = player1)
+        appModel.playerSide = Player.player1;
+        appModel.setPlayerCount(1); // Set playing with AI (playerCount = 1)
+        appModel.turn = Player.player1;
 
-      // When game ends with time remaining on both sides
-      appModel.player1TimeLeft.value = const Duration(minutes: 5);
-      appModel.player2TimeLeft.value = const Duration(minutes: 5);
-      appModel.endGame(silent: true);
+        // When game ends with time remaining on both sides
+        appModel.player1TimeLeft.value = const Duration(minutes: 5);
+        appModel.player2TimeLeft.value = const Duration(minutes: 5);
+        appModel.endGame(silent: true);
 
-      // User (White) delivered checkmate on their turn, so they should win
-      expect(appModel.userWon, isTrue);
-    });
+        // User (White) delivered checkmate on their turn, so they should win
+        expect(appModel.userWon, isTrue);
+      },
+    );
 
     test(
         'winner is correctly determined as the active player on checkmate in untimed games',
@@ -168,27 +172,29 @@ void main() {
       expect(appModel.userWon, isTrue);
     });
 
-    test('exitChessView clears saved game and prevents subsequent saves',
-        () async {
-      final prefs = UserPreferences();
-      await prefs.load();
-      final appModel = AppModel(prefs: prefs);
-      appModel.newGame();
+    test(
+      'exitChessView clears saved game and prevents subsequent saves',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        final appModel = AppModel(prefs: prefs);
+        appModel.newGame();
 
-      // Save game state
-      appModel.saveGameStateImmediate();
-      expect(await GameStateStorage.hasSavedGame(), isTrue);
+        // Save game state
+        appModel.saveGameStateImmediate();
+        expect(await GameStateStorage.hasSavedGame(), isTrue);
 
-      // Exit without saving
-      await appModel.exitChessView();
-      expect(appModel.isExiting, isTrue);
-      expect(await GameStateStorage.hasSavedGame(), isFalse);
-      expect(appModel.hasSavedGame, isFalse);
+        // Exit without saving
+        await appModel.exitChessView();
+        expect(appModel.isExiting, isTrue);
+        expect(await GameStateStorage.hasSavedGame(), isFalse);
+        expect(appModel.hasSavedGame, isFalse);
 
-      // Attempting to save after exit should be blocked
-      appModel.saveGameStateImmediate();
-      expect(await GameStateStorage.hasSavedGame(), isFalse);
-    });
+        // Attempting to save after exit should be blocked
+        appModel.saveGameStateImmediate();
+        expect(await GameStateStorage.hasSavedGame(), isFalse);
+      },
+    );
 
     test('saveAndExitChessView saves game state and marks isExiting', () async {
       final prefs = UserPreferences();
@@ -223,44 +229,50 @@ void main() {
       expect(prefs.showCapturedPieces, isTrue);
     });
 
-    test('captured pieces update dynamically during history navigation',
-        () async {
-      final prefs = UserPreferences();
-      await prefs.load();
-      final appModel = AppModel(prefs: prefs);
-      final controller = GameController(appModel);
-      appModel.gameController = controller;
+    test(
+      'captured pieces update dynamically during history navigation',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        final appModel = AppModel(prefs: prefs);
+        final controller = GameController(appModel);
+        appModel.gameController = controller;
 
-      // Play e2e4 (48 -> 32)
-      final meta1 = controller.board.push(Move(48, 32));
-      appModel.pushMoveMeta(meta1);
+        // Play e2e4 (48 -> 32)
+        final meta1 = controller.board.push(Move(48, 32));
+        appModel.pushMoveMeta(meta1);
 
-      // Play d7d5 (11 -> 27)
-      final meta2 = controller.board.push(Move(11, 27));
-      appModel.pushMoveMeta(meta2);
+        // Play d7d5 (11 -> 27)
+        final meta2 = controller.board.push(Move(11, 27));
+        appModel.pushMoveMeta(meta2);
 
-      // White captures Black's pawn: e4xd5 (32 -> 27)
-      final meta3 = controller.board.push(Move(32, 27));
-      appModel.pushMoveMeta(meta3);
+        // White captures Black's pawn: e4xd5 (32 -> 27)
+        final meta3 = controller.board.push(Move(32, 27));
+        appModel.pushMoveMeta(meta3);
 
-      // Verify captured pieces at live state: Player 2 lost 1 pawn
-      expect(appModel.capturedPiecesFor(Player.player2), [ChessPieceType.pawn]);
-      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
+        // Verify captured pieces at live state: Player 2 lost 1 pawn
+        expect(appModel.capturedPiecesFor(Player.player2), [
+          ChessPieceType.pawn,
+        ]);
+        expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
 
-      // Rewind history to move index 1 (before the capture on move 2)
-      appModel.setHistoryViewIndex(1);
+        // Rewind history to move index 1 (before the capture on move 2)
+        appModel.setHistoryViewIndex(1);
 
-      // Before the capture, Player 2 had NO captured pieces
-      expect(appModel.capturedPiecesFor(Player.player2), isEmpty);
-      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
+        // Before the capture, Player 2 had NO captured pieces
+        expect(appModel.capturedPiecesFor(Player.player2), isEmpty);
+        expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
 
-      // Return to live game
-      appModel.setHistoryViewIndex(null);
+        // Return to live game
+        appModel.setHistoryViewIndex(null);
 
-      // Capture is restored
-      expect(appModel.capturedPiecesFor(Player.player2), [ChessPieceType.pawn]);
-      expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
-    });
+        // Capture is restored
+        expect(appModel.capturedPiecesFor(Player.player2), [
+          ChessPieceType.pawn,
+        ]);
+        expect(appModel.capturedPiecesFor(Player.player1), isEmpty);
+      },
+    );
 
     test(
         'board and piece rotation in 2P mode behave like single player when viewing history',
@@ -381,30 +393,40 @@ void main() {
       expect(controller.board.redoStack.length, 1);
     });
 
-    test('stepHistoryBackward and stepHistoryForward step through moves',
-        () async {
-      final prefs = UserPreferences();
-      await prefs.load();
-      final appModel = AppModel(prefs: prefs);
-      final controller = GameController(appModel);
-      appModel.gameController = controller;
-      appModel.playerCount = 2;
+    test(
+      'stepHistoryBackward and stepHistoryForward step through moves',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        final appModel = AppModel(prefs: prefs);
+        final controller = GameController(appModel);
+        appModel.gameController = controller;
+        appModel.playerCount = 2;
 
-      // Create two moves: 1. e4 (52->36), 1... e5 (12->28)
-      final meta1 = MoveMeta(Move(52, 36), Player.player1, ChessPieceType.pawn);
-      final meta2 = MoveMeta(Move(12, 28), Player.player2, ChessPieceType.pawn);
-      controller.board.push(meta1.move!);
-      controller.board.push(meta2.move!);
-      appModel.moveMetaList.addAll([meta1, meta2]);
+        // Create two moves: 1. e4 (52->36), 1... e5 (12->28)
+        final meta1 = MoveMeta(
+          Move(52, 36),
+          Player.player1,
+          ChessPieceType.pawn,
+        );
+        final meta2 = MoveMeta(
+          Move(12, 28),
+          Player.player2,
+          ChessPieceType.pawn,
+        );
+        controller.board.push(meta1.move!);
+        controller.board.push(meta2.move!);
+        appModel.moveMetaList.addAll([meta1, meta2]);
 
-      // Enter history at move 0
-      appModel.setHistoryViewIndex(0);
-      expect(appModel.historyViewIndex, 0);
+        // Enter history at move 0
+        appModel.setHistoryViewIndex(0);
+        expect(appModel.historyViewIndex, 0);
 
-      // Stepping forward at the end of history returns to live state (null)
-      appModel.stepHistoryForward();
-      expect(appModel.historyViewIndex, isNull);
-    });
+        // Stepping forward at the end of history returns to live state (null)
+        appModel.stepHistoryForward();
+        expect(appModel.historyViewIndex, isNull);
+      },
+    );
 
     test(
         'king check highlight (checkHintTile) is restored after undoing move in 2-player mode',

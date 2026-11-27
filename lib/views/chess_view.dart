@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../logic/chess_game.dart';
 import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
@@ -43,7 +42,6 @@ class ChessView extends StatefulWidget {
 
 class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   AppModel appModel;
-  ChessGame? chessGame;
   late ConfettiController _confettiController;
   bool _hasPlayedConfetti = false;
   // Confetti colors only change with the theme. Cache to avoid recomputing
@@ -57,8 +55,9 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 5));
+    _confettiController = ConfettiController(
+      duration: const Duration(seconds: 5),
+    );
 
     // Ensure status and navigation bars stay hidden in immersive mode as configured globally
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -68,28 +67,16 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     appModel.addListener(_onAppModelChanged);
 
     // Defer game initialization to after the page transition completes.
-    // This prevents heavy work (sprite creation, board setup) from
-    // blocking the navigation animation.
+    // This prevents heavy work (board setup) from blocking the navigation animation.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.isResuming) {
-        appModel.restoreGameState().then((_) => _initFlameGame());
+        appModel.restoreGameState().then((_) {
+          if (mounted) appModel.update();
+        });
       } else {
-        appModel.newGame(notify: false);
-        _initFlameGame();
+        appModel.newGame(notify: true);
       }
     });
-  }
-
-  void _initFlameGame() {
-    if (appModel.gameController != null) {
-      setState(() {
-        chessGame = ChessGame(appModel.gameController!, appModel);
-      });
-      // Defer notifying listeners if needed to let the flame engine setup.
-      Future.delayed(Duration(milliseconds: 50), () {
-        if (mounted) appModel.update();
-      });
-    }
   }
 
   /// Handles side-effects that must NOT run inside [build]:
@@ -101,8 +88,9 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
     // ── Promotion dialog ──────────────────────────────────────────────────
     if (appModel.promotionRequested) {
       appModel.promotionRequested = false;
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _showPromotionDialog(appModel));
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _showPromotionDialog(appModel),
+      );
     }
 
     // ── Confetti ──────────────────────────────────────────────────────────
@@ -182,17 +170,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
         final theme = appModel.theme;
 
         // Show themed background while game initializes.
-        if (!isReady || chessGame == null) {
-          return Container(
-            decoration: BoxDecoration(gradient: theme.background),
-          );
-        }
-
-        // Game was reset — re-init Flame. Schedule after the current frame.
-        if (chessGame!.controller != appModel.gameController) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) _initFlameGame();
-          });
+        if (!isReady) {
           return Container(
             decoration: BoxDecoration(gradient: theme.background),
           );
@@ -277,8 +255,8 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                     top: isFullscreen ? 8.0 : 0.0,
                                   ),
                                   child: ChessBoardWidget(
+                                    key: ValueKey(appModel.gameController),
                                     appModel,
-                                    chessGame!,
                                     topWidget:
                                         showCapturedPieces && !isSideCaptured
                                             ? _buildCapturedPiecesWidget(
@@ -317,7 +295,9 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 10),
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
                           child: GameInfoAndControls(appModel),
                         ),
                         BottomPadding(),
@@ -369,7 +349,9 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                           _buildSideCapturedPiecesButton(theme, sideCaptured),
                           const SizedBox(height: 10),
                           _buildFlipSideCapturedPiecesButton(
-                              theme, flipSideCaptured),
+                            theme,
+                            flipSideCaptured,
+                          ),
                         ],
                       ),
                     );
@@ -417,10 +399,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                   ],
                 )
               : null,
-          middle: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: GameStatus(),
-          ),
+          middle: FittedBox(fit: BoxFit.scaleDown, child: GameStatus()),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -522,16 +501,10 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
           rotatePieces: isPieceRotated,
         );
         if (isTop) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 6),
-            child: row,
-          );
+          return Padding(padding: const EdgeInsets.only(bottom: 6), child: row);
         }
         if (isBottom) {
-          return Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: row,
-          );
+          return Padding(padding: const EdgeInsets.only(top: 6), child: row);
         }
         return row;
       },
@@ -552,11 +525,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             width: 1,
           ),
           boxShadow: const [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
+            BoxShadow(color: Colors.black38, blurRadius: 8, spreadRadius: 1),
           ],
         ),
         child: CupertinoButton(
@@ -595,11 +564,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             width: 1,
           ),
           boxShadow: const [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
+            BoxShadow(color: Colors.black38, blurRadius: 8, spreadRadius: 1),
           ],
         ),
         child: CupertinoButton(
@@ -638,11 +603,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
             width: 1,
           ),
           boxShadow: const [
-            BoxShadow(
-              color: Colors.black38,
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
+            BoxShadow(color: Colors.black38, blurRadius: 8, spreadRadius: 1),
           ],
         ),
         child: CupertinoButton(
@@ -701,9 +662,7 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
-          opacity: anim1.drive(
-            CurveTween(curve: Curves.easeOut),
-          ),
+          opacity: anim1.drive(CurveTween(curve: Curves.easeOut)),
           child: child,
         );
       },
@@ -726,9 +685,7 @@ class _ChessBackground extends StatelessWidget {
       child: Stack(
         children: [
           // Gradient fill
-          Container(
-            decoration: BoxDecoration(gradient: theme.background),
-          ),
+          Container(decoration: BoxDecoration(gradient: theme.background)),
 
           // Dot grid
           Positioned.fill(
@@ -839,8 +796,10 @@ void showExitDialog(BuildContext context) {
                           padding: EdgeInsets.zero,
                           onPressed: () async {
                             Navigator.pop(dialogContext);
-                            final appModel =
-                                Provider.of<AppModel>(context, listen: false);
+                            final appModel = Provider.of<AppModel>(
+                              context,
+                              listen: false,
+                            );
                             await appModel.saveAndExitChessView();
                             appModel.showExitInterstitialAd(
                               onAdDismissed: () {
@@ -854,20 +813,24 @@ void showExitDialog(BuildContext context) {
                             height: 46,
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                                color: const Color(0xFFF5F5F0),
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(0x20000000),
-                                    blurRadius: 6,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ]),
+                              color: const Color(0xFFF5F5F0),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x20000000),
+                                  blurRadius: 6,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.save_rounded,
-                                    color: const Color(0xFF131313), size: 18),
+                                Icon(
+                                  Icons.save_rounded,
+                                  color: const Color(0xFF131313),
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Save & Exit',
@@ -887,8 +850,10 @@ void showExitDialog(BuildContext context) {
                           padding: EdgeInsets.zero,
                           onPressed: () async {
                             Navigator.pop(dialogContext);
-                            final appModel =
-                                Provider.of<AppModel>(context, listen: false);
+                            final appModel = Provider.of<AppModel>(
+                              context,
+                              listen: false,
+                            );
                             await appModel.exitChessView();
                             appModel.showExitInterstitialAd(
                               onAdDismissed: () {
@@ -912,8 +877,11 @@ void showExitDialog(BuildContext context) {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.close_rounded,
-                                    color: const Color(0xFFE5E2E1), size: 18),
+                                Icon(
+                                  Icons.close_rounded,
+                                  color: const Color(0xFFE5E2E1),
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 8),
                                 const Text(
                                   'Exit Without Saving',
@@ -952,9 +920,7 @@ void showExitDialog(BuildContext context) {
     },
     transitionBuilder: (context, anim1, anim2, child) {
       return FadeTransition(
-        opacity: anim1.drive(
-          CurveTween(curve: Curves.easeOut),
-        ),
+        opacity: anim1.drive(CurveTween(curve: Curves.easeOut)),
         child: child,
       );
     },

@@ -45,6 +45,7 @@ All hex codes:
 ## Typography
 
 **Primary sans (everything that is not the accent word):**
+
 - Inter Medium / Söhne Buch / Aeonik Medium / GT America Medium
 - Tracking slightly tight: `-0.01em` for headlines, `0` for body
 - Headlines 60–84pt at canvas scale (sized down on closer wordlist)
@@ -53,6 +54,7 @@ All hex codes:
 - Body color: `#B8C0D3` on navy, `#FFFFFF` at 85% on coral/purple, `#5A6275` on cream
 
 **Script accent font (the ONE emphasis phrase per slide):**
+
 - Caveat Bold / Permanent Marker / Reenie Beanie / Homemade Apple / custom hand-lettered SVG
 - Preferred: a brush-pen script with visible pressure variation, not a thin monoline
 - Size scaled ~115–130% of the surrounding sans (it visually competes with the headline)
@@ -61,6 +63,7 @@ All hex codes:
 - Baseline shift: `+4px` to `-6px` — let it break the grid
 
 **Wordmark:**
+
 - "Superlist" — clean lowercase wordmark, monoline geometric (looks similar to Inter Medium lowercase), top-left corner
 - Color matches the text color of the slide (white on dark, navy on light)
 - ~32pt at canvas scale, tracking neutral
@@ -70,6 +73,7 @@ All hex codes:
 ## Headline emphasis (signature)
 
 The emphasis phrase is rendered in:
+
 1. Script/handwritten font (brush pen, pressure-varied)
 2. Warm coral `#F26A50` (or white on coral bg)
 3. Hand-drawn squiggle accompaniment: an underline scribble, a circle-around, a wavy strike, OR a doodle adjacent to it
@@ -125,6 +129,7 @@ Each slide is one solid color block, edge-to-edge, no gradients (except a near-i
 Doodles are the soul of this style. Without them it collapses into generic minimal.
 
 **Types (use 2–4 per slide, varied):**
+
 - Scribbled wavy lines (sine-wave-ish but uneven), 2–5 per slide
 - 5-point stars and asterisks (3–6 pointed)
 - Curved arrows pointing AT phone features (with little arrowhead)
@@ -135,17 +140,20 @@ Doodles are the soul of this style. Without them it collapses into generic minim
 - Short hatch marks / triple slashes `///` for emphasis
 
 **Stroke:**
+
 - Width ~4–6px at canvas scale (assume 1284×2778 canvas)
 - Use `stroke-linecap: round` and `stroke-linejoin: round`
 - Slight pressure variation: vary stroke width along the path by ±20% (use SVG `<path>` with width modulation, or layer two paths at slightly different opacities)
 - Color: coral `#F26A50` on navy/cream bgs; white `#FFFFFF` or cream `#F5EFDF` on coral/purple bgs
 
 **Rotation & placement:**
+
 - Organic. Doodles rotate at any angle.
 - Never centered behind the phone — they orbit margins: top corners, between headline and phone, beside the wordmark, off the phone edge as if pointing in.
 - One doodle per slide may overlap the phone bezel for depth.
 
 **Count per slide observed:**
+
 - Slide 1: ~3 doodles (wavy line under "your whole day", a small star top-right area, a curl/squiggle near the top-right corner)
 - Slide 2: ~4 doodles (cluster of squiggles top-right in coral/white, a small swirl near phone, a star)
 - Slide 3: ~2 doodles (underline under "together", a small mark near phone)
@@ -178,6 +186,7 @@ The phone screens are themselves designed with care. Match these patterns:
 This is slide 5, the signature payoff slide.
 
 **Layout:**
+
 - Cream `#F5EFDF` background
 - Left-aligned vertical stack of feature names, top to bottom
 - Generous line-height (`1.15`)
@@ -206,6 +215,7 @@ Fast AF              ← script coral
 ```
 
 **Mixed sizes for visual rhythm:**
+
 - Script entries range 56–82pt
 - Sans entries range 40–60pt
 - Sizes alternate large/small to create a typographic poster rhythm
@@ -225,6 +235,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 - "Real-time collaboration", "Repeatable tasks", "Offline support", "Widgets", "Nested Lists & Tasks", "Multiplatform", "Integrations", "Reminders", "AI-Powered", "Privacy First", "Fast AF"
 
 **Rules:**
+
 - Sentences can break grammar (fragments OK: "Widgets.", "Fast AF.")
 - Lowercase OK in body, sentence case in headlines
 - No exclamation marks
@@ -236,6 +247,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 ## Per-slide breakdown (mandatory)
 
 ### Slide 1 — Cover ("The one app that fits your whole day")
+
 - **Background:** navy `#1B2336`, 3% noise overlay
 - **Wordmark:** "Superlist" top-left, white `#FFFFFF`, ~32pt lowercase
 - **Headline:** stacked, left-aligned, starts ~18% from top
@@ -252,6 +264,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 - **Notable effects:** soft warm shadow under phone; tiny gold Apple Design Award badge optional bottom-center
 
 ### Slide 2 — Express / Voice ("waveform")
+
 - **Background:** lavender-purple `#8B7BFF`, 3% noise overlay
 - **Wordmark:** "Superlist" top-left, white `#FFFFFF` (or could be omitted on internal slides)
 - **Headline:** top area, left-aligned. Could read "Express yourself" or similar — with the verb in sans white and the object/emphasis in script coral `#F26A50` rotated `+2°`
@@ -265,6 +278,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 - **Notable effects:** the coral waveform inside the dark phone is the visual hook — make sure it pops against the purple bg through the phone bezel
 
 ### Slide 3 — Tasks and notes together
+
 - **Background:** cream `#F5EFDF`, 3% noise overlay
 - **Wordmark:** "Superlist" top-left, navy `#1B2336`
 - **Headline:** top-center-left, ~14% from top
@@ -279,6 +293,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 - **Notable effects:** cream bg makes the coral script the loudest element — keep navy headline calm to let the script sing
 
 ### Slide 4 — Talk tasks with AI
+
 - **Background:** coral `#E55846`, 3% noise overlay
 - **Wordmark:** "Superlist" top-left, white `#FFFFFF`
 - **Headline:** top, left-aligned
@@ -293,6 +308,7 @@ Conversational, playful, slightly bold. Quote actual lines:
 - **Notable effects:** doodles flip to white on this bg — coral script would disappear into the coral bg, so the rule inverts. Phone shadow uses deeper warm red tone.
 
 ### Slide 5 — Feature wordlist closer
+
 - **Background:** cream `#F5EFDF`, 3% noise overlay
 - **Wordmark:** "Superlist" top-left, navy `#1B2336` (or omit since the list is the whole slide)
 - **Headline:** the wordlist IS the headline. No separate title needed.

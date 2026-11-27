@@ -176,8 +176,10 @@ void main() {
       final appModel = AppModel(prefs: prefs);
       appModel.newGame(notify: false);
 
-      expect(appModel.exportFen(),
-          'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1');
+      expect(
+        appModel.exportFen(),
+        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+      );
 
       // Make a move
       final controller = appModel.gameController!;
@@ -191,8 +193,10 @@ void main() {
       expect(pgn, contains('1. e4'));
 
       final fen = appModel.exportFen();
-      expect(fen,
-          contains('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq'));
+      expect(
+        fen,
+        contains('rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq'),
+      );
     });
   });
 }

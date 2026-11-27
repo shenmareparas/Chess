@@ -3,7 +3,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { PROJECT_SCHEMA_VERSION, STORAGE_KEY } from "./constants";
 import { DEFAULT_PROJECT } from "./defaults";
 import { coerceLocalized } from "./locale";
-import type { Device, ElementTransform, ProjectState, Slide, TextElement } from "./types";
+import type {
+  Device,
+  ElementTransform,
+  ProjectState,
+  Slide,
+  TextElement,
+} from "./types";
 
 const HISTORY_LIMIT = 50;
 // Coalesce rapid edits (typing, slider drags) into a single undo step.
@@ -15,7 +21,8 @@ function cleanTransform(value: unknown): ElementTransform | undefined {
   if (!value || typeof value !== "object") return undefined;
   const raw = value as Partial<ElementTransform>;
   const required = [raw.x, raw.y, raw.width, raw.height];
-  if (!required.every((n) => typeof n === "number" && Number.isFinite(n))) return undefined;
+  if (!required.every((n) => typeof n === "number" && Number.isFinite(n)))
+    return undefined;
   return {
     x: raw.x!,
     y: raw.y!,
@@ -64,15 +71,21 @@ function migrateSlide(slide: Slide): Slide {
       )
     : undefined;
   const textElements = Array.isArray(slide.textElements)
-    ? slide.textElements.map(cleanTextElement).filter((t): t is TextElement => !!t)
+    ? slide.textElements
+        .map(cleanTextElement)
+        .filter((t): t is TextElement => !!t)
     : undefined;
 
   return {
     ...slide,
     label: coerceLocalized(slide.label as unknown),
     headline: coerceLocalized(slide.headline as unknown),
-    ...(transforms && Object.keys(transforms).length > 0 ? { transforms } : { transforms: undefined }),
-    ...(textElements && textElements.length > 0 ? { textElements } : { textElements: undefined }),
+    ...(transforms && Object.keys(transforms).length > 0
+      ? { transforms }
+      : { transforms: undefined }),
+    ...(textElements && textElements.length > 0
+      ? { textElements }
+      : { textElements: undefined }),
   };
 }
 
@@ -89,7 +102,9 @@ function mergeWithDefaults(parsed: Partial<ProjectState>): ProjectState {
     ? Object.fromEntries(
         Object.entries(parsed.slidesByDevice).map(([device, slides]) => [
           device,
-          Array.isArray(slides) ? slides.map((slide) => migrateSlide(slide as Slide)) : [],
+          Array.isArray(slides)
+            ? slides.map((slide) => migrateSlide(slide as Slide))
+            : [],
         ]),
       )
     : {};
@@ -129,11 +144,15 @@ function loadFromLocalStorage(): ProjectState | null {
 async function loadFromFile(): Promise<
   { ok: true; state: ProjectState | null } | { ok: false; error: string }
 > {
-  if (typeof window === "undefined") return { ok: false, error: "Window is not available" };
+  if (typeof window === "undefined")
+    return { ok: false, error: "Window is not available" };
   try {
     const resp = await fetch("/api/project", { cache: "no-store" });
     if (!resp.ok) return { ok: false, error: `HTTP ${resp.status}` };
-    const json = (await resp.json()) as { ok: boolean; state: Partial<ProjectState> | null };
+    const json = (await resp.json()) as {
+      ok: boolean;
+      state: Partial<ProjectState> | null;
+    };
     if (!json.ok) return { ok: false, error: "Project response was not ok" };
     if (!json.state) return { ok: true, state: null };
     return { ok: true, state: mergeWithDefaults(json.state) };
@@ -142,7 +161,9 @@ async function loadFromFile(): Promise<
   }
 }
 
-function saveToLocalStorage(state: ProjectState): { ok: true } | { ok: false; error: string } {
+function saveToLocalStorage(
+  state: ProjectState,
+): { ok: true } | { ok: false; error: string } {
   if (typeof window === "undefined") return { ok: true };
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -153,7 +174,9 @@ function saveToLocalStorage(state: ProjectState): { ok: true } | { ok: false; er
   }
 }
 
-async function saveToFile(state: ProjectState): Promise<{ ok: true } | { ok: false; error: string }> {
+async function saveToFile(
+  state: ProjectState,
+): Promise<{ ok: true } | { ok: false; error: string }> {
   if (typeof window === "undefined") return { ok: true };
   try {
     const resp = await fetch("/api/project", {
@@ -291,15 +314,18 @@ export function useProject() {
     setState(DEFAULT_PROJECT);
   }, [setState]);
 
-  const resetDevice = useCallback((device: Device) => {
-    setState((prev) => ({
-      ...prev,
-      slidesByDevice: {
-        ...prev.slidesByDevice,
-        [device]: DEFAULT_PROJECT.slidesByDevice[device],
-      },
-    }));
-  }, [setState]);
+  const resetDevice = useCallback(
+    (device: Device) => {
+      setState((prev) => ({
+        ...prev,
+        slidesByDevice: {
+          ...prev.slidesByDevice,
+          [device]: DEFAULT_PROJECT.slidesByDevice[device],
+        },
+      }));
+    },
+    [setState],
+  );
 
   return {
     state,

@@ -11,11 +11,8 @@ class MainMenuButtons extends StatelessWidget {
   final AppModel appModel;
   final VoidCallback? onResetScroll;
 
-  const MainMenuButtons(
-    this.appModel, {
-    Key? key,
-    this.onResetScroll,
-  }) : super(key: key);
+  const MainMenuButtons(this.appModel, {Key? key, this.onResetScroll})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +27,11 @@ class MainMenuButtons extends StatelessWidget {
   }
 
   Widget _buildButtons(
-      BuildContext context, AppTheme theme, bool ready, bool hasSavedGame) {
+    BuildContext context,
+    AppTheme theme,
+    bool ready,
+    bool hasSavedGame,
+  ) {
     return Container(
       width: double.infinity,
       child: Column(
@@ -107,7 +108,8 @@ class MainMenuButtons extends StatelessWidget {
     final secondaryBorder = theme.lightTile;
 
     final isDark = ThemeData.estimateBrightnessForColor(
-            isPrimary ? primaryBg : secondaryBg) ==
+          isPrimary ? primaryBg : secondaryBg,
+        ) ==
         Brightness.dark;
     final textColor = isDark ? Colors.white : const Color(0xFF241A00);
     final disabledTextColor = textColor.withValues(alpha: 0.45);
@@ -128,7 +130,7 @@ class MainMenuButtons extends StatelessWidget {
                   color: primaryBg.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 4),
-                )
+                ),
               ]
             : null,
       ),

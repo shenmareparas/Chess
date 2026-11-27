@@ -29,7 +29,11 @@ type Props = {
   onLabelChange: (slide: Slide, v: string) => void;
   onHeadlineChange: (slide: Slide, v: string) => void;
   onTextElementTextChange: (slideId: string, id: string, v: string) => void;
-  onElementChange: (slideId: string, id: ElementId, t: ElementTransform) => void;
+  onElementChange: (
+    slideId: string,
+    id: ElementId,
+    t: ElementTransform,
+  ) => void;
   onSelectElement: (element: SelectedElement | null) => void;
   showCameraDot?: boolean;
   noiseOpacity?: number;
@@ -65,7 +69,10 @@ export function PreviewStage({
   const { cW, cH } = getCanvas(device, orientation);
   const totalW = Math.max(1, slides.length) * cW;
   const scale = fitScale * zoom;
-  const activeIndex = Math.max(0, slides.findIndex((slide) => slide.id === activeSlideId));
+  const activeIndex = Math.max(
+    0,
+    slides.findIndex((slide) => slide.id === activeSlideId),
+  );
   const activeSlide = slides[activeIndex] || slides[0] || null;
 
   React.useEffect(() => {
@@ -97,7 +104,10 @@ export function PreviewStage({
     if (!scroller || !activeSlide) return;
     const screenLeft = activeIndex * cW * scale;
     const screenWidth = cW * scale;
-    const targetLeft = Math.max(0, screenLeft - (scroller.clientWidth - screenWidth) / 2);
+    const targetLeft = Math.max(
+      0,
+      screenLeft - (scroller.clientWidth - screenWidth) / 2,
+    );
     scroller.scrollTo({ left: targetLeft, behavior: "smooth" });
   }, [activeIndex, activeSlide, cW, scale]);
 
@@ -170,7 +180,9 @@ export function PreviewStage({
       </div>
 
       <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-1.5 rounded-md bg-background/80 px-2 py-1 text-[11px] text-muted-foreground shadow-sm backdrop-blur">
-        <span className="font-medium text-foreground">{DEVICE_LABEL[device]}</span>
+        <span className="font-medium text-foreground">
+          {DEVICE_LABEL[device]}
+        </span>
         {activeSlide && (
           <>
             <span aria-hidden>·</span>
@@ -194,27 +206,37 @@ export function PreviewStage({
       </div>
 
       <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-md bg-background/85 px-1.5 py-1 text-[10px] tabular-nums text-muted-foreground shadow-sm backdrop-blur">
-        <span className="px-1">{slides.length}× {cW}×{cH}</span>
-        <span aria-hidden className="text-border">|</span>
+        <span className="px-1">
+          {slides.length}× {cW}×{cH}
+        </span>
+        <span aria-hidden className="text-border">
+          |
+        </span>
         <Button
           type="button"
           variant="ghost"
           size="icon"
           className="h-6 w-6"
-          onClick={() => setZoom((value) => Math.max(0.25, Number((value - 0.1).toFixed(2))))}
+          onClick={() =>
+            setZoom((value) => Math.max(0.25, Number((value - 0.1).toFixed(2))))
+          }
           disabled={zoom <= 0.25}
           title="Zoom out"
           aria-label="Zoom out"
         >
           <ZoomOut className="h-3.5 w-3.5" />
         </Button>
-        <span className="min-w-10 text-center">{(scale * 100).toFixed(0)}%</span>
+        <span className="min-w-10 text-center">
+          {(scale * 100).toFixed(0)}%
+        </span>
         <Button
           type="button"
           variant="ghost"
           size="icon"
           className="h-6 w-6"
-          onClick={() => setZoom((value) => Math.min(2, Number((value + 0.1).toFixed(2))))}
+          onClick={() =>
+            setZoom((value) => Math.min(2, Number((value + 0.1).toFixed(2))))
+          }
           disabled={zoom >= 2}
           title="Zoom in"
           aria-label="Zoom in"

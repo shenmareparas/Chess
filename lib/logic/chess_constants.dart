@@ -5,5 +5,5 @@ const PROMOTIONS = [
   ChessPieceType.queen,
   ChessPieceType.rook,
   ChessPieceType.bishop,
-  ChessPieceType.knight
+  ChessPieceType.knight,
 ];

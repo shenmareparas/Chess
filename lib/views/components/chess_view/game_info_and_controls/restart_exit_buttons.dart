@@ -128,9 +128,7 @@ class RestartExitButtons extends StatelessWidget {
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
-          opacity: anim1.drive(
-            CurveTween(curve: Curves.easeOut),
-          ),
+          opacity: anim1.drive(CurveTween(curve: Curves.easeOut)),
           child: child,
         );
       },

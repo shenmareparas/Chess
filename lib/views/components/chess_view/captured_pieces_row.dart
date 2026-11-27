@@ -58,15 +58,17 @@ class CapturedPiecesRow extends StatelessWidget {
           );
 
     final tombstoneWidgets = displayedEntries
-        .map((entry) => _PieceGroupTombstone(
-              pieceType: entry.key,
-              count: entry.value,
-              player: player,
-              pieceTheme: pieceTheme,
-              theme: theme,
-              rotate: rotatePieces,
-              isVertical: isVertical,
-            ))
+        .map(
+          (entry) => _PieceGroupTombstone(
+            pieceType: entry.key,
+            count: entry.value,
+            player: player,
+            pieceTheme: pieceTheme,
+            theme: theme,
+            rotate: rotatePieces,
+            isVertical: isVertical,
+          ),
+        )
         .toList();
 
     if (isVertical) {
@@ -195,11 +197,7 @@ class _PieceGroupTombstone extends StatelessWidget {
       fontWeight: FontWeight.bold,
       color: isWhite ? theme.lightTile : theme.lightTile.withValues(alpha: 0.9),
       shadows: const [
-        Shadow(
-          color: Color(0x99000000),
-          offset: Offset(0, 1),
-          blurRadius: 2,
-        ),
+        Shadow(color: Color(0x99000000), offset: Offset(0, 1), blurRadius: 2),
       ],
     );
 

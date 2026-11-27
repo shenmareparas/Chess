@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -30,8 +31,9 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
     _fToast = FToast();
     _fToast.init(context);
     final appModel = Provider.of<AppModel>(context, listen: false);
-    _scrollController =
-        FixedExtentScrollController(initialItem: appModel.pieceThemeIndex);
+    _scrollController = FixedExtentScrollController(
+      initialItem: appModel.pieceThemeIndex,
+    );
   }
 
   @override
@@ -59,9 +61,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
             PromotionDialog(appModel, animation: anim1, canPop: true),
         transitionBuilder: (context, anim1, anim2, child) {
           return FadeTransition(
-            opacity: anim1.drive(
-              CurveTween(curve: Curves.easeOut),
-            ),
+            opacity: anim1.drive(CurveTween(curve: Curves.easeOut)),
             child: child,
           );
         },
@@ -128,8 +128,10 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
           _debounceTimer?.cancel();
           _debounceTimer = Timer(const Duration(milliseconds: 150), () {
             if (mounted) {
-              Provider.of<AppModel>(context, listen: false)
-                  .setPieceTheme(index);
+              Provider.of<AppModel>(
+                context,
+                listen: false,
+              ).setPieceTheme(index);
             }
           });
         },
@@ -185,9 +187,7 @@ class _PieceThemePickerState extends State<PieceThemePicker> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  Expanded(
-                    child: child!,
-                  ),
+                  Expanded(child: child!),
                   const SizedBox(width: 16),
                   GestureDetector(
                     onTap: () => _onPiecePreviewTap(appModel),

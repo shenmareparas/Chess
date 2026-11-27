@@ -14,7 +14,7 @@ const _kingRowPieces = [
   ChessPieceType.king,
   ChessPieceType.bishop,
   ChessPieceType.knight,
-  ChessPieceType.rook
+  ChessPieceType.rook,
 ];
 
 // Move direction constants
@@ -28,7 +28,7 @@ const _knightMovesList = [
   Direction(2, 1),
   Direction(-2, 1),
   Direction(2, -1),
-  Direction(-2, -1)
+  Direction(-2, -1),
 ];
 const _bishopMovesList = [UP_RIGHT, DOWN_RIGHT, DOWN_LEFT, UP_LEFT];
 const _rookMovesList = [UP, RIGHT, DOWN, LEFT];
@@ -40,7 +40,7 @@ const _kingQueenMovesList = [
   DOWN,
   DOWN_LEFT,
   LEFT,
-  UP_LEFT
+  UP_LEFT,
 ];
 
 class ChessBoard {
@@ -81,8 +81,12 @@ class ChessBoard {
     for (var pieceType in _kingRowPieces) {
       var id = player == Player.player1 ? index * 2 : index * 2 + 16;
       var piece = ChessPiece(id, pieceType, player, kingRowOffset + index);
-      var pawn = ChessPiece(id + 1, ChessPieceType.pawn, player,
-          kingRowOffset + pawnRowOffset + index);
+      var pawn = ChessPiece(
+        id + 1,
+        ChessPieceType.pawn,
+        player,
+        kingRowOffset + pawnRowOffset + index,
+      );
       _setTile(piece.tile, piece);
       _setTile(pawn.tile, pawn);
       piecesForPlayer(player).addAll([piece, pawn]);
@@ -235,12 +239,18 @@ class ChessBoard {
   // Push / Pop (make / unmake move)
   // ──────────────────────────────────────────────
 
-  MoveMeta push(Move move,
-      {bool getMeta = false,
-      ChessPieceType promotionType = ChessPieceType.promotion}) {
+  MoveMeta push(
+    Move move, {
+    bool getMeta = false,
+    ChessPieceType promotionType = ChessPieceType.promotion,
+  }) {
     _invalidateCapturedCache();
-    var mso =
-        MoveStackObject(move, tiles[move.from], tiles[move.to], enPassantPiece);
+    var mso = MoveStackObject(
+      move,
+      tiles[move.from],
+      tiles[move.to],
+      enPassantPiece,
+    );
     var meta = MoveMeta(move, mso.movedPiece?.player, mso.movedPiece?.type);
     if (getMeta) {
       _checkMoveAmbiguity(move, meta);
@@ -272,8 +282,10 @@ class ChessBoard {
   }
 
   MoveMeta pushMSO(MoveStackObject mso) {
-    return push(mso.move,
-        promotionType: mso.promotionType ?? ChessPieceType.promotion);
+    return push(
+      mso.move,
+      promotionType: mso.promotionType ?? ChessPieceType.promotion,
+    );
   }
 
   MoveStackObject pop() {
@@ -384,7 +396,10 @@ class ChessBoard {
 
   /// Checks whether a sliding piece (bishop / rook / queen) attacks [targetTile].
   bool _slidingAttacks(
-      ChessPiece piece, List<Direction> directions, int targetTile) {
+    ChessPiece piece,
+    List<Direction> directions,
+    int targetTile,
+  ) {
     for (final dir in directions) {
       var r = tileToRow(piece.tile);
       var c = tileToCol(piece.tile);
@@ -628,7 +643,10 @@ class ChessBoard {
   }
 
   List<int> _movesFromDirections(
-      ChessPiece piece, List<Direction> directions, bool repeat) {
+    ChessPiece piece,
+    List<Direction> directions,
+    bool repeat,
+  ) {
     List<int> moves = [];
     for (var direction in directions) {
       var row = tileToRow(piece.tile);
@@ -722,7 +740,9 @@ class ChessBoard {
   }
 
   Iterable<ChessPiece> _piecesOfTypeForPlayer(
-      ChessPieceType? type, Player? player) {
+    ChessPieceType? type,
+    Player? player,
+  ) {
     if (type == null || player == null) return const [];
     // Return a lazy iterable — avoids allocating a full List<ChessPiece> for
     // ambiguity checks that typically only need to test existence or iterate once.

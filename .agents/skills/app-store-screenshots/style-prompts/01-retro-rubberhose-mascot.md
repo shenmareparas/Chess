@@ -12,7 +12,7 @@ feel: cozy, friendly, nostalgic, "your daily walk has a tiny cartoon buddy"
 ## Hard quality rules (this style)
 
 - **Phone size on phone-bearing slides** (this includes the HERO — the hero is NOT exempt): phone height = **80–88%** of canvas height (≈ **2300–2520 px** on a 1320×2868 canvas). The phone bottom MUST bleed off the canvas edge by 4–10% of its own height. **Concretely: render the phone at `height = canvas.height * 0.84` and crop the bottom.** On the hero, the mascot row (4 walking variants) peeks from BEHIND the phone — partially hidden behind its lower edge, not in front of an empty cream slab. Phone smaller than 80% canvas height on the hero is a hard fail.
-- **Use the default iPhone bezel.** Use the template's stock `Phone` device frame (the iPhone mockup PNG). Do NOT replace it with a cream paper bezel, a hand-drawn outline, or any custom frame. The retro warmth comes from the cream/mustard *backgrounds, mascot, and inside-phone UI stickers* — not from re-skinning the iPhone itself. A 1-2% warm tint behind the phone (drop shadow color, halo glow) is fine.
+- **Use the default iPhone bezel.** Use the template's stock `Phone` device frame (the iPhone mockup PNG). Do NOT replace it with a cream paper bezel, a hand-drawn outline, or any custom frame. The retro warmth comes from the cream/mustard _backgrounds, mascot, and inside-phone UI stickers_ — not from re-skinning the iPhone itself. A 1-2% warm tint behind the phone (drop shadow color, halo glow) is fine.
 - **Mascot scale is non-negotiable**: hero/cover mascot **≥ 420px tall** on a 1320×2868 canvas (≈ 14.5% canvas height). Companion mascots ≥ 300px. A 150px mascot in the corner is a fail.
 - **Mascot polish gates** — must hit ALL of these:
   1. **Halftone shadow** on the lower-right third of the body: black dots at 8–14% opacity, dot size 3–4px, denser at edge, fading toward middle. Pure flat fill = clipart.
@@ -34,16 +34,19 @@ feel: cozy, friendly, nostalgic, "your daily walk has a tiny cartoon buddy"
 - **Sticker UI** inside the phone: every card/button has the 2-3px black border + the hard offset shadow `0 3-4px 0 #1A1A1A`. Soft blur shadows are a fail.
 
 ## Vibe summary
+
 This is a warm, hand-drawn world that feels like a vintage tin lunchbox someone forgot in a sunny attic. A chunky yellow can-shaped mascot with white gloves and pie-cut eyes walks you through your day, surrounded by cream-paper backgrounds and chunky brown display type. Every shape is hugged by a fat black ink outline, every color is dialed warm (mustard, peach, pink, mint), and the UI inside the phones is rendered as soft sticker buttons that look pressable. The overall feeling is "1932 cereal box meets 2026 wellness app" — playful, slightly silly, and never cold or corporate.
 
 ## Global palette
 
 ### Warm cream backgrounds
+
 - Primary cream paper: `#F4E6CC` (slide 1, slide 3 base, slide 5 stat-card)
 - Soft butter cream: `#FBEFD2` (lightest variant, inside phone areas)
 - Warm off-white: `#FAF3E3` (status bar / card highlights)
 
 ### Accent backgrounds (full-bleed slide colors)
+
 - Mustard sun: `#F2BB46` (slide 2 main background, the "16628 steps" slide)
 - Mustard deep: `#E5A52E` (gradient bottom edge on slide 2)
 - Bubblegum pink: `#F3A6B7` (slide 4 "more you walk" slide background)
@@ -52,18 +55,21 @@ This is a warm, hand-drawn world that feels like a vintage tin lunchbox someone 
 - Mint deep: `#9CC692` (chart bars, accent shadows on mint)
 
 ### Character body fills
+
 - Mustard can-yellow: `#F2BB46` (primary mascot body)
 - Peach: `#F2B07A` (secondary mascot body)
 - Pink mascot: `#EE92A4`
 - Cowboy / wide character body: `#E08767` (terracotta)
 
 ### Text & ink
+
 - Outline ink: `#1A1A1A` (a true-warm near-black, never pure `#000`)
 - Brown wordmark fill: `#5C3A1E` (the CAN COCO logo color)
 - Body text dark: `#2A2118` (slightly desaturated coffee)
 - Caption gray: `#6B5E4D` (warm gray for secondary copy)
 
 ### UI accents inside phone
+
 - Coupon yellow chip: `#FCD34D`
 - Soft red "TODAY" stamp ink: `#C0392B`
 - Mint button accent: `#8FCB9B`
@@ -73,6 +79,7 @@ This is a warm, hand-drawn world that feels like a vintage tin lunchbox someone 
 The mascot is the soul of this style. Document every rule strictly.
 
 ### Body shape
+
 - A rounded **upright soft rectangle / oval can** — roughly 1.0 wide × 1.25 tall ratio.
 - Top: a soft dome (think a can lid with no sharp seam).
 - Bottom: identical rounded dome.
@@ -80,12 +87,14 @@ The mascot is the soul of this style. Document every rule strictly.
 - Cowboy / "wide" variant: same height but ~1.4× width, more pumpkin-shaped.
 
 ### Fill color
+
 - Default: mustard `#F2BB46`.
 - Peach variant: `#F2B07A`.
 - Pink variant: `#EE92A4`.
 - Body is rendered with a **subtle inner shadow** on the lower-right third — `inset -8px -10px 0 0 rgba(180, 120, 30, 0.18)` equivalent — to suggest 3D roundness without losing flatness.
 
 ### Eyes (pie-cut eyes)
+
 - Two large overlapping ovals, roughly 22% of body width each.
 - Whites are pure cream `#FBEFD2` (NOT pure white — keep them warm).
 - Each eye has a **pie-cut slice** removed (a wedge missing, classic 1930s style), filled with body color OR with the dark pupil itself.
@@ -94,6 +103,7 @@ The mascot is the soul of this style. Document every rule strictly.
 - Eyes are outlined with the same 3-4px black stroke as the body.
 
 ### Hands & gloves
+
 - **White four-fingered mitten gloves** — classic rubber-hose hands.
 - Glove fill: `#FBEFD2` (warm cream, never pure white).
 - Glove outline: same 3-4px black.
@@ -103,17 +113,20 @@ The mascot is the soul of this style. Document every rule strictly.
 - Arm width: ~14% of body width.
 
 ### Feet / legs
+
 - Same sausage-tube rule: legs are rounded stubs, no knee.
 - Shoes: simple rounded **black or brown lozenges** that look like vintage spats or oxfords.
 - One foot usually lifted in a walk cycle pose.
 
 ### Outline rules
+
 - Every shape gets a **solid black `#1A1A1A` stroke at 3-4px** when the mascot is rendered at ~280-360px tall (on a 1242px phone canvas this is roughly 1% of canvas width).
 - Stroke is **uniform width** — no tapering, no calligraphy.
 - Stroke style: `stroke-linecap: round; stroke-linejoin: round;`
 - NEVER use a thin or hairline outline. If in doubt, make it thicker.
 
 ### Pose vocabulary
+
 - **Walking forward**: one arm raised in a wave, one leg lifted, slight forward lean.
 - **Holding object**: both gloves cupped in front holding a coin, coupon, or phone.
 - **Leaning back / posing**: hand on hip, the cowboy-hatted variant.
@@ -122,17 +135,20 @@ The mascot is the soul of this style. Document every rule strictly.
 - **Sitting / chilling**: shorter pose, both legs forward.
 
 ### Costume / accessory variations seen
+
 - **Cowboy hat**: brown `#8B5A2B` ten-gallon hat with a darker band.
 - **Red sweatband**: thick `#E74C3C` headband across the forehead.
 - **Sunglasses**: black rounded squares, no shine.
 - **Tiny phone / coin / coupon** held in gloves.
 
 ### Surface texture on body
+
 - A very light **halftone dot shadow** sits on the bottom-right curve of the body — small `#1A1A1A` dots at ~8% opacity, arranged in a gradient density (denser at the shadow edge, fading out). This is the 1930s newsprint feel.
 
 ## Typography
 
 ### Headline display font
+
 - **Cooper Black** (or Recoleta Black, Filson Soft Black, Sofia Pro Black as fallbacks).
 - Weight: 900 / Black.
 - Letter-spacing: -0.01em.
@@ -140,6 +156,7 @@ The mascot is the soul of this style. Document every rule strictly.
 - Color: dark brown `#2A2118` for body text, or accent color (mustard / red) for the highlighted word.
 
 ### Wordmark font (the "CAN COCO" logo)
+
 - A custom-feel chunky slab/sans — closest off-the-shelf match: **Recoleta Black** or **Cooper Std Black** with manual tracking.
 - Color: deep brown `#5C3A1E`.
 - **Inline white shadow**: each letterform has a thin (2-3px) cream `#FBEFD2` inline highlight offset by `1px 1px` toward the upper-left, sitting INSIDE the letter shape. This creates the classic 1930s "embossed candy bar" look.
@@ -147,20 +164,24 @@ The mascot is the soul of this style. Document every rule strictly.
 - All-caps.
 
 ### Body / UI label font
+
 - **Nunito** or **Fredoka** at weight 600-700.
 - Rounded sans, slightly bouncy.
 - Color: `#2A2118` for primary, `#6B5E4D` for secondary.
 
 ### Caption font
+
 - Same Nunito family, weight 500, size ~11-13px on phone canvas.
 
 ### Text effects checklist
+
 - Headline emphasis word: color swap to mustard `#F2BB46` or coral `#F19A8E`, often paired with a hand-drawn squiggle underline in black 3px.
 - Wordmark: inline cream shadow as above.
 - Sticker labels (App Store badge): cream pill with thin black border.
 - NO neon glows. NO gradients on type. NO modern variable-weight tricks.
 
 ## Headline emphasis
+
 - One word is colorized — usually the action verb. Examples: in "**Walk** Can be a lot of fun", the word "Walk" is mustard `#F2BB46` while the rest is dark brown `#2A2118`.
 - The emphasized word may sit on its own line for visual weight.
 - A **hand-drawn underline squiggle** sometimes sits under the emphasized word — 3px black, gently wavy (not perfectly straight).
@@ -240,6 +261,7 @@ Inside the phone screens, every UI element is a **sticker** with personality.
 ## Per-slide breakdown (mandatory)
 
 ### Slide 1 — "Walk Can be a lot of fun" cover with bullet list
+
 - **Background**: warm cream `#F4E6CC` full bleed with 7% paper noise overlay.
 - **Top badge**: an "App Store — Featured on Today" pill at the very top, cream fill, 2px black border, small Apple logo and red "Today" word inside. Centered horizontally, ~60px from top.
 - **Headline**: "**Walk** Can be a lot of fun" — large Cooper Black, three lines, left-aligned, starting ~120px from top, left padding ~60px. "Walk" word is mustard `#F2BB46`, rest is dark brown `#2A2118`. Font size ~84-96px on a 1242px canvas.
@@ -253,6 +275,7 @@ Inside the phone screens, every UI element is a **sticker** with personality.
 - **Notable effects**: subtle ground shadow under the mascot row; paper grain visible throughout.
 
 ### Slide 2 — Mustard "16628 steps" slide with phone & CAN COCO wordmark
+
 - **Background**: full-bleed mustard `#F2BB46` with a vertical gradient darkening to `#E5A52E` at the bottom 25%. 6% paper noise overlay.
 - **Headline / wordmark**: "CAN COCO" wordmark in deep brown `#5C3A1E` with cream inline highlight, sitting in the bottom-right area, stacked on two lines ("CAN" / "COCO"), font size ~110-140px, very chunky.
 - **Phone**: a single phone centered slightly left, straight upright, cream bezel, showing a screen with a large "16628" step count in dark brown Cooper Black centered, mascot illustration above the count, a "TODAY'S" coupon-style label below in red ink stamp, and a yellow primary action button at the bottom. Phone is roughly 60% of slide height.
@@ -261,6 +284,7 @@ Inside the phone screens, every UI element is a **sticker** with personality.
 - **Notable effects**: warm soft drop shadow under the phone; the "TODAY'S" stamp is rotated -6° to feel hand-applied.
 
 ### Slide 3 — "Walking Companion" on white/cream
+
 - **Background**: soft butter cream `#FBEFD2` full bleed with 6% noise. A subtle horizon line of slightly darker cream at the lower third.
 - **Headline**: "Walking Companion" at the top center, Cooper Black, dark brown, ~72px, single line, with a small mascot-color highlight dot to the left of the word.
 - **Phone**: a single phone, upright, cream bezel, showing a "home" screen with three mascot character cards (mustard, peach, cowboy) arranged in a 3-column grid, the big "16628" stat below, and a primary mustard CTA at the bottom labeled with a short action verb.
@@ -269,6 +293,7 @@ Inside the phone screens, every UI element is a **sticker** with personality.
 - **Notable effects**: the three card portraits inside the phone each have a 3px black border and a hard offset shadow; subtle halftone shadow on the right side of the outside mascots' bodies.
 
 ### Slide 4 — Pink "more you walk, more animals you meet"
+
 - **Background**: full-bleed bubblegum pink `#F3A6B7` with 6% noise. Scattered large cream `#FBEFD2` polka dots at low density (~6 dots, 28-40px each).
 - **Headline**: "The more you walk the more animals you meet" at the top, two or three lines, Cooper Black, dark brown, ~58-66px, centered. The phrase "more animals" may be colorized in coral `#F19A8E`.
 - **Phone**: a single phone, slight 2° tilt to the right, cream bezel, showing a chat-style screen where the wider pink mascot greets the user with a speech bubble; a mustard CTA at the bottom.
@@ -277,6 +302,7 @@ Inside the phone screens, every UI element is a **sticker** with personality.
 - **Notable effects**: the chat bubble inside the phone has the same 2-3px black border and hard offset shadow as other sticker UI.
 
 ### Slide 5 — Mint green "Accurate Data Recording" stats slide
+
 - **Background**: full-bleed sage mint `#BFD9B6` with 6% noise.
 - **Headline**: "Accurate Data Recording" at the top, Cooper Black, dark brown, ~64px, with a sparkle icon to the left of "Accurate". "Data" may be colorized in deeper mint `#9CC692` or in mustard `#F2BB46`.
 - **Phone**: a single phone, upright, cream bezel, showing a stats / chart screen — a cream `#FBEFD2` card at the top with a small bar chart in mint `#9CC692` bars, a "Today" label, numeric stats in dark brown, and a yellow CTA button at the bottom.

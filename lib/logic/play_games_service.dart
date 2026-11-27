@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:games_services/games_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,9 +84,8 @@ class PlayGamesService {
   /// or if the ID is still a placeholder.
   void unlock(String androidId) {
     if (!_isEnabled || !_signedIn || androidId.startsWith('REPLACE_')) return;
-    GamesServices.unlock(
-      achievement: Achievement(androidID: androidId),
-    ).catchError((_) => null);
+    GamesServices.unlock(achievement: Achievement(androidID: androidId))
+        .catchError((_) => null);
   }
 
   // ── Game-event hooks ────────────────────────────────────────────────────────
@@ -132,6 +132,8 @@ class PlayGamesService {
           achievement: Achievement(androidID: play50Games, steps: 1),
         ).catchError((_) => null);
       }
-    } catch (_) {/* ignore */}
+    } catch (_) {
+      /* ignore */
+    }
   }
 }

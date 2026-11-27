@@ -3,9 +3,7 @@
   "appName": "Chess",
   "themeId": "forest-mint",
   "connectedCanvas": true,
-  "locales": [
-    "en"
-  ],
+  "locales": ["en"],
   "locale": "en",
   "device": "android",
   "orientation": "portrait",

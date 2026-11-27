@@ -1,16 +1,15 @@
 import 'dart:async';
 
 import 'package:cupertino_ui/cupertino_ui.dart';
-import 'package:flame/flame.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'logic/ad_service.dart';
+import 'logic/chessground_adapter.dart';
 import 'logic/in_app_purchase_service.dart';
 import 'logic/in_app_update_service.dart';
 import 'logic/notification_service.dart';
 import 'logic/play_games_service.dart';
-import 'logic/shared_functions.dart';
 import 'model/app_model.dart';
 import 'model/user_preferences.dart';
 import 'views/main_menu_view.dart';
@@ -32,12 +31,7 @@ void main() async {
   // Launch the UI immediately — the logo appears on the very first frame.
   // Images are decoded *after* runApp() so the main thread is never blocked
   // before the first render.
-  runApp(
-    ChangeNotifierProvider.value(
-      value: appModel,
-      child: Chess(),
-    ),
-  );
+  runApp(ChangeNotifierProvider.value(value: appModel, child: Chess()));
 
   // Preload only the logo synchronously (single tiny image for splash).
   // Piece images load asynchronously; appModel.imagesReady gates navigation.
@@ -45,7 +39,7 @@ void main() async {
 
   // Load essential piece images and audio in the background.
   // When done, notify listeners so the play buttons re-enable.
-  _loadFlameAssetsAsync(prefs.pieceTheme, appModel);
+  _loadAssetsAsync(prefs.pieceTheme, appModel);
 
   // Sign in to Play Games Services silently on startup in a microtask after render
   Future.microtask(() => PlayGamesService.instance.signInSilently());
@@ -94,24 +88,12 @@ Future<void> _preloadLogoImage() async {
   logoStream.removeListener(listener);
 }
 
-/// Decodes essential piece images and audio, then signals [appModel.imagesReady].
-/// Each image decode yields to the event loop so the UI thread stays responsive.
-Future<void> _loadFlameAssetsAsync(
-    String activeTheme, AppModel appModel) async {
-  final List<String> essentialImages = [];
+/// Decodes essential piece images into ChessgroundImages cache and audio,
+/// then signals [appModel.imagesReady].
+Future<void> _loadAssetsAsync(String activeTheme, AppModel appModel) async {
   for (var theme in {activeTheme, 'Classic'}) {
-    for (var color in ['black', 'white']) {
-      for (var piece in ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn']) {
-        essentialImages
-            .add('pieces/${formatPieceTheme(theme)}/${piece}_$color.png');
-      }
-    }
-  }
-
-  // Load each image individually with an event-loop yield between decodes.
-  for (final img in essentialImages) {
     try {
-      await Flame.images.load(img);
+      await ChessgroundAdapter.preloadPieceTheme(theme);
     } catch (_) {}
     await Future.delayed(Duration.zero);
   }
@@ -154,9 +136,7 @@ class _ChessState extends State<Chess> with WidgetsBindingObserver {
     final size = view.physicalSize / view.devicePixelRatio;
     if (size.shortestSide < 600) {
       // Normal phone or folded foldable outer screen: lock to portrait only
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-      ]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     } else {
       // Unfolded foldable inner screen or tablet: allow all orientations
       SystemChrome.setPreferredOrientations([

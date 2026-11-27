@@ -61,10 +61,8 @@ class PromotionDialog extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: PROMOTIONS
                           .map(
-                            (promotionType) => PromotionOption(
-                              appModel,
-                              promotionType,
-                            ),
+                            (promotionType) =>
+                                PromotionOption(appModel, promotionType),
                           )
                           .toList(),
                     ),

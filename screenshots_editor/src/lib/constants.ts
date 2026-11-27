@@ -1,12 +1,15 @@
 import type { Device, Orientation, SlideLayout, Theme, ThemeId } from "./types";
 
 // ---------- Canvas dimensions (design at largest required resolution) ----------
-export const CANVAS: Record<Device, { w: number; h: number; wL?: number; hL?: number }> = {
-  iphone:        { w: 1320, h: 2868 },
-  ipad:          { w: 2064, h: 2752 },
-  android:       { w: 1080, h: 1920 },
-  "android-7":   { w: 1200, h: 1920, wL: 1920, hL: 1200 },
-  "android-10":  { w: 1600, h: 2560, wL: 2560, hL: 1600 },
+export const CANVAS: Record<
+  Device,
+  { w: number; h: number; wL?: number; hL?: number }
+> = {
+  iphone: { w: 1320, h: 2868 },
+  ipad: { w: 2064, h: 2752 },
+  android: { w: 1080, h: 1920 },
+  "android-7": { w: 1200, h: 1920, wL: 1920, hL: 1200 },
+  "android-10": { w: 1600, h: 2560, wL: 2560, hL: 1600 },
   "feature-graphic": { w: 1024, h: 500 },
 };
 
@@ -21,18 +24,18 @@ export const EXPORT_SIZES: Record<Device, ExportSize[]> = {
     { label: '6.1"', w: 1125, h: 2436 },
   ],
   ipad: [
-    { label: '13" iPad',       w: 2064, h: 2752 },
+    { label: '13" iPad', w: 2064, h: 2752 },
     { label: '12.9" iPad Pro', w: 2048, h: 2732 },
   ],
-  android:       [{ label: "Phone",          w: 1080, h: 1920 }],
-  "android-7":   [{ label: '7" Portrait',    w: 1200, h: 1920 }],
-  "android-10":  [{ label: '10" Portrait',   w: 1600, h: 2560 }],
+  android: [{ label: "Phone", w: 1080, h: 1920 }],
+  "android-7": [{ label: '7" Portrait', w: 1200, h: 1920 }],
+  "android-10": [{ label: '10" Portrait', w: 1600, h: 2560 }],
   "feature-graphic": [{ label: "Feature Graphic", w: 1024, h: 500 }],
 };
 
 // Landscape sizes (tablets only)
 export const EXPORT_SIZES_LANDSCAPE: Partial<Record<Device, ExportSize[]>> = {
-  "android-7":  [{ label: '7" Landscape',  w: 1920, h: 1200 }],
+  "android-7": [{ label: '7" Landscape', w: 1920, h: 1200 }],
   "android-10": [{ label: '10" Landscape', w: 2560, h: 1600 }],
 };
 
@@ -40,7 +43,10 @@ export function supportsLandscape(device: Device): boolean {
   return device in EXPORT_SIZES_LANDSCAPE;
 }
 
-export function getExportSizes(device: Device, orientation: Orientation): ExportSize[] {
+export function getExportSizes(
+  device: Device,
+  orientation: Orientation,
+): ExportSize[] {
   if (orientation === "landscape") {
     return EXPORT_SIZES_LANDSCAPE[device] || EXPORT_SIZES[device];
   }
@@ -48,10 +54,10 @@ export function getExportSizes(device: Device, orientation: Orientation): Export
 }
 
 // ---------- Frame aspect ratios ----------
-export const MK_RATIO    = 1022 / 2082; // iPhone PNG mockup
-export const TAB_P_RATIO = 0.667;        // tablet portrait
-export const TAB_L_RATIO = 1.5;          // tablet landscape
-export const IPAD_RATIO  = 0.770;        // iPad
+export const MK_RATIO = 1022 / 2082; // iPhone PNG mockup
+export const TAB_P_RATIO = 0.667; // tablet portrait
+export const TAB_L_RATIO = 1.5; // tablet landscape
+export const IPAD_RATIO = 0.77; // iPad
 
 // iPhone mockup screen overlay (pre-measured)
 export const PHONE_SCREEN = {
@@ -70,7 +76,7 @@ export function phoneW(cW: number, cH: number, clamp = 0.84) {
 export function phoneWSmall(cW: number, cH: number) {
   return phoneW(cW, cH, 0.66);
 }
-export function tabletPW(cW: number, cH: number, clamp = 0.80) {
+export function tabletPW(cW: number, cH: number, clamp = 0.8) {
   return Math.min(clamp, 0.72 * (cH / cW) * TAB_P_RATIO);
 }
 export function tabletLW(cW: number, cH: number, clamp = 0.62) {
@@ -241,8 +247,12 @@ export const LAYOUT_HINT: Record<SlideLayout, string> = {
   "device-right": "Phone right, caption left",
   "three-devices": "Three layered phones side-by-side",
   "feature-graphic": "App icon, name, and tagline centered",
-  "feature-graphic-cards": "Icon and tagline on left, three overlapping screenshot cards on right",
-  "feature-graphic-triple-mockup": "Icon and tagline on left, three vertical phones on right",
-  "feature-graphic-dual-upright": "Icon and tagline on left, two clean upright phones on right",
-  "feature-graphic-fan-cards": "Icon and tagline on left, four screenshot cards fanned out on right",
+  "feature-graphic-cards":
+    "Icon and tagline on left, three overlapping screenshot cards on right",
+  "feature-graphic-triple-mockup":
+    "Icon and tagline on left, three vertical phones on right",
+  "feature-graphic-dual-upright":
+    "Icon and tagline on left, two clean upright phones on right",
+  "feature-graphic-fan-cards":
+    "Icon and tagline on left, four screenshot cards fanned out on right",
 };

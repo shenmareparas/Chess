@@ -9,12 +9,20 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON" },
+      { status: 400 },
+    );
   }
 
-  const { images } = body as { images: Array<{ name: string; dataUrl: string }> };
+  const { images } = body as {
+    images: Array<{ name: string; dataUrl: string }>;
+  };
   if (!images || !Array.isArray(images)) {
-    return NextResponse.json({ ok: false, error: "Missing or invalid images list" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Missing or invalid images list" },
+      { status: 400 },
+    );
   }
 
   try {

@@ -19,22 +19,24 @@ feel: hype, social, "join the cool creator community"
   4. White specular streak at 25% opacity sweeping top-left to bottom-right.
   5. Tilt -5° to +5°.
   6. Size **≥ 380px tall** (≥ 13% canvas height) for hero numerals.
-  Flat colored numerals = fail.
+     Flat colored numerals = fail.
 - **Ghost mascot polish gates** (all required):
   1. Lavender `#C9B8E8` body, two-tone shading with `#8B6FB5` shadow on right third.
   2. White eyes with pupils, blush cheeks, a tiny mouth — not a blank silhouette.
   3. Holds a tilted yellow mug with brown coffee surface + white foam highlight + a "z" or steam wisp.
   4. **Minimum height 420px**.
   5. Sits with a pearl shine `radial-gradient(circle, #FFFFFF 0%, transparent 70%)` halo behind.
-  Featureless blob ≠ ghost.
+     Featureless blob ≠ ghost.
 - **Hashtag pill stickers**: chubby rounded rect, yellow `#FBE254` fill, weight 900 black `#0A0A0A` text, 8–12° rotation each (different per pill), layered drop shadow `0 8px 20px rgba(0,0,0,0.25)` + inset top white sheen `inset 0 1px 0 rgba(255,255,255,0.8)`. Flat-fill rects = fail.
 - **Bg gradient is 3-stop minimum**: `linear-gradient(180deg, #3B266B 0%, #5C3DAA 45%, #A567E0 100%)` + radial bloom `#C98AFF` 25% opacity centered at 50%/75% + corner vignette `#1F0E3D`. Less = fail.
 - **Starfield**: ≥ 60 small white dots at 18% opacity scattered across the bg. Without it the bg reads as a plain gradient.
 
 ## Vibe summary
+
 This is a hype, social-first, "you are about to join a cool creator's club" aesthetic. It marries deep K-pop/K-beauty purple atmosphere with glossy chrome 3D type, kawaii blob mascots, and stickered-on yellow hashtag pills that read like a Y2K social media moodboard. The screenshots feel like a Discord-meets-Instagram-meets-Sephora pitch for influencers: hype numbers (100K, 400+), creator-economy hashtags (#PAID #PRODUCTS #CONNECTED), and an oversaturated purple "after-hours lounge" backdrop that signals exclusivity and play.
 
 ## Global palette
+
 All hex codes used across the mosaic:
 
 - Bg purple (top, deep) — `#3B266B`
@@ -59,6 +61,7 @@ All hex codes used across the mosaic:
 - Subtle starfield dot — `#FFFFFF` at 18%
 
 ## Gradient & atmospheric treatment
+
 Each slide uses a vertical (top-to-bottom) gradient with a subtle radial bloom in the lower-third:
 
 - Slide background gradient stops:
@@ -71,6 +74,7 @@ Each slide uses a vertical (top-to-bottom) gradient with a subtle radial bloom i
 - Corner vignette: `#1F0E3D` at 25% opacity feathered into all four corners over a 120px radius.
 
 ## Typography
+
 - Headlines (English titles like "Chosen by", "Daily OPEN!", "Get the VIP Invite & Benefits", "Connect you"): clean bold sans, Pretendard Black / Inter Black / SF Pro Display Black. Weight 800-900. Tracking slightly tight (-1%). White (`#FFFFFF`) on purple. Mix of Title Case for sentences and ALL CAPS for power words.
 - Big numeric / 3D type ("100K"): full glossy chrome 3D rendering — see signature section below.
 - Subhead (e.g., "400+ K-Beauty Brands Active", "VIP parties, meetups, offline events!"): same sans family, weight 600, ~50% the size of the headline, white at 85-90% opacity.
@@ -79,6 +83,7 @@ Each slide uses a vertical (top-to-bottom) gradient with a subtle radial bloom i
 - Hashtag chip text ("#CONNECTED", "#PRODUCTS", "#PAID"): bold uppercase sans, weight 800, black `#0A0A0A`, ~28-32px at canvas scale.
 
 ### Glossy 3D headline treatment (signature)
+
 For the "100K" hero on slide 2 — and applicable to any future numeric/word hero on this style:
 
 - Extruded 3D depth: ~14-18px deep, extrusion direction: down and slightly right (angle ~110° from top).
@@ -98,12 +103,14 @@ For the "100K" hero on slide 2 — and applicable to any future numeric/word her
 - Reflection on the bottom edge of letters: a 6px band that fades from `#F2D9FF` to transparent, suggesting the type is sitting on glass.
 
 ## Headline emphasis
+
 - Color/scale jump on emphasis words: "100K" is the visual hero (chrome 3D at ~2.5× the surrounding text scale); "Creator" sits beneath in plain white sans at much smaller size.
 - Hashtag chips on slide 1 are physically separated stickers — each on its own yellow pill, stacked vertically with random rotation, breaking the grid like fridge magnets.
 - "OPEN!" in "Daily OPEN!" uses a warmer yellow-to-cream gradient and a slight bevel; "Daily" stays plain white.
 - "VIP" in "Get the VIP Invite & Benefits" can be punched up to yellow `#FFE16B` while the rest stays white.
 
 ## Phone / device frame treatment
+
 - iPhone with thin black bezel, near-bezelless. Dynamic Island visible at the top.
 - Phone tilted slightly: most slides ~0° (upright); slides 2 and 4 use a ~4-6° clockwise or counter-clockwise tilt for energy.
 - Phone sits inside a soft purple bloom — a radial glow `#C98AFF` at 35% opacity, blur radius 80px, fading to transparent.
@@ -112,6 +119,7 @@ For the "100K" hero on slide 2 — and applicable to any future numeric/word her
 - A tiny "nuri lounge" wordmark chip sits below the phone on certain slides, centered horizontally.
 
 ## Floating chips & stickers (signature)
+
 The screenshot mosaic is loaded with stickered-on objects that float over the phone and background. They feel layered, like a moodboard. Each has its own drop shadow so it physically lifts off the canvas.
 
 - **Yellow hashtag pill chips** ("#CONNECTED", "#PRODUCTS", "#PAID"):
@@ -137,6 +145,7 @@ The screenshot mosaic is loaded with stickered-on objects that float over the ph
 All stickers cast a tiny consistent shadow at 0 4px 8px rgba(0,0,0,0.2) and are layered above the phone but never cover critical UI content.
 
 ## Mascot ghost-blob (signature)
+
 Cute purple/lavender amorphous blob character — the visual personality anchor of the style.
 
 - Silhouette: rounded blob head, ~120px tall, no hard edges, slightly squished pear shape with a small wave at the bottom (ghost tail).
@@ -149,12 +158,14 @@ Cute purple/lavender amorphous blob character — the visual personality anchor 
 - Pose variations: peeking out from behind a yellow book; floating mid-air next to a coin; tucked into the corner of a phone card.
 
 ## Glossy 3D objects
+
 - **Yellow open book**: 3D rendered, pages slightly fanned, cover and inside pages both bright `#FBE254`. Shadow side on the spine is `#E2B431`. A white specular streak runs across the top of the pages. The book has a soft drop shadow and the mascot can sit atop it as if reading or popping out of it. Tilted slightly ~8°.
 - **Gold coin with star**: dimensional disc, gradient `#FFE16B` → `#E2A431`, edge ring slightly darker, central star or "$" embossed with inset shadow. Suspended at a ~25° angle to show its thickness.
 - **Bell, gift box, heart icons**: optional secondary props. Each rendered with a soft gradient fill, a single white specular highlight, and a warm cast shadow `#3D2374` at 30%.
 - All 3D props share the same "lighting direction": top-left key light, warm bounce from the lower yellow palette.
 
 ## Inside-phone UI
+
 - White or off-white card-based UI, ~16-20px corner radius on cards.
 - Tab bars / category chips at the top (e.g., "Today's Pick", "Daily Open", category labels in pill form).
 - Product cards: thumbnail photo of K-beauty product on top half, brand name + 1-line product title beneath, small action button (heart or follow) bottom-right.
@@ -165,12 +176,14 @@ Cute purple/lavender amorphous blob character — the visual personality anchor 
 - Chat-style cards on slide 5: profile avatar, name, last-message preview, timestamp, with an unread count badge in pink.
 
 ## Background panel treatments
+
 - Slide 4 ("VIP Invite & Benefits") uses a layered look: a white wordmark "BCN"-style brand chip sits on a darker purple inner panel, which sits on the main purple slide bg. The inner panel has a thin 1px white inner stroke and ~24px corner radius.
 - Cards inside the phone use a soft 1px `rgba(255,255,255,0.04)` inner stroke for crispness against the white phone bg.
 - Outer headline regions (above/below the phone) sit directly on the purple gradient with no panel — the chips and 3D objects are the only relief.
 - Bottom-of-slide wordmark area ("nuri lounge") has no panel; it's a tiny chip at most.
 
 ## Decorative accents
+
 - Sparkles ✦ in white or pale yellow, scattered around the chrome 3D type. Use mixed sizes (4px, 6px, 8px).
 - Tiny stars (4-point and 5-point), `#FFE16B` and `#FFFFFF`, randomly rotated.
 - Dotted halos around the mascot or coin (5-7 small dots forming an arc).
@@ -180,6 +193,7 @@ Cute purple/lavender amorphous blob character — the visual personality anchor 
 - A faint horizontal "light line" across the chrome type to suggest a reflected horizon.
 
 ## Copy tone
+
 Hype, creator-economy, second-person, mixed Korean-English with abundant punctuation. Specific lines from the mosaic:
 
 - "Get #CONNECTED #PRODUCTS #PAID"
@@ -195,6 +209,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 ## Per-slide breakdown (mandatory)
 
 ### Slide 1 — "Get #CONNECTED #PRODUCTS #PAID"
+
 - Background: full purple gradient as global spec, slight magenta bloom in the lower-left.
 - Headline: "Get" small at top-left in white bold sans, followed by three stacked yellow hashtag pill chips. Each chip is on its own line, left-aligned with playful rotation.
 - Phone: upright, ~0° tilt, sits center-right behind the chips, showing a product feed with white cards and K-beauty thumbnails. Mascot peeks out from inside one of the cards.
@@ -206,6 +221,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 - Notable effects: starfield dots in the upper third, warm yellow glow behind the book.
 
 ### Slide 2 — "Chosen by 100K Creator"
+
 - Background: purple gradient with the strongest radial bloom of any slide, positioned behind the "100K".
 - Headline: "Chosen by" in white bold sans at the top-center, ~36-44px. Beneath it, the chrome 3D "100K" treatment as the visual hero, tilted ~5° counter-clockwise, with the warm yellow halo behind. "Creator" sits below in plain white bold sans, ~40px.
 - Phone: tilted ~4° counter-clockwise, sits center-bottom, showing a creator's profile / feed UI with the mascot icon on a card.
@@ -214,6 +230,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 - Notable effects: chrome reflection on the bottom of "100K", outer warm-yellow halo, scattered glitter specks.
 
 ### Slide 3 — "Daily OPEN! 400+ K-Beauty Brands Active"
+
 - Background: purple gradient, slight upward warmth bloom.
 - Headline: "Daily OPEN!" at top-center in white bold sans (with "OPEN!" in cream/yellow gradient and a subtle bevel); subhead "400+ K-Beauty Brands Active" beneath in white at 85% opacity, weight 600.
 - Phone: upright, ~0° tilt, centered, full-bleed showing a tiled grid of K-beauty product cards (thumbnails of skincare, makeup) with the mascot tucked into one card.
@@ -222,6 +239,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 - Notable effects: a subtle purple light-streak across the upper-left of the phone bezel.
 
 ### Slide 4 — "Get the VIP Invite & Benefits"
+
 - Background: purple gradient with the lower-third pushed warmer toward magenta.
 - Headline: "Get the VIP Invite & Benefits" at the bottom in white bold sans, "VIP" punched up in yellow `#FFE16B`. Subhead "VIP parties, meetups, offline events!" beneath in white at 85%, weight 600.
 - Phone: upright at top, showing a "Campaigns" feed UI. Inside the phone, a vertical white card features a dark purple inner panel with a chunky white "BCN"-style wordmark — this is the layered brand-chip visual.
@@ -230,6 +248,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 - Notable effects: thin 1px white inner stroke on the BCN panel; sparkles around the "VIP" word.
 
 ### Slide 5 — "Connect you"
+
 - Background: purple gradient, soft magenta bloom lower-center.
 - Headline: "Connect you" at the bottom in white bold sans; subhead "Connect with Top Br…" (truncated) beneath in white at 85%.
 - Phone: upright at top, showing a chat/DM interface with profile avatar at the top ("Mall", "#nm…") and a list of message threads with thumbnails, names, message previews, timestamps, and pink unread badges.
@@ -238,6 +257,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 - Notable effects: thin gradient ring around the top profile avatar (purple→pink); soft purple bloom behind the phone.
 
 ## How to apply this style
+
 1. Set up a 1242×2688 (or 1290×2796) canvas with the global purple gradient as background and add the radial bloom + starfield + corner vignette.
 2. Place the phone mockup centered with a soft purple bloom and drop shadow; tilt by 0-6° depending on slide.
 3. Inside the phone, render the relevant K-beauty UI on white/off-white cards using Pretendard / Noto Sans KR for any text.
@@ -250,6 +270,7 @@ Mix of all-caps emphasis ("CONNECTED", "OPEN!", "VIP") and Title Case for the re
 10. Confirm sticker layering: every floating element casts a small consistent drop shadow so the slide reads as a moodboard, not a flat design.
 
 ## What this style is NOT
+
 - Do not use a flat 2D number — the hero numeric ("100K") MUST be glossy chrome 3D with bevel and warm outer glow.
 - Do not use a single-color background — it MUST be the deep-purple-to-magenta gradient with at least one radial bloom.
 - Do not omit the scattered yellow pill chips — at least one slide MUST feature stacked hashtag stickers.

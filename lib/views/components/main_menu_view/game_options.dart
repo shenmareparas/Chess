@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../../../model/app_model.dart';
 import '../shared/glass_panel.dart';
 import 'game_options/ai_difficulty_picker.dart';
@@ -13,11 +14,8 @@ class GameOptions extends StatelessWidget {
   final AppModel appModel;
   final ScrollController? scrollController;
 
-  const GameOptions(
-    this.appModel, {
-    Key? key,
-    this.scrollController,
-  }) : super(key: key);
+  const GameOptions(this.appModel, {Key? key, this.scrollController})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -128,24 +126,21 @@ class GameOptions extends StatelessWidget {
             if (appModel.timeLimit > 0) ...[
               const SizedBox(height: 16),
               GlassPanel(
-                child: TimerIncrementPicker(
-                  appModel.timerIncrement,
-                  (val) {
-                    appModel.setTimerIncrement(val);
-                    if (val > 0) {
-                      Future.delayed(const Duration(milliseconds: 150), () {
-                        if (scrollController != null &&
-                            scrollController!.hasClients) {
-                          scrollController!.animateTo(
-                            scrollController!.position.maxScrollExtent,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeOut,
-                          );
-                        }
-                      });
-                    }
-                  },
-                ),
+                child: TimerIncrementPicker(appModel.timerIncrement, (val) {
+                  appModel.setTimerIncrement(val);
+                  if (val > 0) {
+                    Future.delayed(const Duration(milliseconds: 150), () {
+                      if (scrollController != null &&
+                          scrollController!.hasClients) {
+                        scrollController!.animateTo(
+                          scrollController!.position.maxScrollExtent,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                        );
+                      }
+                    });
+                  }
+                }),
               ),
               if (appModel.timerIncrement > 0) ...[
                 const SizedBox(height: 16),

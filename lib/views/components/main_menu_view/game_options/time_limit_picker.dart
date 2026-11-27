@@ -1,6 +1,7 @@
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../../../../model/app_model.dart';
 import '../../../../model/app_themes.dart';
 import '../../shared/glass_panel.dart';
@@ -71,7 +72,9 @@ class TimeLimitPicker extends StatelessWidget {
                           autofocus: true,
                           textAlign: TextAlign.center,
                           style: const TextStyle(
-                              color: Colors.white, fontSize: 18),
+                            color: Colors.white,
+                            fontSize: 18,
+                          ),
                           cursorColor: primaryColor,
                           decoration: BoxDecoration(
                             color: Colors.white.withValues(alpha: 0.05),
@@ -84,8 +87,10 @@ class TimeLimitPicker extends StatelessWidget {
                             ),
                           ),
                           placeholder: 'Minutes',
-                          placeholderStyle:
-                              const TextStyle(color: Colors.grey, fontSize: 16),
+                          placeholderStyle: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 16,
+                          ),
                           onChanged: (_) {
                             if (errorMessage != null) {
                               setState(() {
@@ -120,8 +125,9 @@ class TimeLimitPicker extends StatelessWidget {
                                     color: Colors.white.withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(12),
                                     border: Border.all(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.1),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       width: 1,
                                     ),
                                   ),
@@ -142,8 +148,9 @@ class TimeLimitPicker extends StatelessWidget {
                               child: CupertinoButton(
                                 padding: EdgeInsets.zero,
                                 onPressed: () {
-                                  final int? val =
-                                      int.tryParse(controller.text);
+                                  final int? val = int.tryParse(
+                                    controller.text,
+                                  );
                                   if (val == null) {
                                     setState(() {
                                       errorMessage =

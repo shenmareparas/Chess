@@ -26,10 +26,7 @@ bool _isFoldableOrWideScreen(BuildContext context) {
 class PieceGuideView extends StatefulWidget {
   final ChessPieceType initialPiece;
 
-  const PieceGuideView({
-    super.key,
-    this.initialPiece = ChessPieceType.king,
-  });
+  const PieceGuideView({super.key, this.initialPiece = ChessPieceType.king});
 
   @override
   State<PieceGuideView> createState() => _PieceGuideViewState();
@@ -51,8 +48,10 @@ class _PieceGuideViewState extends State<PieceGuideView> {
     super.didChangeDependencies();
     if (!_precached) {
       _precached = true;
-      final pieceTheme =
-          Provider.of<AppModel>(context, listen: false).pieceTheme;
+      final pieceTheme = Provider.of<AppModel>(
+        context,
+        listen: false,
+      ).pieceTheme;
       _precacheImages(pieceTheme);
     }
   }
@@ -145,16 +144,9 @@ class _PieceGuideViewState extends State<PieceGuideView> {
 
   // ── Top Header Bar (Left: Back, Middle: Piece Name, Right: Color Switcher) ──
 
-  Widget _buildTopHeader(
-    AppTheme theme,
-    PieceInfo info,
-    Color highlightColor,
-  ) {
+  Widget _buildTopHeader(AppTheme theme, PieceInfo info, Color highlightColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16.0,
-        vertical: 8.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Row(
         children: [
           // Left Wing: Back button (like in Settings)
@@ -312,10 +304,7 @@ class _PieceGuideViewState extends State<PieceGuideView> {
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
+              return FadeTransition(opacity: animation, child: child);
             },
             child: _PieceDescriptionCard(
               key: ValueKey(_selectedPiece),
@@ -503,10 +492,7 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                       // whole content
                       final rightPane = SizedBox(
                         width: rightPaneWidth,
-                        child: _buildDescriptionPanel(
-                          theme,
-                          highlightColor,
-                        ),
+                        child: _buildDescriptionPanel(theme, highlightColor),
                       );
 
                       return Row(
@@ -624,9 +610,7 @@ class _PieceGuideViewState extends State<PieceGuideView> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.12),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -692,7 +676,7 @@ class _PieceGuideViewState extends State<PieceGuideView> {
                     color: highlightColor.withValues(alpha: 0.4),
                     blurRadius: 6,
                     spreadRadius: 1,
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -776,11 +760,7 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
               trackVisibility: false,
               thickness: 3.0,
               radius: const Radius.circular(8),
-              padding: const EdgeInsets.only(
-                top: 4,
-                bottom: 12,
-                right: 0,
-              ),
+              padding: const EdgeInsets.only(top: 4, bottom: 12, right: 0),
               thumbColor: theme.lightTile.withValues(alpha: 0.35),
               controller: _scrollController,
               child: SingleChildScrollView(
@@ -917,8 +897,9 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
                                   height: 4.5,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color:
-                                        highlightColor.withValues(alpha: 0.8),
+                                    color: highlightColor.withValues(
+                                      alpha: 0.8,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 6),
@@ -928,8 +909,9 @@ class _PieceDescriptionCardState extends State<_PieceDescriptionCard> {
                                     fontFamily: 'Inter',
                                     fontSize: 11,
                                     fontWeight: FontWeight.w600,
-                                    color:
-                                        theme.lightTile.withValues(alpha: 0.82),
+                                    color: theme.lightTile.withValues(
+                                      alpha: 0.82,
+                                    ),
                                     letterSpacing: 0.2,
                                   ),
                                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+
 import '../lib/logic/chess_piece.dart';
 import '../lib/logic/move_calculation/move_classes/move.dart';
 import '../lib/logic/move_calculation/move_classes/move_stack_object.dart';
@@ -57,9 +58,11 @@ void main() {
       expect(StockfishService.msoToUCI(mso), 'a7a8n');
     });
 
-    test('StockfishService.instance dispose does not throw when idle',
-        () async {
-      await expectLater(StockfishService.instance.dispose(), completes);
-    });
+    test(
+      'StockfishService.instance dispose does not throw when idle',
+      () async {
+        await expectLater(StockfishService.instance.dispose(), completes);
+      },
+    );
   });
 }

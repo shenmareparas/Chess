@@ -8,11 +8,15 @@ export const BUILT_IN_ELEMENT_IDS: BuiltInElementId[] = [
 
 export const TEXT_ELEMENT_PREFIX = "text:";
 
-export function isBuiltInElementId(id: ElementId | string): id is BuiltInElementId {
+export function isBuiltInElementId(
+  id: ElementId | string,
+): id is BuiltInElementId {
   return (BUILT_IN_ELEMENT_IDS as string[]).includes(id);
 }
 
-export function isTextElementId(id: ElementId | string | null | undefined): id is TextElementId {
+export function isTextElementId(
+  id: ElementId | string | null | undefined,
+): id is TextElementId {
   return typeof id === "string" && id.startsWith(TEXT_ELEMENT_PREFIX);
 }
 

@@ -22,33 +22,35 @@ feel: intimate, candle-lit, "you've been hand-picked"
 - **Photo never crops through eyes or jawline** when actual photos are used.
 
 ## Vibe summary
+
 This style sells exclusivity through atmosphere, not through chrome or gradients. Every slide reads like a still from a 35mm short film about a private dinner club — warm tungsten light spilling across faces, deep teal-black shadows swallowing the edges, and a quiet serif headline floating like a whispered line of dialogue. The voice is selective, second-person, and a little romantic: "your circle," "hand-picked," "worth your time." Nothing shouts. The photography does all the heavy lifting, and the UI hides almost entirely so the brand reads as a lifestyle, not a product.
 
 ## Global palette
+
 Use these values as Tailwind arbitrary values or CSS custom properties.
 
-| Token | Hex | Use |
-|---|---|---|
-| `--ink-0` | `#0A0A0B` | Deepest background, crushed-black shadows |
-| `--ink-1` | `#0E0E10` | Phone screen background |
-| `--ink-2` | `#16151A` | Phone card surfaces (solid fallback) |
-| `--ink-3` | `#1F1C1A` | Warm-shifted shadow on photo darkest zones |
-| `--vignette` | `rgba(0,0,0,0.62)` | Corner darkening at 40% from edges |
-| `--bottom-fade-top` | `rgba(0,0,0,0)` | Top of bottom gradient (35% from bottom) |
-| `--bottom-fade-bot` | `rgba(0,0,0,0.78)` | Bottom of bottom gradient |
-| `--tungsten` | `#C99566` | Warm key-light highlight on skin |
-| `--tungsten-deep` | `#8A5A33` | Warm mid-tones, lamp glow |
-| `--candle` | `#E8B97A` | Specular candle/bulb highlights |
-| `--teal-shadow` | `#1A2026` | Cool shadow side of faces (orange-teal grade) |
-| `--cream` | `#F4EBDD` | Headline color, wordmark |
-| `--cream-dim` | `rgba(244,235,221,0.72)` | Subhead opacity |
-| `--cream-mute` | `#B8AFA2` | Phone body copy |
-| `--gold-hairline` | `rgba(201,149,102,0.55)` | 1px ring around avatars/dividers |
-| `--card-fill` | `rgba(255,255,255,0.04)` | Glass cards inside phone |
-| `--card-border` | `rgba(255,255,255,0.08)` | 1px card border |
-| `--notif-fill` | `rgba(28,26,24,0.78)` | Floating notification background |
-| `--notif-border` | `rgba(255,255,255,0.06)` | Notification hairline |
-| `--grain-opacity` | `0.05` | Film noise layer alpha |
+| Token               | Hex                      | Use                                           |
+| ------------------- | ------------------------ | --------------------------------------------- |
+| `--ink-0`           | `#0A0A0B`                | Deepest background, crushed-black shadows     |
+| `--ink-1`           | `#0E0E10`                | Phone screen background                       |
+| `--ink-2`           | `#16151A`                | Phone card surfaces (solid fallback)          |
+| `--ink-3`           | `#1F1C1A`                | Warm-shifted shadow on photo darkest zones    |
+| `--vignette`        | `rgba(0,0,0,0.62)`       | Corner darkening at 40% from edges            |
+| `--bottom-fade-top` | `rgba(0,0,0,0)`          | Top of bottom gradient (35% from bottom)      |
+| `--bottom-fade-bot` | `rgba(0,0,0,0.78)`       | Bottom of bottom gradient                     |
+| `--tungsten`        | `#C99566`                | Warm key-light highlight on skin              |
+| `--tungsten-deep`   | `#8A5A33`                | Warm mid-tones, lamp glow                     |
+| `--candle`          | `#E8B97A`                | Specular candle/bulb highlights               |
+| `--teal-shadow`     | `#1A2026`                | Cool shadow side of faces (orange-teal grade) |
+| `--cream`           | `#F4EBDD`                | Headline color, wordmark                      |
+| `--cream-dim`       | `rgba(244,235,221,0.72)` | Subhead opacity                               |
+| `--cream-mute`      | `#B8AFA2`                | Phone body copy                               |
+| `--gold-hairline`   | `rgba(201,149,102,0.55)` | 1px ring around avatars/dividers              |
+| `--card-fill`       | `rgba(255,255,255,0.04)` | Glass cards inside phone                      |
+| `--card-border`     | `rgba(255,255,255,0.08)` | 1px card border                               |
+| `--notif-fill`      | `rgba(28,26,24,0.78)`    | Floating notification background              |
+| `--notif-border`    | `rgba(255,255,255,0.06)` | Notification hairline                         |
+| `--grain-opacity`   | `0.05`                   | Film noise layer alpha                        |
 
 Color philosophy: zero pure white, zero pure saturated colors. Even the brightest highlight is the warm cream, never `#FFFFFF`. Even "black" is a 1-2% warm-shifted dark, never `#000`.
 
@@ -86,11 +88,11 @@ These are non-negotiable. The photography IS the brand.
 
 Every headline contains ONE italicized phrase, never two. The italic phrase always carries the emotional payload of the line. Color stays identical to the rest of the headline (no color shift, no weight shift — italic only). Examples taken from the deck:
 
-- "Every Thursday, with people at your level. *Upgrade your circle.*" (italic on the imperative)
-- "We make a filter so *every person you meet is worth your time.*" (italic on the promise)
-- "Every Thursday, We sit you at a table of 6 *hand-picked members.*" (italic on the differentiator)
-- "Every day, *Limited curated profiles. Quality is key.*" (italic on the value prop)
-- "*Complete profil[es]* — deep conversations." (italic on the product noun)
+- "Every Thursday, with people at your level. _Upgrade your circle._" (italic on the imperative)
+- "We make a filter so _every person you meet is worth your time._" (italic on the promise)
+- "Every Thursday, We sit you at a table of 6 _hand-picked members._" (italic on the differentiator)
+- "Every day, _Limited curated profiles. Quality is key._" (italic on the value prop)
+- "_Complete profil[es]_ — deep conversations." (italic on the product noun)
 
 Rule: italicize the part that, if removed, would leave the line generic.
 
@@ -165,15 +167,16 @@ Rule: italicize the part that, if removed, would leave the line generic.
 - **Actual lines from the deck:**
   - "Every Thursday, with people at your level. Upgrade your circle."
   - "Congrats, Andy"
-  - "We make a filter so *every person you meet is worth your time.*"
+  - "We make a filter so _every person you meet is worth your time._"
   - "Your table for The Thursday Ritual is ready"
-  - "Every Thursday, We sit you at a table of 6 *hand-picked members.* 3 boys, 3 girls"
-  - "Every day, *Limited curated profiles. Quality is key.*"
-  - "*Complete profil[es]* — deep conversations."
+  - "Every Thursday, We sit you at a table of 6 _hand-picked members._ 3 boys, 3 girls"
+  - "Every day, _Limited curated profiles. Quality is key._"
+  - "_Complete profil[es]_ — deep conversations."
 
 ## Per-slide breakdown (mandatory)
 
 ### Slide 1 — "Upgrade your circle" (group dinner hero)
+
 - **Background photo:** warm dinner-party scene, two-row composition. Top half: a candle-lit table with several people, glasses raised mid-toast, deep crimson velvet/curtain behind them. Bottom half: two women in foreground embracing or leaning into each other, laughing. Color cast: heavy tungsten amber on faces and glasses, deep teal-black behind the figures. Crimson reds in clothing and curtain are desaturated to brick.
 - **Vignette / gradient overlay:** radial vignette darkening the four corners by ~40%. A central vertical band stays slightly brighter so the wordmark at top and headline at middle both read.
 - **Headline:** "Every Thursday, with people at your level." in cream serif, three-line stack centered horizontally, sitting at vertical middle (52–60% from top). Below it, a smaller line "Upgrade your circle." in subhead size at 72% opacity cream — this is where the italic phrase lives if you choose to italicize the subhead instead of inside the headline.
@@ -183,6 +186,7 @@ Rule: italicize the part that, if removed, would leave the line generic.
 - **Notable effects:** strongest grain on this slide because the dim midtones reveal it most. Slight warm halation around the brightest candle highlight is acceptable.
 
 ### Slide 2 — "Congrats, Andy" (acceptance moment)
+
 - **Background photo:** medium close-up of a young man with longish dark hair under warm bar light, half-smile, looking slightly off-camera. Background blown out to a soft tungsten haze (deep golden bokeh). Strong key from upper-right, shadow falls across left cheek.
 - **Vignette / gradient overlay:** standard radial vignette; bottom gradient takes over the lower 30% to cradle the wordmark.
 - **Headline:** "Congrats, Andy" in cream serif, two-line stack with a comma break, centered horizontally, sitting at the top third (around 18–24% from top). Size 78pt. No italic (this slide uses the floating notification card as the rhetorical beat instead).
@@ -192,6 +196,7 @@ Rule: italicize the part that, if removed, would leave the line generic.
 - **Notable effects:** the notification card's backdrop-blur should genuinely blur the photo behind it — this is the moment of contact between brand and user.
 
 ### Slide 3 — "Your table for The Thursday Ritual is ready" (booking confirmation phone)
+
 - **Background photo:** dim dinner table or bar interior, very dark, mostly out-of-focus warm bokeh. Subject (likely a hand pouring wine or a candle) sits low-left or low-right. Used mainly as atmosphere — the phone is the hero.
 - **Vignette / gradient overlay:** heavier than other slides — the photo is functionally a moody backdrop. Bottom gradient extends up to 50% to anchor the headline.
 - **Phone:** upright, centered horizontally, occupies vertical 18–78% of canvas. Screen content:
@@ -201,10 +206,11 @@ Rule: italicize the part that, if removed, would leave the line generic.
   - Bottom: ghost button "Let's go" or similar in cream ghost-button style.
   - Wordmark `mate` with macron sits at the bottom of the screen, just above the home indicator, in cream 18pt.
 - **Floating elements:** profile sticker bubble(s) may bleed slightly off the phone's right bezel as noted.
-- **Headline (outside phone):** "Every Thursday, We sit you at a table of 6 *hand-picked members.*" in cream serif, 3-line, centered horizontally below the phone (~85% from top). Italic on "hand-picked members." Subhead beneath: "3 boys, 3 girls" in 28pt cream at 60% opacity.
+- **Headline (outside phone):** "Every Thursday, We sit you at a table of 6 _hand-picked members._" in cream serif, 3-line, centered horizontally below the phone (~85% from top). Italic on "hand-picked members." Subhead beneath: "3 boys, 3 girls" in 28pt cream at 60% opacity.
 - **Notable effects:** the phone's inset warm glow is most visible here because the surrounding photo is darkest.
 
 ### Slide 4 — "Quality is key" (curated profile grid phone)
+
 - **Background photo:** very dark — a single subject (woman in profile, half-lit, soft smile) on the right side, mostly silhouetted against a tungsten-glow background. The photo's job here is to frame the phone.
 - **Vignette / gradient overlay:** strong radial vignette; bottom gradient again pulls the headline forward.
 - **Phone:** upright, slightly left-of-center to balance the right-side photo subject. Screen content:
@@ -213,10 +219,11 @@ Rule: italicize the part that, if removed, would leave the line generic.
   - 2×N grid of portrait cards (4 visible: a curly-haired woman, a man in blue tracker, a man with glasses labeled "Julian", a woman with red hair). Each card has the gold-hairline ring described, with name + age overlay bottom-left.
   - Bottom tab bar with 5 monoline icons as specified.
 - **Floating elements:** the small "Tracker 11" or "Julian" name labels — these are inside the cards, not floating.
-- **Headline (outside phone):** "Every day, *Limited curated profiles. Quality is key.*" centered below phone in cream serif, italic on "Limited curated profiles. Quality is key." Position ~84% from top.
+- **Headline (outside phone):** "Every day, _Limited curated profiles. Quality is key._" centered below phone in cream serif, italic on "Limited curated profiles. Quality is key." Position ~84% from top.
 - **Notable effects:** the grid cards' gold rings catch warm light from the photo behind — keep that gold ring opacity high enough (50–60%) so it reads as part of the brand language.
 
 ### Slide 5 — "Complete profiles, deep conversations" (single profile detail phone)
+
 - **Background photo:** waist-up portrait of a woman, looking directly at camera, soft smile, warm candle-amber light from frame-left. Brown/charcoal background, slightly out of focus. Most photographically forward slide of the deck.
 - **Vignette / gradient overlay:** lighter vignette than slides 3 and 4 because the portrait itself is the hero alongside the phone.
 - **Phone:** upright, positioned right-of-center or centered. Screen content:
@@ -225,7 +232,7 @@ Rule: italicize the part that, if removed, would leave the line generic.
   - Two interest tags as candle-amber pills: e.g., "Tapas, cocktails and good conversations" — pill wraps to two lines, full-width minus 16px margins, gold-tinted.
   - Horizontal "interest bar" — a 4px tall progress-style strip in muted gold (`--tungsten-deep` fill, `--candle` highlight at ~40% width), no label, just a visual.
   - Below it, secondary metadata in `--cream-mute` 11pt: language, neighborhood, profession in one line separated by `·`.
-- **Headline (outside phone):** "*Complete profil[es]* — deep conversations." or similar, italic on "Complete profiles", positioned bottom of canvas at ~92% from top, may be partially cropped in mosaic preview as is intentional in the deck.
+- **Headline (outside phone):** "_Complete profil[es]_ — deep conversations." or similar, italic on "Complete profiles", positioned bottom of canvas at ~92% from top, may be partially cropped in mosaic preview as is intentional in the deck.
 - **Notable effects:** subtle 1px cream underline beneath "Lucía" should be drawn as a separate element with rounded caps, not text-decoration, so it has presence.
 
 ## How to apply this style

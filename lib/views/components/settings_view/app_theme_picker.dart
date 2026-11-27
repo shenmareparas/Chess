@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
@@ -22,8 +23,9 @@ class _AppThemePickerState extends State<AppThemePicker> {
   void initState() {
     super.initState();
     final appModel = Provider.of<AppModel>(context, listen: false);
-    _scrollController =
-        FixedExtentScrollController(initialItem: appModel.themeIndex);
+    _scrollController = FixedExtentScrollController(
+      initialItem: appModel.themeIndex,
+    );
   }
 
   @override

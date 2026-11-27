@@ -48,7 +48,14 @@ export function SlideThumb({
 }: Props) {
   const headline = pickText(slide.headline, locale);
   const label = pickText(slide.label, locale);
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
     id: slide.id,
   });
 
@@ -57,7 +64,9 @@ export function SlideThumb({
   const tileH = Math.max(34, Math.min(120, Math.round(THUMB_W / aspect)));
   const scale = THUMB_W / cW;
   const start = connectedCanvas ? Math.max(0, index - 1) : index;
-  const visibleSlides = connectedCanvas ? slides.slice(start, Math.min(slides.length, index + 2)) : [slide];
+  const visibleSlides = connectedCanvas
+    ? slides.slice(start, Math.min(slides.length, index + 2))
+    : [slide];
   const localIndex = index - start;
 
   const style: React.CSSProperties = {

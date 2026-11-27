@@ -6,7 +6,10 @@ export const DEFAULT_LOCALE = "en";
 // the first locale that has a non-empty value, then to empty string. Used by
 // the canvas/preview/thumb so switching to a locale the user hasn't filled in
 // shows the source copy instead of blanks.
-export function pickText(field: LocalizedText | undefined, locale: string): string {
+export function pickText(
+  field: LocalizedText | undefined,
+  locale: string,
+): string {
   if (!field) return "";
   const direct = field[locale];
   if (direct && direct.length) return direct;
@@ -21,7 +24,10 @@ export function pickText(field: LocalizedText | undefined, locale: string): stri
 
 // Replace `{locale}` placeholders in a screenshot path. Data URLs and empty
 // strings pass through unchanged.
-export function resolveScreenshot(path: string | undefined, locale: string): string {
+export function resolveScreenshot(
+  path: string | undefined,
+  locale: string,
+): string {
   if (!path) return "";
   if (path.startsWith("data:")) return path;
   if (!path.includes("{locale}")) return path;

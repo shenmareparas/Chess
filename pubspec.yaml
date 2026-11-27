@@ -24,7 +24,7 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.0.5
-  flame: ^1.7.3
+  chessground: ^10.3.0
   sound_effect: ^0.2.0
   shared_preferences: ^2.5.5
   async: ^2.13.1

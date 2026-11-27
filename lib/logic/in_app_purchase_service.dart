@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -69,12 +70,14 @@ class InAppPurchaseService {
     if (!_isAvailable) return;
 
     try {
-      final ProductDetailsResponse response =
-          await _iap.queryProductDetails(_productIds);
+      final ProductDetailsResponse response = await _iap.queryProductDetails(
+        _productIds,
+      );
 
       if (response.error != null) {
         debugPrint(
-            '[InAppPurchaseService] queryProductDetails error: ${response.error}');
+          '[InAppPurchaseService] queryProductDetails error: ${response.error}',
+        );
       }
 
       for (final product in response.productDetails) {
@@ -99,15 +102,17 @@ class InAppPurchaseService {
       return false;
     }
 
-    final PurchaseParam purchaseParam =
-        PurchaseParam(productDetails: _removeAdsProduct!);
+    final PurchaseParam purchaseParam = PurchaseParam(
+      productDetails: _removeAdsProduct!,
+    );
 
     _isPurchasePending = true;
     purchaseStateNotifier.value = !purchaseStateNotifier.value;
 
     try {
-      final bool started =
-          await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+      final bool started = await _iap.buyNonConsumable(
+        purchaseParam: purchaseParam,
+      );
       if (!started) {
         _isPurchasePending = false;
         purchaseStateNotifier.value = !purchaseStateNotifier.value;
@@ -138,7 +143,8 @@ class InAppPurchaseService {
 
   /// Handles stream updates for purchases.
   Future<void> _onPurchaseDetailsUpdated(
-      List<PurchaseDetails> purchaseDetailsList) async {
+    List<PurchaseDetails> purchaseDetailsList,
+  ) async {
     for (final purchaseDetails in purchaseDetailsList) {
       if (purchaseDetails.productID == removeAdsProductId) {
         if (purchaseDetails.status == PurchaseStatus.pending) {
@@ -152,7 +158,8 @@ class InAppPurchaseService {
             await _unlockAdFree();
           } else if (purchaseDetails.status == PurchaseStatus.error) {
             debugPrint(
-                '[InAppPurchaseService] Purchase error: ${purchaseDetails.error}');
+              '[InAppPurchaseService] Purchase error: ${purchaseDetails.error}',
+            );
           } else if (purchaseDetails.status == PurchaseStatus.canceled) {
             debugPrint('[InAppPurchaseService] Purchase canceled');
           }
@@ -163,7 +170,8 @@ class InAppPurchaseService {
               await _iap.completePurchase(purchaseDetails);
             } catch (e) {
               debugPrint(
-                  '[InAppPurchaseService] completePurchase exception: $e');
+                '[InAppPurchaseService] completePurchase exception: $e',
+              );
             }
           }
         }

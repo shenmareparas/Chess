@@ -20,6 +20,7 @@ Scaffold a pre-built Next.js + ShadCN editor that lets the user design and expor
 - Guided in-place migration for older projects created by this skill; passive and explicit migrations keep legacy decks isolated until the user intentionally opts into connected canvas
 
 Supported devices out of the box:
+
 - **iPhone** (portrait) — Apple App Store
 - **iPad** (portrait) — Apple App Store
 - **Android Phone** (portrait) — Google Play
@@ -29,7 +30,7 @@ Supported devices out of the box:
 
 ## Core Principle
 
-**Screenshots are advertisements, not documentation.** Every screenshot sells one idea. If you're showing UI, you're doing it wrong — you're selling a *feeling*, an *outcome*, or killing a *pain point*. Use this skill's interactive editor to iterate on copy and layout fast; do not hand-craft the page from scratch.
+**Screenshots are advertisements, not documentation.** Every screenshot sells one idea. If you're showing UI, you're doing it wrong — you're selling a _feeling_, an _outcome_, or killing a _pain point_. Use this skill's interactive editor to iterate on copy and layout fast; do not hand-craft the page from scratch.
 
 ## What This Skill Does
 
@@ -392,6 +393,7 @@ The starter project state lives in `app-store-screenshots.json`, not `src/lib/de
 ### (Optional) Seed Initial Copy
 
 If the user provided headlines, edit `app-store-screenshots.json` to set:
+
 - `appName`
 - `themeId` (one of `"clean-light" | "dark-bold" | "warm-editorial" | "ocean-fresh" | "bloom-roast"`, or add a matching entry to `THEMES` in `src/lib/constants.ts`)
 - `connectedCanvas` (`true` for new connected decks; migrated legacy decks should stay `false` until the user opts in)
@@ -420,36 +422,37 @@ Inside the editor the user will write headlines themselves, but they often need 
 
 ### Three Approaches
 
-| Type | What it does | Example |
-|------|-------------|---------|
-| **Paint a moment** | You picture yourself doing it | "Check your coffee without opening the app." |
-| **State an outcome** | What your life looks like after | "A home for every coffee you buy." |
-| **Kill a pain** | Name a problem and destroy it | "Never waste a great bag of coffee." |
+| Type                 | What it does                    | Example                                      |
+| -------------------- | ------------------------------- | -------------------------------------------- |
+| **Paint a moment**   | You picture yourself doing it   | "Check your coffee without opening the app." |
+| **State an outcome** | What your life looks like after | "A home for every coffee you buy."           |
+| **Kill a pain**      | Name a problem and destroy it   | "Never waste a great bag of coffee."         |
 
 ### Bad-to-Better
 
-| Weak | Better | Why |
-|------|--------|-----|
-| Track habits and stay motivated | Keep your streak alive | one idea, faster to parse |
-| Organize tasks with AI summaries | Turn notes into next steps | outcome-first, less jargon |
-| Save recipes with tags and favorites | Find dinner fast | sells the benefit, not the UI |
+| Weak                                 | Better                     | Why                           |
+| ------------------------------------ | -------------------------- | ----------------------------- |
+| Track habits and stay motivated      | Keep your streak alive     | one idea, faster to parse     |
+| Organize tasks with AI summaries     | Turn notes into next steps | outcome-first, less jargon    |
+| Save recipes with tags and favorites | Find dinner fast           | sells the benefit, not the UI |
 
 ### Narrative Arc
 
 The user's slide deck should follow a rough arc (skip slots that don't fit):
 
-| Slot | Purpose |
-|------|---------|
-| #1 | **Hero / Main Benefit** — the ONLY slide most people see |
-| #2 | **Differentiator** — what makes the app unique |
-| #3 | **Ecosystem** — widgets, watch, extensions (skip if N/A) |
-| #4+ | **Core Features** — one per slide, most important first |
-| 2nd-to-last | **Trust Signal** — "made for people who [X]" |
-| Last | **More Features** — pills listing extras (skip if few features) |
+| Slot        | Purpose                                                         |
+| ----------- | --------------------------------------------------------------- |
+| #1          | **Hero / Main Benefit** — the ONLY slide most people see        |
+| #2          | **Differentiator** — what makes the app unique                  |
+| #3          | **Ecosystem** — widgets, watch, extensions (skip if N/A)        |
+| #4+         | **Core Features** — one per slide, most important first         |
+| 2nd-to-last | **Trust Signal** — "made for people who [X]"                    |
+| Last        | **More Features** — pills listing extras (skip if few features) |
 
 ### Layout Variation
 
 Vary the `layout` field across slides. The editor exposes:
+
 - `hero` — centered headline + bottom-anchored device
 - `device-bottom` — same composition, smaller headline
 - `device-top` — flipped, device above caption (good contrast slide)
@@ -465,6 +468,7 @@ Never repeat the same layout twice in a row. Use 1-2 `inverted` (dark) slides fo
 Use the connected canvas as a design tool during Step 3, after the narrative arc and layout rhythm are chosen and before final export. For most decks with **5+ slides**, plan **one** tasteful cross-screen moment by default. For 8-10 slide decks, use at most **two**. For short, formal, or compliance-heavy decks, zero is fine. The goal is "these screenshots belong together," not "one giant poster chopped into pieces."
 
 Good cross-screen patterns:
+
 - An oversized phone, tablet, or screenshot mosaic bridges two adjacent screens by 10-30% of its width, while each exported crop still reads as a complete ad.
 - A background horizon, photo, gradient, doodle path, waveform, starfield, sticker trail, or map route continues across the seam.
 - A mascot, 3D object, floating chip, or notification peeks from one screen into the next as a secondary visual, not the whole message.
@@ -472,6 +476,7 @@ Good cross-screen patterns:
 - The seam passes through negative space, a soft shadow, a simple object body, or a non-critical decorative area.
 
 Bad cross-screen patterns:
+
 - Splitting headlines, app names, prices, legal text, ratings, CTAs, or critical UI across a seam.
 - Centering one giant phone on the seam so each crop shows only a half-device and no clear benefit.
 - Using cross-screen movement on every slide; it becomes a gimmick and makes the deck harder to scan.
@@ -480,6 +485,7 @@ Bad cross-screen patterns:
 - Letting shadows, stickers, or partial objects look accidentally clipped. If it crosses a boundary, make the bleed deliberate with scale, shadow, rotation, or continuation.
 
 Placement rules:
+
 - Use adjacent screens only unless a deliberate 3-screen panorama is the entire concept.
 - Keep all text fully inside a single exported screen with safe margins.
 - Let 10-30% of a non-critical visual cross the seam; go beyond 40% only for backgrounds, paths, or abstract decoration.
@@ -501,6 +507,7 @@ The headline occupies roughly the **top 30–40%** of the canvas — much bigger
 ### 3. Mixed emphasis inside the headline
 
 Almost every great headline has one word styled differently from the rest — a contrast color, an italic script, a heavier weight, or a hand-drawn underline. Examples:
+
 - Superlist: "The one app that fits **your whole day**" (script + coral)
 - Headspace: "Stress **less**" (`less` orange against black)
 - Arc Search: "**Fastest** way to search. **Cleanest** way to browse." (purple / navy)
@@ -510,6 +517,7 @@ Flat single-color headlines look weaker. Pick one emphasis word per slide.
 ### 4. Decorative accents are the rule, not the exception
 
 Top decks layer at least one of these on most slides:
+
 - Hand-drawn squiggles, arrows, scribbles (Superlist)
 - Sparkles / glow (Gentler Streak, Arc)
 - Label badges on the visual ("SUPER RAW", "Cinematic", "LUT")
@@ -521,6 +529,7 @@ A bare phone on a bare bg with a bare headline is the default-skill output. Add 
 ### 5. Phone framing is a deliberate choice — vary it across the deck
 
 Three common framings, each carries a different feeling:
+
 - **Bezelless / minimal frame** — maximizes UI legibility, modern (Arc, Linktree, Gentler)
 - **Tilted floating phone with soft shadow** — product / advertorial feel (Superlist, CRED hero)
 - **Full device with visible bezel, dead-center** — editorial, premium (CRED, NB Camera)
@@ -533,11 +542,12 @@ Award badges, press quotes, star counts, install counts — concentrate them on 
 
 ### 7. Density inside the phone, sparsity outside
 
-The screenshot inside the phone can (and should) be a real, dense product capture — actual lists, dashboards, charts, conversations. The space *outside* the phone is the opposite: one headline, one visual, one optional sub-line, one optional badge. Don't add bullet lists, multi-line paragraphs, or competing logos around the device.
+The screenshot inside the phone can (and should) be a real, dense product capture — actual lists, dashboards, charts, conversations. The space _outside_ the phone is the opposite: one headline, one visual, one optional sub-line, one optional badge. Don't add bullet lists, multi-line paragraphs, or competing logos around the device.
 
 ### 8. Break the phone parade
 
 Every 2–3 slides, drop the phone and use a different hero element to keep visual rhythm:
+
 - 3D rendered product object (NB Camera's stylized camera)
 - Photographic still (NB Camera slide 2)
 - Real human / lifestyle photo (Linktree)
@@ -548,6 +558,7 @@ Every 2–3 slides, drop the phone and use a different hero element to keep visu
 ### 9. Last slide pattern
 
 The closer is almost always one of two things:
+
 - **Feature wall** — a vertical list of one-word features styled as big type ("Real-time collaboration / Offline support / Widgets / Integrations…")
 - **Phone mosaic** — multiple bezelless mini-screenshots arranged in a grid to convey "look at all the things this does"
 
@@ -562,6 +573,7 @@ Shrink the slide to ~160px wide (App Store search-result size). Squint. Can you 
 **Always confirm the language list with the user before scaffolding** — even if they didn't volunteer it. Ask: _"Should screenshots be localized? If yes, which locales? (e.g. en, de, es, pt, ja)."_ Default to English-only if they say no or skip.
 
 The project state file (`app-store-screenshots.json`) carries a `locales: string[]` field — the list of locale codes the project targets. The editor reads this to decide:
+
 - The locale dropdown in the toolbar is **hidden** when `locales.length <= 1`.
 - The dropdown's options come from this list (not a hardcoded set).
 - The **Export bundle** loops every locale in the list × every required size.
@@ -585,6 +597,7 @@ Before export, zoom out to inspect the connected canvas as a strip, then inspect
 Project locales come from `app-store-screenshots.json` `locales` field — set during scaffolding (Step 4). Single-locale projects produce a flat per-size structure with just the one locale folder.
 
 If exports come out blank or with black screen rectangles:
+
 - Verify source screenshots are RGB (not RGBA). The template flattens via `objectFit: cover`, but truly transparent sources can still produce black regions.
 - Confirm the referenced screenshot paths exist under `public/`; export retries paths that were previously missing before it starts rendering.
 - Keep export scaling inside `html-to-image` via `canvasWidth`/`canvasHeight`; CSS `transform: scale(...)` can leave transparent gutters when App Store sizes differ slightly in aspect ratio.
@@ -592,11 +605,13 @@ If exports come out blank or with black screen rectangles:
 ## Step 6: Final QA Gate
 
 ### Message Quality
+
 - One idea per slide
 - Hero slide communicates the main benefit in one second
 - Readable at arm's length at thumbnail size
 
 ### Visual Quality
+
 - No two adjacent slides share the same layout
 - Landscape tablet slides use `split-landscape` — never two devices side-by-side
 - At least one contrast (`inverted: true`) slide when the deck is long enough
@@ -604,6 +619,7 @@ If exports come out blank or with black screen rectangles:
 - Cross-screen moments are limited to adjacent screens and never split text, required info, faces, or critical UI
 
 ### Export Quality
+
 - No clipped text or assets after scaling to export size
 - No transparent gutters or blank edge pixels in the generated PNGs
 - Cross-screen elements split cleanly across adjacent PNGs
@@ -613,15 +629,15 @@ If exports come out blank or with black screen rectangles:
 
 ## Common Mistakes
 
-| Mistake | Fix |
-|---------|-----|
-| Edited `page.tsx` instead of using the editor | Roll back the edit; let users iterate in the browser |
-| Tried to rebuild device frames from scratch | They're in `src/components/editor/device-frames.tsx` — modify there |
-| Pasted screenshots into git directly | `public/screenshots/...` is fine to commit. Drop-target uploads are now also written to `public/screenshots/uploaded/<hash>.png` — commit both that folder **and** `app-store-screenshots.json` so collaborators reproduce your deck after `git clone`. |
-| Wrong directory layout for tablet screenshots | See Step 2 — `android/tablet-7/portrait/{locale}/...` etc. |
-| Reset wiped the deck | Reset clears in-memory state and re-saves defaults to `app-store-screenshots.json`. Recover by `git checkout app-store-screenshots.json` if it was committed, or export first before resetting. |
-| Export is blank | Source PNGs probably have alpha — flatten to RGB |
-| `bun dev` port collision | Template defaults to `next dev`; let Next pick the next free port (3001+) |
+| Mistake                                       | Fix                                                                                                                                                                                                                                                     |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Edited `page.tsx` instead of using the editor | Roll back the edit; let users iterate in the browser                                                                                                                                                                                                    |
+| Tried to rebuild device frames from scratch   | They're in `src/components/editor/device-frames.tsx` — modify there                                                                                                                                                                                     |
+| Pasted screenshots into git directly          | `public/screenshots/...` is fine to commit. Drop-target uploads are now also written to `public/screenshots/uploaded/<hash>.png` — commit both that folder **and** `app-store-screenshots.json` so collaborators reproduce your deck after `git clone`. |
+| Wrong directory layout for tablet screenshots | See Step 2 — `android/tablet-7/portrait/{locale}/...` etc.                                                                                                                                                                                              |
+| Reset wiped the deck                          | Reset clears in-memory state and re-saves defaults to `app-store-screenshots.json`. Recover by `git checkout app-store-screenshots.json` if it was committed, or export first before resetting.                                                         |
+| Export is blank                               | Source PNGs probably have alpha — flatten to RGB                                                                                                                                                                                                        |
+| `bun dev` port collision                      | Template defaults to `next dev`; let Next pick the next free port (3001+)                                                                                                                                                                               |
 
 ## Project Migration
 

@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
 
@@ -69,8 +70,9 @@ class _GlassPanelState extends State<GlassPanel> {
     // to maintain readability and contrast against background elements.
     final resolvedColor = isAndroid
         ? (widget.color != null
-            ? widget.color!
-                .withValues(alpha: (widget.color!.a * 1.8).clamp(0.0, 0.95))
+            ? widget.color!.withValues(
+                alpha: (widget.color!.a * 1.8).clamp(0.0, 0.95),
+              )
             : const Color(0xB0201F1F))
         : (widget.color ?? const Color(0x28201F1F));
 
@@ -81,7 +83,8 @@ class _GlassPanelState extends State<GlassPanel> {
         borderRadius: BorderRadius.circular(widget.borderRadius),
         border: Border.all(
           color: const Color(
-              0x14F5F5F0), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
+            0x14F5F5F0,
+          ), // Subtle white/beige border (rgba(245, 245, 240, 0.08))
           width: 1.0,
         ),
         boxShadow: const [

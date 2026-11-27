@@ -51,6 +51,7 @@ class AppModel extends ChangeNotifier {
   bool get showNotation => prefs.showNotation;
   bool get enableRotation => prefs.enableRotation;
   bool get enablePieceRotation => prefs.enablePieceRotation;
+  bool get flipOpponentPieces => prefs.flipOpponentPieces;
   bool get enableRotationAnimation => prefs.enableRotationAnimation;
   bool get hapticEnabled => prefs.hapticEnabled;
   bool get showCapturedPieces => prefs.showCapturedPieces;
@@ -96,6 +97,7 @@ class AppModel extends ChangeNotifier {
   // ── ViewModel-layer game state ──
   GameController? gameController;
   bool promotionRequested = false;
+  bool snapNextBoardUpdate = false;
   int? historyViewIndex;
   final List<MoveStackObject> historyRedoStack = [];
   Timer? _historyAnimationTimer;
@@ -300,8 +302,9 @@ class AppModel extends ChangeNotifier {
     audio.enabled = this.prefs.soundEnabled;
     audio.initialize();
     haptic.enabled = this.prefs.hapticEnabled;
-    InAppPurchaseService.instance.purchaseStateNotifier
-        .addListener(_onPurchaseStateChanged);
+    InAppPurchaseService.instance.purchaseStateNotifier.addListener(
+      _onPurchaseStateChanged,
+    );
 
     // Check saved game availability asynchronously on start
     refreshHasSavedGame();
@@ -327,8 +330,11 @@ class AppModel extends ChangeNotifier {
     historyViewIndex = null;
     historyRedoStack.clear();
     _historyAnimationTimer?.cancel();
-    timerService.configure(timeLimit,
-        incrementSeconds: timerIncrement, mode: timerMode);
+    timerService.configure(
+      timeLimit,
+      incrementSeconds: timerIncrement,
+      mode: timerMode,
+    );
     audio.enabled = prefs.soundEnabled;
     // Reset undo bank for the new game.
     _availableUndos = 1;
@@ -486,11 +492,13 @@ class AppModel extends ChangeNotifier {
     saveGameState();
   }
 
-  void setHistoryViewIndex(int? index,
-      {int? visualIndex,
-      bool snap = true,
-      bool playAudio = false,
-      bool showLatestMoveHighlight = true}) {
+  void setHistoryViewIndex(
+    int? index, {
+    int? visualIndex,
+    bool snap = true,
+    bool playAudio = false,
+    bool showLatestMoveHighlight = true,
+  }) {
     if (gameController == null) return;
     _historyAnimationTimer?.cancel();
 
@@ -526,7 +534,7 @@ class AppModel extends ChangeNotifier {
       if (playAudio) {
         audio.playMovedSound();
       }
-      gameController!.snapSprites(snap: snap);
+      snapNextBoardUpdate = snap;
       notifyListeners();
       return;
     }
@@ -572,7 +580,7 @@ class AppModel extends ChangeNotifier {
     if (playAudio) {
       audio.playMovedSound();
     }
-    gameController!.snapSprites(snap: snap);
+    snapNextBoardUpdate = snap;
     notifyListeners();
   }
 
@@ -587,22 +595,32 @@ class AppModel extends ChangeNotifier {
     // Pass visualIndex: whiteMoveIndex so that the UI immediately highlights the selected turn tile.
     // Set showLatestMoveHighlight: false so the board does not show the previous turn's highlight squares.
     final int beforeWhiteIndex = whiteMoveIndex > 0 ? (whiteMoveIndex - 1) : -1;
-    setHistoryViewIndex(beforeWhiteIndex,
-        visualIndex: whiteMoveIndex,
-        snap: true,
-        playAudio: false,
-        showLatestMoveHighlight: false);
+    setHistoryViewIndex(
+      beforeWhiteIndex,
+      visualIndex: whiteMoveIndex,
+      snap: true,
+      playAudio: false,
+      showLatestMoveHighlight: false,
+    );
 
     // 2. Schedule White's move to play with animation (snap = false) after a brief frame delay
     _historyAnimationTimer = Timer(const Duration(milliseconds: 250), () {
-      setHistoryViewIndex(whiteMoveIndex,
-          visualIndex: whiteMoveIndex, snap: false, playAudio: true);
+      setHistoryViewIndex(
+        whiteMoveIndex,
+        visualIndex: whiteMoveIndex,
+        snap: false,
+        playAudio: true,
+      );
 
       // 3. Schedule Black's move to play after the White move finishes sliding
       if (blackMoveIndex != null) {
         _historyAnimationTimer = Timer(const Duration(milliseconds: 600), () {
-          setHistoryViewIndex(blackMoveIndex,
-              visualIndex: blackMoveIndex, snap: false, playAudio: true);
+          setHistoryViewIndex(
+            blackMoveIndex,
+            visualIndex: blackMoveIndex,
+            snap: false,
+            playAudio: true,
+          );
         });
       }
     });
@@ -867,6 +885,11 @@ class AppModel extends ChangeNotifier {
     prefs.setEnablePieceRotation(enable);
   }
 
+  void setFlipOpponentPieces(bool flip) {
+    haptic.light();
+    prefs.setFlipOpponentPieces(flip);
+  }
+
   void setEnableRotationAnimation(bool enable) {
     haptic.light();
     prefs.setEnableRotationAnimation(enable);
@@ -975,18 +998,22 @@ class AppModel extends ChangeNotifier {
     gameController = GameController(this);
     final moves = GameStateStorage.parseMoves(state);
     for (var move in moves) {
-      var meta = gameController!.board
-          .push(move, getMeta: true, promotionType: move.promotionType);
+      var meta = gameController!.board.push(
+        move,
+        getMeta: true,
+        promotionType: move.promotionType,
+      );
       moveMetaList.add(meta);
       turn = oppositePlayer(turn);
     }
-    gameController!.snapSprites();
 
     // Restore timer durations
-    player1TimeLeft.value =
-        Duration(milliseconds: state['player1TimeLeftMs'] as int);
-    player2TimeLeft.value =
-        Duration(milliseconds: state['player2TimeLeftMs'] as int);
+    player1TimeLeft.value = Duration(
+      milliseconds: state['player1TimeLeftMs'] as int,
+    );
+    player2TimeLeft.value = Duration(
+      milliseconds: state['player2TimeLeftMs'] as int,
+    );
 
     // Restore timer increment and mode
     // Assign fields directly — using the setters would trigger a SharedPrefs
@@ -996,8 +1023,11 @@ class AppModel extends ChangeNotifier {
     prefs.timerIncrement = savedIncrement;
     final savedMode = (state['timerMode'] as String?) ?? 'increment';
     prefs.timerMode = savedMode;
-    timerService.configure(state['timeLimit'] as int,
-        incrementSeconds: savedIncrement, mode: savedMode);
+    timerService.configure(
+      state['timeLimit'] as int,
+      incrementSeconds: savedIncrement,
+      mode: savedMode,
+    );
 
     // Restore game over / stalemate state
     gameOver = state['gameOver'] as bool;
@@ -1034,8 +1064,9 @@ class AppModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    InAppPurchaseService.instance.purchaseStateNotifier
-        .removeListener(_onPurchaseStateChanged);
+    InAppPurchaseService.instance.purchaseStateNotifier.removeListener(
+      _onPurchaseStateChanged,
+    );
     _saveDebounceTimer?.cancel();
     _historyAnimationTimer?.cancel();
     audio.dispose();

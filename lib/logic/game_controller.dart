@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:async/async.dart';
 
 import '../model/app_model.dart';
@@ -28,9 +29,6 @@ class GameController {
   int? checkHintTile;
   int? warningTile;
   Move? latestMove;
-
-  /// Called when the view needs to refresh sprites (e.g. after game restore).
-  void Function({bool snap})? onSnapSprites;
 
   GameController(this.appModel);
 
@@ -101,8 +99,10 @@ class GameController {
   void movePiece(int tile) {
     if (validMoves.contains(tile)) {
       validMoves = [];
-      var meta =
-          board.push(Move(selectedPiece?.tile ?? 0, tile), getMeta: true);
+      var meta = board.push(
+        Move(selectedPiece?.tile ?? 0, tile),
+        getMeta: true,
+      );
       appModel.audio.playMovedSound();
       if (meta.promotion) {
         appModel.requestPromotion();
@@ -111,6 +111,52 @@ class GameController {
     } else if (selectedPiece != null) {
       appModel.haptic.warning();
     }
+  }
+
+  /// Executes a move initiated from the `chessground` board widget.
+  ///
+  /// When [promotionType] is provided (inline selector), promotion completes
+  /// immediately without triggering the modal dialog. When `null` on a pawn
+  /// promotion, [appModel.requestPromotion] is triggered for the GlassPanel UI.
+  void executeMove(int fromTile, int toTile, {ChessPieceType? promotionType}) {
+    if (!appModel.gameOver && appModel.isAIsTurn) return;
+    if (appModel.historyViewIndex != null) return;
+
+    validMoves = [];
+    selectedPiece = null;
+
+    final move = Move(
+      fromTile,
+      toTile,
+      promotionType: promotionType ?? ChessPieceType.promotion,
+    );
+    final meta = board.push(move, getMeta: true);
+    appModel.audio.playMovedSound();
+
+    if (meta.promotion && promotionType != null) {
+      PlayGamesService.instance.onPawnPromotion();
+      _moveCompletion(meta, changeTurn: false);
+      appModel.moveMetaList.last.promotionType = promotionType;
+      _moveCompletion(appModel.moveMetaList.last, updateMetaList: false);
+    } else {
+      if (meta.promotion) {
+        appModel.requestPromotion();
+      }
+      _moveCompletion(meta, changeTurn: !meta.promotion);
+    }
+  }
+
+  /// Flashes the red warning tile for 500ms when tapping a piece with no legal moves.
+  void triggerWarningTile(int tile) {
+    warningTile = tile;
+    appModel.haptic.warning();
+    appModel.update();
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (warningTile == tile) {
+        warningTile = null;
+        appModel.update();
+      }
+    });
   }
 
   // ── AI ──
@@ -232,8 +278,12 @@ class GameController {
     board.redoStack.add(board.pop());
     appModel.popMoveMeta();
     if (appModel.moveMetaList.length > 1) {
-      _moveCompletion(appModel.moveMetaList[appModel.moveMetaList.length - 2],
-          clearRedo: false, undoing: true, changeTurn: false);
+      _moveCompletion(
+        appModel.moveMetaList[appModel.moveMetaList.length - 2],
+        clearRedo: false,
+        undoing: true,
+        changeTurn: false,
+      );
     } else {
       _undoOpeningMove();
       appModel.update();
@@ -255,16 +305,25 @@ class GameController {
 
   void redoMove() {
     appModel.haptic.light();
-    _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
-        clearRedo: false);
+    _moveCompletion(
+      board.pushMSO(board.redoStack.removeLast()),
+      clearRedo: false,
+    );
   }
 
   void redoTwoMoves() {
     appModel.haptic.light();
-    _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
-        clearRedo: false, updateMetaList: true, triggerAI: false);
-    _moveCompletion(board.pushMSO(board.redoStack.removeLast()),
-        clearRedo: false, updateMetaList: true);
+    _moveCompletion(
+      board.pushMSO(board.redoStack.removeLast()),
+      clearRedo: false,
+      updateMetaList: true,
+      triggerAI: false,
+    );
+    _moveCompletion(
+      board.pushMSO(board.redoStack.removeLast()),
+      clearRedo: false,
+      updateMetaList: true,
+    );
   }
 
   // ── Promotion ──
@@ -333,16 +392,19 @@ class GameController {
     }
     if (changeTurn) {
       if (!undoing && appModel.timerMode == 'increment') {
-        appModel.timerService
-            .addIncrement(appModel.turn, appModel.timerIncrement);
+        appModel.timerService.addIncrement(
+          appModel.turn,
+          appModel.timerIncrement,
+        );
       }
       appModel.changeTurn(silent: true);
     }
     selectedPiece = null;
 
     if (!undoing && changeTurn) {
-      final outcome =
-          ChessNotationService.instance.evaluateOutcome(board.moveStack);
+      final outcome = ChessNotationService.instance.evaluateOutcome(
+        board.moveStack,
+      );
 
       if (outcome.isCheckmate) {
         meta.isCheck = false;
@@ -396,10 +458,6 @@ class GameController {
     if (appModel.isAIsTurn && !appModel.gameOver && triggerAI) {
       _aiMove();
     }
-  }
-
-  void snapSprites({bool snap = true}) {
-    onSnapSprites?.call(snap: snap);
   }
 
   /// Cleans up in-flight operations when discarding this controller.

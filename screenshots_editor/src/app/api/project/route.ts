@@ -32,7 +32,10 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON" },
+      { status: 400 },
+    );
   }
   try {
     const pretty = JSON.stringify(body, null, 2) + "\n";

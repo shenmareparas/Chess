@@ -14,12 +14,7 @@ class UndoRedoButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<AppModel, (bool, bool, int, bool)>(
-      selector: (_, m) => (
-        m.canUndo,
-        m.canRedo,
-        m.availableUndos,
-        m.isAdFree,
-      ),
+      selector: (_, m) => (m.canUndo, m.canRedo, m.availableUndos, m.isAdFree),
       builder: (context, data, __) {
         final (canUndo, canRedo, availableUndos, isAdFree) = data;
         return Row(
@@ -198,10 +193,7 @@ class UndoRedoButtons extends StatelessWidget {
       transitionBuilder: (context, anim1, anim2, child) {
         return Transform.scale(
           scale: 0.95 + 0.05 * anim1.value,
-          child: FadeTransition(
-            opacity: anim1,
-            child: child,
-          ),
+          child: FadeTransition(opacity: anim1, child: child),
         );
       },
     );
@@ -303,10 +295,7 @@ class UndoRedoButtons extends StatelessWidget {
       transitionBuilder: (context, anim1, anim2, child) {
         return Transform.scale(
           scale: 0.95 + 0.05 * anim1.value,
-          child: FadeTransition(
-            opacity: anim1,
-            child: child,
-          ),
+          child: FadeTransition(opacity: anim1, child: child),
         );
       },
     );

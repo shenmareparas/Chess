@@ -43,9 +43,13 @@ class GameStateStorage {
     await prefs.setInt(_selectedSideP1Key, appModel.selectedSideP1.index);
     await prefs.setInt(_timeLimitKey, appModel.timeLimit);
     await prefs.setInt(
-        _player1TimeLeftMsKey, appModel.player1TimeLeft.value.inMilliseconds);
+      _player1TimeLeftMsKey,
+      appModel.player1TimeLeft.value.inMilliseconds,
+    );
     await prefs.setInt(
-        _player2TimeLeftMsKey, appModel.player2TimeLeft.value.inMilliseconds);
+      _player2TimeLeftMsKey,
+      appModel.player2TimeLeft.value.inMilliseconds,
+    );
     await prefs.setBool(_gameOverKey, appModel.gameOver);
     await prefs.setBool(_stalemateKey, appModel.stalemate);
     await prefs.setInt(_timerIncrementKey, appModel.timerIncrement);
@@ -136,8 +140,11 @@ class GameStateStorage {
       if (parts.length == 3) {
         promotionType = _parsePromotionChar(parts[2]);
       }
-      return Move(from, to,
-          promotionType: promotionType ?? ChessPieceType.promotion);
+      return Move(
+        from,
+        to,
+        promotionType: promotionType ?? ChessPieceType.promotion,
+      );
     }).toList();
   }
 

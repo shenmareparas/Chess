@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -98,12 +99,8 @@ class _MoveListState extends State<MoveList> {
   @override
   Widget build(BuildContext context) {
     return Selector<AppModel, (int, int?, bool, AppTheme)>(
-      selector: (_, m) => (
-        m.moveMetaList.length,
-        m.historyViewIndex,
-        m.gameOver,
-        m.theme,
-      ),
+      selector: (_, m) =>
+          (m.moveMetaList.length, m.historyViewIndex, m.gameOver, m.theme),
       builder: (context, data, _) {
         final (moveCount, historyIndex, _, theme) = data;
         // Only schedule a scroll when the move list or selected history item
@@ -148,8 +145,10 @@ class _MoveListState extends State<MoveList> {
               },
               child: Container(
                 margin: const EdgeInsets.only(right: 12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0x662A2A2A),
                   borderRadius: BorderRadius.circular(12),
@@ -255,7 +254,9 @@ class _MoveListState extends State<MoveList> {
                       scrollDirection: Axis.horizontal,
                       controller: scrollController,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       physics: const BouncingScrollPhysics(),
                       itemCount: turnCount,
                       itemBuilder: (context, index) => buildTurnTile(index),
@@ -311,8 +312,10 @@ class _MoveListState extends State<MoveList> {
             (offsetBefore + currentItemWidth / 2) - (viewportWidth / 2);
       }
 
-      final double clampedOffset =
-          targetOffset.clamp(0.0, scrollController.position.maxScrollExtent);
+      final double clampedOffset = targetOffset.clamp(
+        0.0,
+        scrollController.position.maxScrollExtent,
+      );
 
       if (_isFirstScroll) {
         scrollController.jumpTo(clampedOffset);

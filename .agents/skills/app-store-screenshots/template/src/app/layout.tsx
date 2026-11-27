@@ -9,10 +9,16 @@ export const metadata: Metadata = {
   description: "Design and export App Store + Google Play screenshots.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={font.className} suppressHydrationWarning>{children}</body>
+      <body className={font.className} suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }

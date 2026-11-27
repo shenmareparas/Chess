@@ -44,21 +44,21 @@ A 30-second sanity test: if you cropped the mascot/illustration out and put it n
 
 When a style features a mascot/character/object, it must be **physically large on the canvas** — viewers see thumbnails:
 
-| Element                                   | Min size on 1320×2868 canvas        |
-|-------------------------------------------|--------------------------------------|
-| Headlining mascot (cover slide)           | **≥ 380px** tall (≥ 13% canvas H)    |
-| Companion / supporting mascots            | ≥ 260px tall                         |
-| Mascot inside-phone (within UI)           | ≥ 120px tall                         |
-| Hero 3D object (camera/globe/book/etc.)   | ≥ 500px in its largest dimension     |
-| Floating chip / sticker (decorative)      | 100–260px depending on role          |
-| Apple Watch macro (when called for)       | ≥ 520px tall                         |
+| Element                                 | Min size on 1320×2868 canvas      |
+| --------------------------------------- | --------------------------------- |
+| Headlining mascot (cover slide)         | **≥ 380px** tall (≥ 13% canvas H) |
+| Companion / supporting mascots          | ≥ 260px tall                      |
+| Mascot inside-phone (within UI)         | ≥ 120px tall                      |
+| Hero 3D object (camera/globe/book/etc.) | ≥ 500px in its largest dimension  |
+| Floating chip / sticker (decorative)    | 100–260px depending on role       |
+| Apple Watch macro (when called for)     | ≥ 520px tall                      |
 
 If the spec gives a specific size, that size wins. Otherwise, use these minimums.
 
 ## 5. Typography contrast & legibility
 
 - All headline text must clear **WCAG AA 4.5:1** against the local pixel underneath it. If your headline sits over a gradient or photo, sample the **worst** pixel under the letter shapes — not the average — and verify against that.
-- **The "emphasis word" trap.** Accent / italic / colored emphasis words are the most common contrast failure point: they're often a pale tint of the brand color (lilac on cream, mustard on sage, peach on tan) chosen for *style* without measuring contrast. **Every emphasis color must independently clear 4.5:1 against its slide bg.** If it doesn't, swap to a darker variant of the same hue family — never just "hope the user catches it." Examples that historically failed:
+- **The "emphasis word" trap.** Accent / italic / colored emphasis words are the most common contrast failure point: they're often a pale tint of the brand color (lilac on cream, mustard on sage, peach on tan) chosen for _style_ without measuring contrast. **Every emphasis color must independently clear 4.5:1 against its slide bg.** If it doesn't, swap to a darker variant of the same hue family — never just "hope the user catches it." Examples that historically failed:
   - lilac `#B49BE6` on cotton-candy gradient → 2.3:1 → FAIL, must darken to deep violet ~`#5B3FC8`
   - mustard `#F2BB46` on sage `#BFD9B6` → 1.7:1 → FAIL, must switch hue to coral `#E45A4A` (~4.1:1) or darken to brown-mustard `#7A4F1B`
   - any pale color over a 3-stop pastel gradient → ALWAYS verify against the lightest stop, not the average
@@ -93,6 +93,7 @@ If the spec gives a specific size, that size wins. Otherwise, use these minimums
 ## 9. Decoration density discipline
 
 Per slide:
+
 - **Minimal styles** (Crisp Teal Bezelless Wallet, Editorial Minimal, Moody Curated Dating): **0** floating decorations.
 - **Editorial styles** (Hand-Drawn Editorial, Soft Sunset): **2–5** decorations, intentionally placed.
 - **Maximalist styles** (Glassy Iridescent Social, Paper Sticker Skeuomorphic, Glossy 3D K-Beauty): **8–14** decorations, scattered with at least one bleeding off-canvas.
@@ -121,6 +122,7 @@ The agent's job is not done until all of the above are "no."
 ## 11. The thumbnail test (mandatory)
 
 Shrink the rendered PNG to **220px wide** (App Store search-result thumbnail). Squint. Answer in one sentence:
+
 1. What style is this?
 2. What does the app do?
 3. Why should I tap it?

@@ -217,7 +217,8 @@ class AdService {
           _rewardedInterstitialAd = null;
           _rewardedLoadedAt = null;
           debugPrint(
-              '[AdService] Failed to load rewarded interstitial ad: $error');
+            '[AdService] Failed to load rewarded interstitial ad: $error',
+          );
         },
       ),
     );
@@ -298,7 +299,8 @@ class AdService {
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         debugPrint(
-            '[AdService] Rewarded ad failed to show: $error. Preloading next.');
+          '[AdService] Rewarded ad failed to show: $error. Preloading next.',
+        );
         ad.dispose();
         _loadRewardedAd();
         onRewardEarned(); // Grant reward anyway to avoid blocking user.
@@ -308,7 +310,8 @@ class AdService {
     ad.show(
       onUserEarnedReward: (_, reward) {
         debugPrint(
-            '[AdService] User earned reward: ${reward.amount} ${reward.type}');
+          '[AdService] User earned reward: ${reward.amount} ${reward.type}',
+        );
         rewardEarned = true;
       },
     );
@@ -329,7 +332,8 @@ class AdService {
 
     if (_exitInterstitialAd == null) {
       debugPrint(
-          '[AdService] Exit interstitial ad not ready. Preloading next.');
+        '[AdService] Exit interstitial ad not ready. Preloading next.',
+      );
       _loadExitInterstitialAd();
       onAdDismissed();
       return;

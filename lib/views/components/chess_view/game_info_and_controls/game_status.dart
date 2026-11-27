@@ -64,8 +64,10 @@ class GameStatus extends StatelessWidget {
                 appModel.setHistoryViewIndex(null);
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: theme.moveHint.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(20),
@@ -115,10 +117,7 @@ class GameStatus extends StatelessWidget {
             decoration: BoxDecoration(
               color: statusTheme.bgColor,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: statusTheme.borderColor,
-                width: 1.0,
-              ),
+              border: Border.all(color: statusTheme.borderColor, width: 1.0),
               boxShadow: [
                 BoxShadow(
                   color: statusTheme.dotColor.withValues(alpha: 0.08),

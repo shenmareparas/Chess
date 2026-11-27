@@ -56,14 +56,17 @@ type Props = {
   onSelectElement: (id: ElementId | null) => void;
   showCameraDot?: boolean;
   noiseOpacity?: number;
-  onUpdateGlobalSettings?: (patch: { showCameraDot?: boolean; noiseOpacity?: number }) => void;
+  onUpdateGlobalSettings?: (patch: {
+    showCameraDot?: boolean;
+    noiseOpacity?: number;
+  }) => void;
 };
 
 const ELEMENT_LABEL: Record<BuiltInElementId, string> = {
   caption: "Headline",
   device: "Device",
   deviceSecondary: "Back device",
-  deviceTertiary: "Right device"
+  deviceTertiary: "Right device",
 };
 
 export function Inspector({
@@ -78,29 +81,48 @@ export function Inspector({
   noiseOpacity = 0.045,
   onUpdateGlobalSettings,
 }: Props) {
-  const isFeatureGraphic = device === "feature-graphic" || slide.layout.startsWith("feature-graphic");
+  const isFeatureGraphic =
+    device === "feature-graphic" || slide.layout.startsWith("feature-graphic");
   const isNoDevice = slide.layout === "no-device";
-  const layoutValue = device === "feature-graphic" && !slide.layout.startsWith("feature-graphic") ? "feature-graphic" : slide.layout;
+  const layoutValue =
+    device === "feature-graphic" && !slide.layout.startsWith("feature-graphic")
+      ? "feature-graphic"
+      : slide.layout;
   const layoutOptions = Object.entries(LAYOUT_LABEL).filter(([layout]) =>
-    device === "feature-graphic" ? layout.startsWith("feature-graphic") : !layout.startsWith("feature-graphic"),
+    device === "feature-graphic"
+      ? layout.startsWith("feature-graphic")
+      : !layout.startsWith("feature-graphic"),
   );
   const localeLabel = slide.label?.[locale] ?? "";
   const localeHeadline = slide.headline?.[locale] ?? "";
   // When the active locale is empty, surface the fallback (typically en) as
   // the placeholder so the user sees what they're translating from.
-  const headlineDefault = isFeatureGraphic ? "Your tagline." : "One idea\nper slide.";
-  const labelPlaceholder = localeLabel ? "FEATURE 01" : pickText(slide.label, locale) || "FEATURE 01";
+  const headlineDefault = isFeatureGraphic
+    ? "Your tagline."
+    : "One idea\nper slide.";
+  const labelPlaceholder = localeLabel
+    ? "FEATURE 01"
+    : pickText(slide.label, locale) || "FEATURE 01";
   const headlinePlaceholder = localeHeadline
     ? headlineDefault
     : pickText(slide.headline, locale) || headlineDefault;
 
   function setLocaleField(key: "label" | "headline", value: string) {
-    onChange({ [key]: writeLocalized(slide[key], locale, value) } as Partial<Slide>);
+    onChange({
+      [key]: writeLocalized(slide[key], locale, value),
+    } as Partial<Slide>);
   }
 
   React.useEffect(() => {
-    if (device === "feature-graphic" && !slide.layout.startsWith("feature-graphic")) {
-      onChange({ layout: "feature-graphic", transforms: undefined, screenshotSecondary: undefined });
+    if (
+      device === "feature-graphic" &&
+      !slide.layout.startsWith("feature-graphic")
+    ) {
+      onChange({
+        layout: "feature-graphic",
+        transforms: undefined,
+        screenshotSecondary: undefined,
+      });
     }
   }, [device, onChange, slide.layout]);
 
@@ -113,7 +135,9 @@ export function Inspector({
             editing · {locale.toUpperCase()}
           </span>
         </div>
-        <p className="text-xs text-muted-foreground">{LAYOUT_HINT[layoutValue]}</p>
+        <p className="text-xs text-muted-foreground">
+          {LAYOUT_HINT[layoutValue]}
+        </p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto p-3">
@@ -176,21 +200,21 @@ export function Inspector({
             placeholder={headlinePlaceholder}
           />
         </div>
-        {((!isFeatureGraphic && !isNoDevice) || 
+        {((!isFeatureGraphic && !isNoDevice) ||
           slide.layout === "feature-graphic-cards" ||
           slide.layout === "feature-graphic-triple-mockup" ||
           slide.layout === "feature-graphic-dual-upright" ||
           slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "two-devices" || 
-               slide.layout === "three-devices" || 
-               slide.layout === "feature-graphic-cards" ||
-               slide.layout === "feature-graphic-triple-mockup" ||
-               slide.layout === "feature-graphic-dual-upright" ||
-               slide.layout === "feature-graphic-fan-cards"
-                 ? "Main/Front device screenshot"
-                 : "Screenshot"}
+              {slide.layout === "two-devices" ||
+              slide.layout === "three-devices" ||
+              slide.layout === "feature-graphic-cards" ||
+              slide.layout === "feature-graphic-triple-mockup" ||
+              slide.layout === "feature-graphic-dual-upright" ||
+              slide.layout === "feature-graphic-fan-cards"
+                ? "Main/Front device screenshot"
+                : "Screenshot"}
             </Label>
             <ScreenshotPicker
               label="Primary"
@@ -201,16 +225,17 @@ export function Inspector({
           </div>
         )}
 
-        {(slide.layout === "two-devices" || 
-          slide.layout === "three-devices" || 
+        {(slide.layout === "two-devices" ||
+          slide.layout === "three-devices" ||
           slide.layout === "feature-graphic-cards" ||
           slide.layout === "feature-graphic-triple-mockup" ||
           slide.layout === "feature-graphic-dual-upright" ||
           slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "feature-graphic-cards" || slide.layout === "feature-graphic-fan-cards"
-                ? "Second screenshot (Middle card)" 
+              {slide.layout === "feature-graphic-cards" ||
+              slide.layout === "feature-graphic-fan-cards"
+                ? "Second screenshot (Middle card)"
                 : slide.layout === "feature-graphic-triple-mockup"
                   ? "Left phone screenshot"
                   : "Left device screenshot (Back layer)"}
@@ -224,14 +249,15 @@ export function Inspector({
           </div>
         )}
 
-        {(slide.layout === "three-devices" || 
+        {(slide.layout === "three-devices" ||
           slide.layout === "feature-graphic-cards" ||
           slide.layout === "feature-graphic-triple-mockup" ||
           slide.layout === "feature-graphic-fan-cards") && (
           <div className="space-y-1.5">
             <Label className="text-xs">
-              {slide.layout === "feature-graphic-cards" || slide.layout === "feature-graphic-fan-cards"
-                ? "Third screenshot (Bottom card)" 
+              {slide.layout === "feature-graphic-cards" ||
+              slide.layout === "feature-graphic-fan-cards"
+                ? "Third screenshot (Bottom card)"
                 : slide.layout === "feature-graphic-triple-mockup"
                   ? "Right phone screenshot"
                   : "Right device screenshot (Back layer)"}
@@ -259,26 +285,35 @@ export function Inspector({
 
         {isFeatureGraphic && (
           <p className="rounded-md border bg-muted/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            Shows app icon + name + tagline. Drop an icon at <span className="rounded bg-background px-1 py-0.5 font-mono text-[10px] text-foreground">/public/app-icon.png</span> (or leave blank — the app initial will be used). Name is set in the toolbar.
+            Shows app icon + name + tagline. Drop an icon at{" "}
+            <span className="rounded bg-background px-1 py-0.5 font-mono text-[10px] text-foreground">
+              /public/app-icon.png
+            </span>{" "}
+            (or leave blank — the app initial will be used). Name is set in the
+            toolbar.
           </p>
         )}
 
         {/* Global Bezel & Background Settings */}
         {!isFeatureGraphic && onUpdateGlobalSettings && (
           <div className="space-y-3 rounded-lg border bg-muted/20 p-3.5 mt-4">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Global Frame & Background</h3>
-            
-
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Global Frame & Background
+            </h3>
 
             {/* Camera Dot Toggle */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="text-xs font-medium">Camera Dot</Label>
-                <p className="text-[10px] text-muted-foreground">Render front camera pinhole bezel</p>
+                <p className="text-[10px] text-muted-foreground">
+                  Render front camera pinhole bezel
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => onUpdateGlobalSettings({ showCameraDot: !showCameraDot })}
+                onClick={() =>
+                  onUpdateGlobalSettings({ showCameraDot: !showCameraDot })
+                }
                 className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                   showCameraDot ? "bg-primary" : "bg-input"
                 }`}
@@ -294,8 +329,12 @@ export function Inspector({
             {/* Noise Opacity Control */}
             <div className="space-y-1.5 pt-1">
               <div className="flex items-center justify-between">
-                <Label className="text-xs font-medium">Noise Grain Opacity</Label>
-                <span className="text-[10px] font-mono text-muted-foreground">{(noiseOpacity * 100).toFixed(1)}%</span>
+                <Label className="text-xs font-medium">
+                  Noise Grain Opacity
+                </Label>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {(noiseOpacity * 100).toFixed(1)}%
+                </span>
               </div>
               <input
                 type="range"
@@ -303,7 +342,11 @@ export function Inspector({
                 max="0.1"
                 step="0.005"
                 value={noiseOpacity}
-                onChange={(e) => onUpdateGlobalSettings({ noiseOpacity: parseFloat(e.target.value) })}
+                onChange={(e) =>
+                  onUpdateGlobalSettings({
+                    noiseOpacity: parseFloat(e.target.value),
+                  })
+                }
                 className="w-full h-1 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary animate-none"
               />
             </div>
@@ -340,17 +383,22 @@ function ElementTransformControls({
   if (slide.layout === "three-devices") {
     present.push("deviceTertiary");
   }
-  for (const element of slide.textElements || []) present.push(toTextElementId(element.id));
+  for (const element of slide.textElements || [])
+    present.push(toTextElementId(element.id));
 
   const transforms = slide.transforms || {};
   const activeId =
-    selectedElementId && present.includes(selectedElementId) ? selectedElementId : null;
+    selectedElementId && present.includes(selectedElementId)
+      ? selectedElementId
+      : null;
   const activeTransform = activeId
     ? getElementTransform(slide, device, orientation, activeId)
     : undefined;
   const activeTextElement =
     activeId && isTextElementId(activeId)
-      ? slide.textElements?.find((element) => element.id === textElementKey(activeId))
+      ? slide.textElements?.find(
+          (element) => element.id === textElementKey(activeId),
+        )
       : null;
 
   function getTransform(id: ElementId) {
@@ -386,11 +434,15 @@ function ElementTransformControls({
   }
 
   function setTextElementValue(element: TextElement, value: string) {
-    patchTextElement(element.id, { text: writeLocalized(element.text, locale, value) });
+    patchTextElement(element.id, {
+      text: writeLocalized(element.text, locale, value),
+    });
   }
 
   function deleteTextElement(element: TextElement) {
-    const nextTextElements = (slide.textElements || []).filter((item) => item.id !== element.id);
+    const nextTextElements = (slide.textElements || []).filter(
+      (item) => item.id !== element.id,
+    );
     onChange({
       textElements: nextTextElements.length > 0 ? nextTextElements : undefined,
     });
@@ -403,7 +455,9 @@ function ElementTransformControls({
     const zIndex =
       Math.max(
         5,
-        ...present.map((elementId) => getTransform(elementId)?.zIndex ?? defaultZ(elementId)),
+        ...present.map(
+          (elementId) => getTransform(elementId)?.zIndex ?? defaultZ(elementId),
+        ),
       ) + 1;
     const element: TextElement = {
       id,
@@ -451,8 +505,11 @@ function ElementTransformControls({
       if (!cur) return;
       if (isTextElementId(eid)) {
         const textId = textElementKey(eid);
-        const textElement = nextTextElements.find((element) => element.id === textId);
-        if (textElement) textElement.transform = { ...textElement.transform, zIndex: i + 1 };
+        const textElement = nextTextElements.find(
+          (element) => element.id === textId,
+        );
+        if (textElement)
+          textElement.transform = { ...textElement.transform, zIndex: i + 1 };
       } else if (isBuiltInElementId(eid)) {
         nextTransforms[eid] = { ...cur, zIndex: i + 1 };
       }
@@ -492,10 +549,12 @@ function ElementTransformControls({
           onRotate={(rotation) => patchElement(activeId, { rotation })}
           onReorder={(dir) => reorder(activeId, dir)}
           onTextChange={(value) => {
-            if (activeTextElement) setTextElementValue(activeTextElement, value);
+            if (activeTextElement)
+              setTextElementValue(activeTextElement, value);
           }}
           onTextPatch={(patch) => {
-            if (activeTextElement) patchTextElement(activeTextElement.id, patch);
+            if (activeTextElement)
+              patchTextElement(activeTextElement.id, patch);
           }}
           onDeleteText={() => {
             if (activeTextElement) deleteTextElement(activeTextElement);
@@ -547,7 +606,9 @@ function ActiveElementPanel({
     <div className="space-y-2 rounded border bg-background/60 p-2.5">
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-1 text-xs font-medium">
-          {(textElement || activeId === "caption") && <Type className="h-3.5 w-3.5" />}
+          {(textElement || activeId === "caption") && (
+            <Type className="h-3.5 w-3.5" />
+          )}
           {label}
         </span>
         {textElement ? (
@@ -563,7 +624,9 @@ function ActiveElementPanel({
             <Trash2 className="h-3.5 w-3.5" />
           </Button>
         ) : !engaged ? (
-          <span className="text-[10px] text-muted-foreground">drag to enable</span>
+          <span className="text-[10px] text-muted-foreground">
+            drag to enable
+          </span>
         ) : null}
       </div>
 
@@ -579,7 +642,9 @@ function ActiveElementPanel({
       {activeId === "caption" && transform && (
         <div className="space-y-2 rounded border bg-muted/30 p-2">
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Horizontal Align</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Horizontal Align
+            </Label>
             <div className="grid grid-cols-3 gap-1">
               <LayerButton
                 disabled={false}
@@ -609,7 +674,9 @@ function ActiveElementPanel({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">Vertical Align</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Vertical Align
+            </Label>
             <div className="grid grid-cols-3 gap-1">
               <LayerButton
                 disabled={false}
@@ -665,16 +732,32 @@ function ActiveElementPanel({
       <div className="space-y-1">
         <Label className="text-[11px] text-muted-foreground">Layer</Label>
         <div className="grid grid-cols-4 gap-1">
-          <LayerButton disabled={!engaged} onClick={() => onReorder("back")} label="Send to back">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("back")}
+            label="Send to back"
+          >
             <ArrowDownToLine className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("down")} label="Send backward">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("down")}
+            label="Send backward"
+          >
             <ChevronDown className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("up")} label="Bring forward">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("up")}
+            label="Bring forward"
+          >
             <ChevronUp className="h-3.5 w-3.5" />
           </LayerButton>
-          <LayerButton disabled={!engaged} onClick={() => onReorder("front")} label="Bring to front">
+          <LayerButton
+            disabled={!engaged}
+            onClick={() => onReorder("front")}
+            label="Bring to front"
+          >
             <ArrowUpToLine className="h-3.5 w-3.5" />
           </LayerButton>
         </div>
@@ -682,14 +765,18 @@ function ActiveElementPanel({
 
       {transform && (
         <div className="space-y-1 pt-1 border-t">
-          <Label className="text-[11px] text-muted-foreground">Align to Stage</Label>
+          <Label className="text-[11px] text-muted-foreground">
+            Align to Stage
+          </Label>
           <div className="grid grid-cols-2 gap-1.5">
             <Button
               type="button"
               variant="outline"
               size="sm"
               className="h-7 text-[10px] px-1 font-medium"
-              onClick={() => onTransformPatch?.({ x: (cW - transform.width) / 2 })}
+              onClick={() =>
+                onTransformPatch?.({ x: (cW - transform.width) / 2 })
+              }
               disabled={!engaged}
             >
               Center Horizontally
@@ -699,7 +786,9 @@ function ActiveElementPanel({
               variant="outline"
               size="sm"
               className="h-7 text-[10px] px-1 font-medium"
-              onClick={() => onTransformPatch?.({ y: (cH - transform.height) / 2 })}
+              onClick={() =>
+                onTransformPatch?.({ y: (cH - transform.height) / 2 })
+              }
               disabled={!engaged}
             >
               Center Vertically
@@ -742,7 +831,9 @@ function TextElementPanel({
             min={12}
             max={400}
             value={Math.round(element.fontSize || 72)}
-            onChange={(event) => onTextPatch({ fontSize: Number(event.target.value) || 72 })}
+            onChange={(event) =>
+              onTextPatch({ fontSize: Number(event.target.value) || 72 })
+            }
           />
         </div>
         <div className="space-y-1">
@@ -756,7 +847,9 @@ function TextElementPanel({
         </div>
       </div>
       <div className="space-y-1">
-        <Label className="text-[11px] text-muted-foreground">Horizontal Align</Label>
+        <Label className="text-[11px] text-muted-foreground">
+          Horizontal Align
+        </Label>
         <div className="grid grid-cols-3 gap-1">
           <LayerButton
             disabled={false}
@@ -786,7 +879,9 @@ function TextElementPanel({
       </div>
 
       <div className="space-y-1">
-        <Label className="text-[11px] text-muted-foreground">Vertical Align</Label>
+        <Label className="text-[11px] text-muted-foreground">
+          Vertical Align
+        </Label>
         <div className="grid grid-cols-3 gap-1">
           <LayerButton
             disabled={false}

@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:multistockfish/multistockfish.dart';
+
 import 'chess_piece.dart';
 import 'move_calculation/move_classes/move.dart';
 
@@ -91,7 +93,8 @@ class StockfishService {
       const Duration(seconds: 10),
       onTimeout: () {
         debugPrint(
-            '[Stockfish] WARNING: readyok never received — proceeding anyway');
+          '[Stockfish] WARNING: readyok never received — proceeding anyway',
+        );
       },
     );
 
@@ -125,7 +128,8 @@ class StockfishService {
       const Duration(seconds: 10),
       onTimeout: () {
         debugPrint(
-            '[Stockfish] WARNING: readyok never received — proceeding anyway');
+          '[Stockfish] WARNING: readyok never received — proceeding anyway',
+        );
       },
     );
   }
@@ -149,7 +153,8 @@ class StockfishService {
       depth = 1;
       if (kDebugMode) {
         debugPrint(
-            "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+          "[Stockfish stdin] setoption name UCI_LimitStrength value false",
+        );
       }
       engine.stdin = 'setoption name UCI_LimitStrength value false';
       if (kDebugMode) {
@@ -161,7 +166,8 @@ class StockfishService {
       depth = 3;
       if (kDebugMode) {
         debugPrint(
-            "[Stockfish stdin] setoption name UCI_LimitStrength value false");
+          "[Stockfish stdin] setoption name UCI_LimitStrength value false",
+        );
       }
       engine.stdin = 'setoption name UCI_LimitStrength value false';
       if (kDebugMode) {
@@ -182,7 +188,8 @@ class StockfishService {
       }
       if (kDebugMode) {
         debugPrint(
-            "[Stockfish stdin] setoption name UCI_LimitStrength value true");
+          "[Stockfish stdin] setoption name UCI_LimitStrength value true",
+        );
       }
       engine.stdin = 'setoption name UCI_LimitStrength value true';
       if (kDebugMode) {

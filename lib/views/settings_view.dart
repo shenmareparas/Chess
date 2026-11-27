@@ -150,9 +150,7 @@ class _SettingsViewState extends State<SettingsView> {
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return FadeTransition(
-          opacity: anim1.drive(
-            CurveTween(curve: Curves.easeOut),
-          ),
+          opacity: anim1.drive(CurveTween(curve: Curves.easeOut)),
           child: child,
         );
       },
@@ -215,7 +213,9 @@ class _SettingsViewState extends State<SettingsView> {
                             // Glassy App Bar
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
@@ -237,8 +237,9 @@ class _SettingsViewState extends State<SettingsView> {
                                       if (_scrollController.hasClients) {
                                         _scrollController.animateTo(
                                           0,
-                                          duration:
-                                              const Duration(milliseconds: 300),
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
                                           curve: Curves.easeOut,
                                         );
                                       }
@@ -260,8 +261,10 @@ class _SettingsViewState extends State<SettingsView> {
                                       padding: EdgeInsets.zero,
                                       onPressed: () => _showResetConfirmation(
                                         context,
-                                        Provider.of<AppModel>(context,
-                                            listen: false),
+                                        Provider.of<AppModel>(
+                                          context,
+                                          listen: false,
+                                        ),
                                       ),
                                       child: Icon(
                                         Icons.refresh_rounded,
@@ -277,7 +280,9 @@ class _SettingsViewState extends State<SettingsView> {
                               child: ListView(
                                 controller: _scrollController,
                                 padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 16),
+                                  horizontal: 20,
+                                  vertical: 16,
+                                ),
                                 physics: const BouncingScrollPhysics(),
                                 children: [
                                   const AppThemePicker(),
@@ -299,7 +304,7 @@ class _SettingsViewState extends State<SettingsView> {
                                         bool,
                                         bool,
                                         bool,
-                                        AppTheme
+                                        AppTheme,
                                       )>(
                                     selector: (_, m) => (
                                       m.enableRotation,
@@ -317,8 +322,10 @@ class _SettingsViewState extends State<SettingsView> {
                                       m.theme,
                                     ),
                                     builder: (context, _, __) => Toggles(
-                                      Provider.of<AppModel>(context,
-                                          listen: false),
+                                      Provider.of<AppModel>(
+                                        context,
+                                        listen: false,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(height: 32),

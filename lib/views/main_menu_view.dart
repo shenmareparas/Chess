@@ -46,9 +46,7 @@ class _MainMenuViewState extends State<MainMenuView> {
       builder: (context, theme, child) {
         return Scaffold(
           body: Container(
-            decoration: BoxDecoration(
-              gradient: theme.background,
-            ),
+            decoration: BoxDecoration(gradient: theme.background),
             child: Stack(
               children: [
                 // 1. Dot Grid Background (RepaintBoundary isolates it on its own GPU layer)
@@ -56,7 +54,8 @@ class _MainMenuViewState extends State<MainMenuView> {
                   child: RepaintBoundary(
                     child: CustomPaint(
                       painter: DotGridPainter(
-                          color: theme.lightTile.withValues(alpha: 0.05)),
+                        color: theme.lightTile.withValues(alpha: 0.05),
+                      ),
                     ),
                   ),
                 ),
@@ -74,7 +73,8 @@ class _MainMenuViewState extends State<MainMenuView> {
                         boxShadow: [
                           BoxShadow(
                             color: theme.lightTile.withValues(
-                                alpha: 0.06), // Very soft theme-colored glow
+                              alpha: 0.06,
+                            ), // Very soft theme-colored glow
                             blurRadius: 100,
                             spreadRadius: 20,
                           ),
@@ -86,18 +86,8 @@ class _MainMenuViewState extends State<MainMenuView> {
 
                 // 3. Main Content — uses Selector so only option/theme changes
                 // rebuild the interactive content while static background layers stay isolated.
-                Selector<
-                    AppModel,
-                    (
-                      int,
-                      int,
-                      Player,
-                      Player,
-                      int,
-                      int,
-                      String,
-                      AppTheme,
-                    )>(
+                Selector<AppModel,
+                    (int, int, Player, Player, int, int, String, AppTheme)>(
                   selector: (_, m) => (
                     m.playerCount,
                     m.aiDifficulty,
@@ -119,8 +109,9 @@ class _MainMenuViewState extends State<MainMenuView> {
                             // Scrollable Options List
                             Expanded(
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
                                 child: GameOptions(
                                   appModel,
                                   scrollController: _scrollController,
