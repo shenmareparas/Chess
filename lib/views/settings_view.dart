@@ -304,11 +304,13 @@ class _SettingsViewState extends State<SettingsView> {
                                         bool,
                                         bool,
                                         bool,
+                                        bool,
                                         AppTheme,
                                       )>(
                                     selector: (_, m) => (
                                       m.enableRotation,
                                       m.enablePieceRotation,
+                                      m.flipOpponentPieces,
                                       m.enableRotationAnimation,
                                       m.showHints,
                                       m.showNotation,

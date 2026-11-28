@@ -188,14 +188,16 @@ class ChessgroundAdapter {
 
   /// Maps 2P piece-rotation preferences to [PieceOrientationBehavior].
   static PieceOrientationBehavior buildPieceOrientation(AppModel appModel) {
-    if (appModel.enablePieceRotation &&
-        !appModel.enableRotation &&
+    if (!appModel.enableRotation &&
         !appModel.playingWithAI &&
         appModel.historyViewIndex == null &&
         appModel.playerCount == 2) {
-      return appModel.flipOpponentPieces
-          ? PieceOrientationBehavior.opponentUpsideDown
-          : PieceOrientationBehavior.sideToPlay;
+      if (appModel.flipOpponentPieces) {
+        return PieceOrientationBehavior.opponentUpsideDown;
+      }
+      if (appModel.enablePieceRotation) {
+        return PieceOrientationBehavior.sideToPlay;
+      }
     }
     return PieceOrientationBehavior.facingUser;
   }

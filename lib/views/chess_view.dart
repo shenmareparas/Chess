@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
-import '../logic/shared_functions.dart';
 import '../model/app_model.dart';
 import '../model/app_themes.dart';
 import '../model/player.dart';
@@ -239,11 +238,11 @@ class _ChessViewState extends State<ChessView> with WidgetsBindingObserver {
                                 final isSideCaptured = boardData.$5;
                                 final isFlipped = boardData.$6;
                                 final topPlayer = appModel.isBoardInverted
-                                    ? appModel.playerSide
-                                    : oppositePlayer(appModel.playerSide);
+                                    ? Player.player1
+                                    : Player.player2;
                                 final bottomPlayer = appModel.isBoardInverted
-                                    ? oppositePlayer(appModel.playerSide)
-                                    : appModel.playerSide;
+                                    ? Player.player2
+                                    : Player.player1;
 
                                 final leftSidePlayer =
                                     isFlipped ? topPlayer : bottomPlayer;

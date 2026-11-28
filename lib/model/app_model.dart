@@ -266,21 +266,21 @@ class AppModel extends ChangeNotifier {
     if (_gameOverInvertedState != null && gameOver) {
       return _gameOverInvertedState!;
     }
-    if (playingWithAI || historyViewIndex != null) {
+    if (playingWithAI || historyViewIndex != null || !enableRotation) {
       return playerSide == Player.player2;
     } else {
-      return enableRotation && turn == Player.player2;
+      return turn == Player.player2;
     }
   }
 
-  /// Whether pieces should be visually rotated 180 degrees (in 2P mode on Player 2's turn).
+  /// Whether pieces should be visually rotated 180 degrees (in 2P mode on the top player's turn).
   bool get isPieceRotated {
-    return enablePieceRotation &&
+    return (enablePieceRotation || flipOpponentPieces) &&
         !enableRotation &&
         !playingWithAI &&
         historyViewIndex == null &&
         playerCount == 2 &&
-        turn == Player.player2;
+        turn != playerSide;
   }
 
   // ── Saved Game Availability (Reactive) ──
@@ -338,23 +338,13 @@ class AppModel extends ChangeNotifier {
     audio.enabled = prefs.soundEnabled;
     // Reset undo bank for the new game.
     _availableUndos = 1;
-    if (selectedSide == Player.random) {
+    final chosenSide = playingWithAI ? selectedSide : selectedSideP1;
+    if (chosenSide == Player.random) {
       playerSide = math.Random.secure().nextInt(2) == 0
           ? Player.player1
           : Player.player2;
     } else {
-      playerSide = selectedSide;
-    }
-
-    // In a 2-player game, let Player 1 start on their chosen side.
-    if (!playingWithAI) {
-      if (selectedSideP1 == Player.random) {
-        playerSide = math.Random.secure().nextInt(2) == 0
-            ? Player.player1
-            : Player.player2;
-      } else {
-        playerSide = selectedSideP1;
-      }
+      playerSide = chosenSide;
     }
     // Dispose the previous controller's background isolate before replacing it.
     gameController?.dispose();
@@ -830,6 +820,9 @@ class AppModel extends ChangeNotifier {
     if (side != null) {
       haptic.light();
       selectedSideP1 = side;
+      if (side != Player.random) {
+        playerSide = side;
+      }
       notifyListeners();
     }
   }

@@ -136,18 +136,21 @@ class Toggles extends StatelessWidget {
         children: [
           Toggle(
             'Auto-Rotate Board (2P)',
+            subtitle: 'Rotate the board to face the active player',
             icon: Icons.sync,
             toggle: appModel.enableRotation,
             setFunc: appModel.setEnableRotation,
+            enabled:
+                !appModel.enablePieceRotation && !appModel.flipOpponentPieces,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
-            'Auto-Rotate Pieces (2P)',
+            'Flip Pieces Each Turn (2P)',
+            subtitle: 'Point all pieces toward the current player',
             icon: Icons.rotate_left_rounded,
-            toggle:
-                appModel.enableRotation ? false : appModel.enablePieceRotation,
+            toggle: appModel.enablePieceRotation,
             setFunc: appModel.setEnablePieceRotation,
-            enabled: !appModel.enableRotation,
+            enabled: !appModel.enableRotation && !appModel.flipOpponentPieces,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
@@ -156,19 +159,23 @@ class Toggles extends StatelessWidget {
             icon: Icons.swap_vert_rounded,
             toggle: appModel.flipOpponentPieces,
             setFunc: appModel.setFlipOpponentPieces,
-            enabled: !appModel.enableRotation && appModel.enablePieceRotation,
+            enabled: !appModel.enableRotation && !appModel.enablePieceRotation,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Rotation Animation',
-            subtitle: 'Smoothly animate board and piece rotation',
+            subtitle: 'Smoothly animate board rotation',
             icon: Icons.animation_rounded,
-            toggle: appModel.enableRotationAnimation,
+            toggle: appModel.enableRotation
+                ? appModel.enableRotationAnimation
+                : false,
             setFunc: appModel.setEnableRotationAnimation,
+            enabled: appModel.enableRotation,
           ),
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Move Hints & Highlights',
+            subtitle: 'Highlight valid moves, last move, and checks',
             icon: Icons.track_changes_rounded,
             toggle: appModel.showHints,
             setFunc: appModel.setShowHints,
@@ -176,6 +183,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Show Notation',
+            subtitle: 'Display rank and file coordinates on the board',
             icon: Icons.description_outlined,
             toggle: appModel.showNotation,
             setFunc: appModel.setShowNotation,
@@ -183,6 +191,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Allow Undo/Redo',
+            subtitle: 'Enable taking back and replaying moves',
             icon: Icons.history_rounded,
             toggle: appModel.allowUndoRedo,
             setFunc: appModel.setAllowUndoRedo,
@@ -190,6 +199,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Show Move History',
+            subtitle: 'Display the scrollable move list during games',
             icon: Icons.list_alt_rounded,
             toggle: appModel.showMoveHistory,
             setFunc: appModel.setShowMoveHistory,
@@ -197,6 +207,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Show Captured Pieces',
+            subtitle: 'Display captured pieces around the board',
             icon: Icons.shield_outlined,
             toggle: appModel.showCapturedPieces,
             setFunc: appModel.setShowCapturedPieces,
@@ -204,6 +215,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Sound',
+            subtitle: 'Play audio effects for moves and game events',
             icon: Icons.volume_up_rounded,
             toggle: appModel.soundEnabled,
             setFunc: appModel.setSoundEnabled,
@@ -211,6 +223,7 @@ class Toggles extends StatelessWidget {
           Divider(height: 1, color: themeColor, thickness: 1),
           Toggle(
             'Haptic Feedback',
+            subtitle: 'Vibrate on piece selection, moves, and captures',
             icon: Icons.vibration_rounded,
             toggle: appModel.hapticEnabled,
             setFunc: appModel.setHapticEnabled,

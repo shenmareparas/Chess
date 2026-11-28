@@ -1,4 +1,6 @@
+import 'package:chessground/chessground.dart';
 import 'package:cupertino_ui/cupertino_ui.dart';
+import 'package:dartchess/dartchess.dart' as dc;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -15,6 +17,7 @@ import '../lib/model/player.dart';
 import '../lib/model/user_preferences.dart';
 import '../lib/views/chess_view.dart';
 import '../lib/views/components/chess_view/game_info_and_controls/game_status.dart';
+import '../lib/views/components/chess_view/promotion_dialog.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -78,4 +81,68 @@ void main() {
       expect(find.text('RESUME'), findsOneWidget);
     });
   }
+
+  testWidgets(
+    '2P mode with Player 1 Black and Auto-Rotate Board off inverts board',
+    (tester) async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      await prefs.setEnableRotation(false);
+      await prefs.setEnablePieceRotation(true);
+
+      final appModel = AppModel(prefs: prefs);
+      appModel.setPlayerCount(2);
+      appModel.setPlayerSideP1(Player.player2);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: appModel,
+          child: CupertinoApp(
+            home: MediaQuery(
+              data: const MediaQueryData(size: Size(390, 844)),
+              child: Scaffold(body: ChessView(appModel)),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(appModel.playerSide, Player.player2);
+      expect(appModel.isBoardInverted, isTrue);
+      final chessboard = tester.widget<Chessboard>(find.byType(Chessboard));
+      expect(chessboard.orientation, dc.Side.black);
+    },
+  );
+
+  testWidgets(
+    'PromotionDialog rotates 180 degrees when top player promotes in 2P piece-rotation mode',
+    (tester) async {
+      final prefs = UserPreferences();
+      await prefs.load();
+      await prefs.setEnableRotation(false);
+      await prefs.setEnablePieceRotation(true);
+
+      final appModel = AppModel(prefs: prefs);
+      appModel.setPlayerCount(2);
+      appModel.setPlayerSideP1(Player.player2);
+      appModel.newGame(notify: false);
+
+      // Turn is Player.player1 (White, sitting at top while Player 1 is Black at bottom)
+      expect(appModel.isPieceRotated, isTrue);
+
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: appModel,
+          child: CupertinoApp(
+            home: Scaffold(body: PromotionDialog(appModel)),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final rotatedBox = tester.widget<RotatedBox>(find.byType(RotatedBox));
+      expect(rotatedBox.quarterTurns, 2);
+    },
+  );
 }

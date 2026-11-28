@@ -512,5 +512,61 @@ void main() {
       expect(controller.checkHintTile, 4);
       expect(appModel.turn, Player.player2);
     });
+
+    test(
+      '2P mode keeps Player 1 Black at bottom when board rotation is off and rotates opponent pieces',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        await prefs.setEnableRotation(false);
+        await prefs.setEnablePieceRotation(true);
+
+        final appModel = AppModel(prefs: prefs);
+        appModel.setPlayerCount(2);
+        appModel.setPlayerSideP1(Player.player2);
+        appModel.newGame(notify: false);
+
+        expect(appModel.playerSide, Player.player2);
+        // Board stays inverted for Player 1 (Black at bottom) on both turns
+        expect(appModel.turn, Player.player1);
+        expect(appModel.isBoardInverted, isTrue);
+        // White (top player) is active, so pieces rotate 180° to face top
+        expect(appModel.isPieceRotated, isTrue);
+
+        appModel.turn = Player.player2;
+        expect(appModel.isBoardInverted, isTrue);
+        // Black (bottom player, Player 1) is active, so pieces face bottom
+        expect(appModel.isPieceRotated, isFalse);
+      },
+    );
+
+    test(
+      '2P mode with Random resolves playerSide to White or Black and updates board orientation',
+      () async {
+        final prefs = UserPreferences();
+        await prefs.load();
+        await prefs.setEnableRotation(false);
+
+        final appModel = AppModel(prefs: prefs);
+        appModel.setPlayerCount(2);
+        appModel.setPlayerSideP1(Player.random);
+
+        final seenSides = <Player>{};
+        for (int i = 0; i < 40; i++) {
+          appModel.newGame(notify: false);
+          expect(
+            appModel.playerSide,
+            anyOf(Player.player1, Player.player2),
+          );
+          expect(
+            appModel.isBoardInverted,
+            appModel.playerSide == Player.player2,
+          );
+          seenSides.add(appModel.playerSide);
+          if (seenSides.length == 2) break;
+        }
+        expect(seenSides, containsAll([Player.player1, Player.player2]));
+      },
+    );
   });
 }

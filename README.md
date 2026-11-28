@@ -74,9 +74,10 @@ A feature-rich chess application built with **Flutter** and **chessground** (by 
 - **Sound Effects**: Audio feedback for piece movements using a pooled `AudioPool` for rapid playback
 - **Haptic Feedback**: Configurable vibration patterns — light for moves, medium for captures/checks, heavy for stalemates, vibrate for checkmates (default: on)
 - **Daily Practice Notifications**: Adaptively schedules daily reminder notifications at the player's most frequent playing hour, with built-in permission handling and blocked-notification recovery (default: on)
-- **Auto-Rotate Board**: Automatic board rotation based on turn in offline 2-Player mode (configurable)
-- **Auto-Rotate Pieces**: Rotates Player 2's pieces 180 degrees (pi) in offline 2-Player mode if board auto-rotation is disabled, with a **Flip Opponent Pieces (2P)** toggle to keep opponent pieces permanently upside down instead of rotating per turn (configurable)
-- **Rotation Animation**: Smoothly animates board and piece rotation transitions; can be disabled in Settings for instant snapping (default: on)
+- **Auto-Rotate Board (2P)**: Automatically rotates the board to face the active player in offline 2-Player mode (default: on)
+- **Flip Pieces Each Turn (2P)**: Points all pieces toward the current player on each turn in offline 2-Player mode (`PieceOrientationBehavior.sideToPlay`)
+- **Flip Opponent Pieces (2P)**: Keeps opponent pieces permanently upside down for face-to-face play in offline 2-Player mode (`PieceOrientationBehavior.opponentUpsideDown`), with all three 2P rotation modes mutually exclusive
+- **Rotation Animation**: Smoothly animates board rotation transitions (`RotationTransition` over 600ms); enabled when **Auto-Rotate Board (2P)** is on (default: on)
 - **Context-aware Game Status**: The status indicator uses custom background, border, text, and dot colors that adapt dynamically to the active state or outcome of the game (e.g., success green for wins, red for losses, gray for stalemates and FIDE draws)
 - **Smooth Animated Promotion Handling**: Glassmorphic pawn promotion picker with custom spring scale and fade transition (`Curves.easeOutBack` over 240ms) via `showGeneralDialog` (wrapped in `PopScope(canPop: false)` to require an explicit piece choice).
 - **Check Detection & Dynamic Undo Sync**: Visual red check mark highlight on the king piece for checks and checkmate. Dynamically synchronizes across both forward moves and move undos (in single-player AI games and two-player offline matches), as well as during move history navigation without stale indicators.

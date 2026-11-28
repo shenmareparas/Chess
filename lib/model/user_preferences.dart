@@ -25,7 +25,7 @@ class UserPreferences {
   bool showHints = true;
   bool showNotation = false;
   bool enableRotation = true;
-  bool enablePieceRotation = true;
+  bool enablePieceRotation = false;
   bool flipOpponentPieces = false;
   bool enableRotationAnimation = true;
   bool hapticEnabled = true;
@@ -65,8 +65,14 @@ class UserPreferences {
     showHints = _prefs!.getBool('showHints') ?? true;
     showNotation = _prefs!.getBool('showNotation') ?? false;
     enableRotation = _prefs!.getBool('enableRotation') ?? true;
-    enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? true;
+    enablePieceRotation = _prefs!.getBool('enablePieceRotation') ?? false;
     flipOpponentPieces = _prefs!.getBool('flipOpponentPieces') ?? false;
+    if (enableRotation) {
+      enablePieceRotation = false;
+      flipOpponentPieces = false;
+    } else if (flipOpponentPieces && enablePieceRotation) {
+      enablePieceRotation = false;
+    }
     enableRotationAnimation =
         _prefs!.getBool('enableRotationAnimation') ?? true;
     allowUndoRedo = _prefs!.getBool('allowUndoRedo') ?? true;
@@ -142,6 +148,16 @@ class UserPreferences {
     enableRotation = enable;
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setBool('enableRotation', enable);
+    if (enable) {
+      if (enablePieceRotation) {
+        enablePieceRotation = false;
+        _prefs!.setBool('enablePieceRotation', false);
+      }
+      if (flipOpponentPieces) {
+        flipOpponentPieces = false;
+        _prefs!.setBool('flipOpponentPieces', false);
+      }
+    }
     onChanged?.call();
   }
 
@@ -149,6 +165,16 @@ class UserPreferences {
     enablePieceRotation = enable;
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setBool('enablePieceRotation', enable);
+    if (enable) {
+      if (enableRotation) {
+        enableRotation = false;
+        _prefs!.setBool('enableRotation', false);
+      }
+      if (flipOpponentPieces) {
+        flipOpponentPieces = false;
+        _prefs!.setBool('flipOpponentPieces', false);
+      }
+    }
     onChanged?.call();
   }
 
@@ -156,6 +182,16 @@ class UserPreferences {
     flipOpponentPieces = flip;
     _prefs ??= await SharedPreferences.getInstance();
     _prefs!.setBool('flipOpponentPieces', flip);
+    if (flip) {
+      if (enableRotation) {
+        enableRotation = false;
+        _prefs!.setBool('enableRotation', false);
+      }
+      if (enablePieceRotation) {
+        enablePieceRotation = false;
+        _prefs!.setBool('enablePieceRotation', false);
+      }
+    }
     onChanged?.call();
   }
 
@@ -216,7 +252,7 @@ class UserPreferences {
     showHints = true;
     showNotation = false;
     enableRotation = true;
-    enablePieceRotation = true;
+    enablePieceRotation = false;
     flipOpponentPieces = false;
     enableRotationAnimation = true;
     allowUndoRedo = true;
